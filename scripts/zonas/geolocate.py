@@ -28,7 +28,7 @@ def processFile (fileName):
 
 	def getGeolocation (address, postalCode):
 		api = 'https://maps.googleapis.com/maps/api/geocode/json?address=%s&postal-code=%s&key=%s'
-		key = 'AIzaSyDnVWDWExw1lGk0x1kvjmdTNLQIcB2nS30'
+		key = 'SUA CHAVE DO GOOGLE AQUI'
 		address = address.replace(' ', '%20')
 		url = api % (address, postalCode, key)
 		try:
