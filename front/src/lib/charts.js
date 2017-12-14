@@ -294,7 +294,10 @@ export default {
             else
                 indexCandidatoSelecionado = null
 
-            if (options.radiusType == VARIABLE_RADIUS) {
+            if (options.radiusType === FIXED_RADIUS) {
+                baseRadius = Math.pow(2, Math.min(params.zoom, 12) / 2.2)                 
+            }
+            else {
                 baseRadius = Math.pow(2, Math.min(params.zoom, 10)) / 12
                 minRadius = Math.max(minRadius, params.zoom/2)
                 if (chartType == 'index') {  
@@ -311,9 +314,6 @@ export default {
                             maxTotalVotos = plottingData[i].totalVotos
                     }
                 }    
-            }
-            else {
-                baseRadius = Math.pow(2, Math.min(params.zoom, 12) / 2.2)                 
             }
 
             ctx.clearRect(0, 0, params.canvas.width, params.canvas.height);
@@ -394,7 +394,7 @@ export default {
 
     setUpCanvasLayer (map) {
         leafletMap = map
-        this.setChartType('winner')
+        this.setChartType('winner', 'variable')
         chartCanvas = L.canvasLayer()
             .delegate(this) 
             .addTo(leafletMap);
