@@ -12,7 +12,7 @@ cd build
 node server
 `
 
-O aplicativo estará disponível em http://localhost:8080.
+O aplicativo estará disponível em http://localhost:8008.
 Para mudar a porta do servidor http, use o comando –p. Por exemplo, para rodar o servidor na porta 8000, digite:
 
 `
@@ -43,25 +43,30 @@ npm run build
 
 O Atlas Eleitoral facilita a visualização dos dados eleitorais do CEPESPData. 
 
-Neste momento, o foco de análise do Atlas Eleitoral são as eleições nos estados e no Distrito Federal. Por isso, permite a análise de dados de eleições para presidente, governador, senador e deputados, mas não incorpora as eleições para prefeito e vereador.
+Neste momento, o foco de análise do Atlas Eleitoral são as eleições nos estados e no Distrito Federal. Por isso, permite a análise de dados de eleições para presidente, governador, senador e deputados, mas ainda não incorpora as eleições para prefeito e vereador.
 
-Ao abrir o Atlas Eleitoral, você deverá escolher um estado para concentrar sua análise. Escolhido um estado, você selecionará, no *painel de candidatos* (à esquerda), os candidatos cujo desempenho eleitoral deseja analisar e comparar. Não há restrições quanto a que candidatos podem ser vistos na mesma tela – é possível, por exemplo, comparar o desempenho de candidatos a presidente com o de candidatos a deputado federal ou estadual, inclusive de eleições diferentes.
+Ao abrir o Atlas Eleitoral, escolha um estado para concentrar sua análise. Escolhido um estado, você poderá fazer dois tipos de análise: comparar o desempenho de vários candidatos ou analisar detalhadamente o padrão de votação de um único candidato.
 
-Os dados dos candidatos selecionados são plotados no mapa por município. No caso dos municípios com mais de uma zona eleitoral, os dados são plotados no centro geográfico estimado de cada zona. Assim, é possível ver com exatidão a distribuição geográfica do desempenho eleitoral dos candidatos no estado sob análise. 
+No primeiro caso, basta adicionar os candidatos que quiser comparar no *painel de candidatos*, à esquerda. Você pode escolher os candidatos digitando parte do nome (como uma busca do Google) ou clicando no botão `BUSCA AVANÇADA`, que abre uma caixa que oferece mais opções de escolha. Escolhidos os candidatos, você poderá, no canto superior direito do mapa, escolher vários gráficos que oferecem diversas formas de você visualizar o desempenho dos candidatos em cada município e zona eleitoral.
 
-O mapa possui dois modos de operação. No modo padrão, ele compara o desempenho eleitoral dos candidatos que figurarem no painel de candidatos. No canto superior direito do mapa, você encontrará diversos tipos de gráficos, que oferecem diversas formas de se compararem as votações dos candidatos em cada zona/município. 
+Note que não há restrições quanto a quem você pode incluir nas comparações, exceto que todos têm de ter disputado eleição no mesmo estado (senão a comparação só faria sentido para candidatos a presidente da República). Você pode, por exemplo, comparar os candidatos a governador em uma eleição, ou todos os candidatos a senador por um partido desde 1998, ou o desempenho de um deputado nos pleitos de 1998 a 2014. Você pode até fazer comparações aparentemente esdrúxulas, que só fazem sentido para você -- o Atlas Eleitoral é uma ferramenta para *você* encontrar padrões onde ninguém mais procurou! 
 
-O segundo modo de operação, acessível quando se clica no nome de um candidato, é o de visualização de índices individuais. Esse modo permite que se veja a concentração dos votos de um candidato, e as regiões em que ele é mais forte e mais fraco. Neste momento, o Atlas Eleitoral calcula dois índices: 
+O segundo tipo de análise é individual. Adicione um candidato e clique no seu nome; você verá um botão `VER ÍNDICES INDIVIDUAIS`. Clicando nele, você verá dois índices que mostram imediatamente onde o candidato tem mais eleitores: o índice LQ e o índice de importância. 
 
-- o **índice LQ** (quociente de locação), que compara o desempenho de um candidato em um distrito com o desempenho global do candidato. Um LQ de 1 indica que a votação do candidato naquele distrito foi proporcional à votação do candidato em todo o estado; um LQ maior que 1 indica que o candidato teve desempenho melhor naquele distrito do que no estado, e LQ menor que 1 indica que o candidato teve proporcionalmente menos votos no distrito do que teve no estado 
-como um todo.
+O *índice LQ* mostra, em azul, os distritos onde o candidato teve votação melhor que sua média global e, em laranja, os distritos onde ele teve votação inferior à sua média. Quanto mais forte a cor, mais longe da média está a votação do candidato no município ou zona em questão. Os municípios em azul são aqueles em que o candidato provavelmente destinou mais recursos.
 
-- o **índice de importância** (IP), que indica quais foram os distritos mais importantes para a votação de um candidato. Quanto menor o índice, maior peso teve aquele distrito para a votação do candidato. O Atlas Eleitoral calcula o índice ordenando os distritos em ordem decrescente de votos dados ao candidato em questão; o índice é a proporção entre a soma dos votos do distrito, e de todos os distritos que deram mais votos ao candidato, e a votação total do candidato. Por exemplo, um distrito com índice de 0,2 indica que o distrito está no quintil superior dos votos dados ao candidato.
+O *índice de importância*, como o nome diz, mostra exatamente quais são os distritos que mais contribuíram para a votação do candidato; a principal base eleitoral dele aparece em vermelho escuro, e a cor vai ficando mais clara à medida que o distrito for menos importante (ou mais dispensável) para compor a votação final do candidato. É razóavel supor que, quanto mais escuro o vermelho de um município, maior a preocupação do representante eleito em agradar os eleitores daquele município.
 
-Para retornar ao modo de comparação, basta clicar no botão `VOLTAR A COMPARAÇÕES` ou fechar o quadro do candidato em questão.
+Sugiro que você analise individualmente alguns deputados mais votados de seu estado. A estratégia geográfica de cada deputado ficará evidente.
 
-Em ambos os modos de operação, para facilitar a visualização, é possível ver os gráficos de cada zona/município em tamanho uniforme ou proporcional à quantidade de votos daquela zona/município. 
+Para fechar a análise individual e retornar ao modo de comparação entre candidatos, basta clicar no botão `VOLTAR A GRÁFICOS COMPARATIVOS` ou clicar novamente no nome do candidato sob análise.
 
-Para selecionar mais de um candidato por vez, procurar pelos mais votados ou ver os candidatos de um partido para uma determinada eleição, clique em `BUSCA AVANÇADA`.
+Em ambos os modos de operação, para facilitar a visualização, é possível ver os gráficos de cada zona/município em tamanho uniforme ou proporcional à quantidade de votos daquela zona/município. Basta clicar nos ícones na parte central do lado direito. 
 
+Espero que o Atlas Eleitoral auxilie você a entender melhor quem são nossos políticos e como eles se elegem.
+
+Boa pesquisa!
+
+Fábio Cereda
+Dezembro de 2017
 
