@@ -3,8 +3,8 @@
 <div class="select-candidates">
 	<v-container fluid class="pa-2">
 
-	    <div v-if="!candidatosSelecionados.length">
-	    	Agora, escolha um ou mais candidatos ou partidos que tenham disputado eleições {{ uf.sigla == 'DF' ? 'no Distrito Federal': 'neste estado' }}, e clique em <b>Adicionar</b>. Para mais opções, clique em <b>Busca avançada</b>:
+	    <div v-if="!candidatosSelecionados.length" class="pa-2">
+	    	Agora, escolha um ou mais candidatos ou partidos que tenham disputado eleições {{ uf.sigla == 'DF' ? 'no Distrito Federal': 'neste estado' }}. Basta digitar parte do nome no campo abaixo. Para mais opções, clique em <code>BUSCA AVANÇADA</code>:
 	    </div>	
 
 		<atlas-candidate-chip
