@@ -39,7 +39,7 @@ O Webpack abrirá uma versão de desenvolvimento com *hot reloading*. Para compi
 npm run build
 `
 
-##Usando o Atlas Eleitoral
+## Usando o Atlas Eleitoral
 
 O Atlas Eleitoral facilita a visualização dos dados eleitorais do CEPESPData. 
 
@@ -68,5 +68,6 @@ Espero que o Atlas Eleitoral auxilie você a entender melhor quem são nossos po
 Boa pesquisa!
 
 Fábio Cereda
+
 Dezembro de 2017
 
