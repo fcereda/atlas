@@ -8,6 +8,9 @@ const fs = require('fs')
 var parse = require('csv-parse')
 var proxy = require('express-http-proxy')
 var path = require('path');
+var apicache = require('apicache')
+let cache = apicache.middleware
+
 
 var arqCandidatos = './data/candidatos.csv',
 	arqCoords = './data/coords.csv',
@@ -26,7 +29,11 @@ var arqCandidatos = './data/candidatos.csv',
 	coordenadasPorUf = {},
 	municipios = [],
 	municipiosPorUf = {},
-	partidos = []
+	partidos = [],
+	timeStarted = null
+
+
+const onlyStatus200 = (req, res) => res.statusCode === 200
 
 router.use(function (req, res, next) {
 	if (debugMode) {
@@ -113,7 +120,9 @@ if (!developmentMode) {
 
 	app.use('/public', express.static(publicFolder));
 
-	app.use('/cepesp', proxy('http://cepesp.io/'))
+	const onlyStatus200 = (req, res) => res.statusCode === 200
+	const cacheSuccesses = cache('5 days', onlyStatus200)
+	app.use('/cepesp', cacheSuccesses, proxy('http://cepesp.io/'))
 }
 else {
 	console.log('Operando em modo de desenvolvimento')
@@ -190,7 +199,16 @@ router.route('/api/municipios')
 		return res.status(400).json({ error: 'Please specify ID or UF' })
 	})
 
+app.get('/api/cache/index', (req, res) => {
+  res.json(apicache.getIndex())
+})
 
+app.get('/api/status', (req, res) => {
+	res.json({
+		timeStarted,
+		cacheIndex: apicache.getIndex()
+	})
+})
 
 function parseCandidateRow (row) {
 
@@ -336,7 +354,8 @@ try {
     	if (verbose)
     		Object.entries(coordenadasPorUf).forEach(([uf, coords]) => print(uf + ': ' + coords.length + ' coordenadas carregadas'))
     	// We assume this will be the last line to be executed when all data files are loaded
-    	print('Servidor do CEPESP Atlas Eleitoral operando na porta ' + port)
+    	timeStarted = Date().toString() 
+    	print(timeStarted + ': Servidor do CEPESP Atlas Eleitoral operando na porta ' + port)
 	})
 }
 catch (error) {
