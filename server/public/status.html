@@ -1,0 +1,63 @@
+<html>
+	<head><title>Atlas Eleitoral - Status</title></head>
+    <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet" type="text/css">
+
+<style>
+
+body {
+	font-family: 'Roboto', sans-serif;
+	font-size: 18px;
+}
+
+.table {
+	border-bottom: 1px solid #999;
+}
+
+.cell {
+	padding:8px;
+	border-top: 1px solid #999;
+	line-height:150%;
+}
+
+</style>
+
+	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+
+<body>
+
+	<h2>Server started on <span id="time"></span></h2> 
+
+	<h2>API Cache</h2>
+	 <h3><span id="numapi"></span></h3>
+
+	<table id="apiindex" class="table">
+	</table>
+
+</body>
+
+<script>
+
+axios.get('/api/status')
+.then((response) => {
+	console.log(response)
+	var timeSpan = document.getElementById('time')
+	timeSpan.innerHTML = response.data.timeStarted
+
+	var table = document.getElementById('apiindex')
+	var chamadas = response.data.cacheIndex.all.sort((a, b) => a > b)
+	if (chamadas.length)
+		document.getElementById('numapi').innerHTML = `${chamadas.length} chamadas`
+	var tableContent = chamadas.map((item) => {
+		return `<tr><td class="cell">${ item }</td></tr>`
+	}).join('')
+	console.log(tableContent)
+	table.innerHTML = tableContent
+})
+.catch((error) => {
+	console.error(error)
+})
+
+</script>
+
+</html>		
