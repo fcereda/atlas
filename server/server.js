@@ -219,7 +219,9 @@ function parseCandidateRow (row) {
 
 	const cargos = ['pr', 'vpr', 'g', 'vg', 's', 'df', 'de', 'de', '1s', '2s', 'pm', 'vpm', 'vm']
 
-	var nome = row['NOME_CANDIDATO'],
+	var nome = row['NOME_URNA_CANDIDATO'],
+		nomeCompleto = row['NOME_CANDIDATO'],
+		cpf = row['CPF_CANDIDATO'],
 		uf = row['UF'] || row['SIGLA_UF'],
 		ano = row['ANO_ELEICAO'],
 		partido = row['SIGLA_PARTIDO'],
@@ -232,7 +234,9 @@ function parseCandidateRow (row) {
 		cargo = cargo + row['NUM_TURNO']
 	return {
 		nome,
+		nomeCompleto,
 		nomeNormalizado: normalizarNome(nome),
+		cpf,
 		uf,
 		ano,
 		partido,
@@ -265,6 +269,17 @@ function parseCoordinateRow (row) {
 }
 
 
+function promisifiedParse (fileData, options) {
+	return new Promise ((resolve, reject) => {
+		parse(fileData, options, (err, data) => {
+			if (err) {
+				reject(err)
+			}
+			resolve(data)
+		})	
+	})
+}
+
 var options = getOptions()
 port = options.port || port
 arqCandidatos = options.candidatos || arqCandidatos
@@ -274,7 +289,7 @@ verbose = options.verbose || verbose
 debugMode = options.debug || debugMode
 developmentMode = options.dev || developmentMode
 
-print('Servidor do CEPESP Atlas Eleitoral')
+
 
 function loadCandidates (next) {
 
@@ -284,7 +299,7 @@ function loadCandidates (next) {
 	    parse(fileData, {delimiter: ',', trim: true, columns: true}, function (err, rows) {
 	    	if (err) {
 				console.error(`Error trying to parse file ${arqCandidatos}`)
-	    		console.error(error)
+	    		console.error(err)
 	    		process.exit()
 	    	}
 	 		print(rows.length + ' candidatos carregados')
@@ -295,7 +310,7 @@ function loadCandidates (next) {
 	    	candidatos.forEach((candidato) => {
 	    		var {id, uf, ano, cargo} = candidato
 	    		if (!candidatosPorUf[uf])
-	    			candidatosPorUf[uf] = {}
+	    			candidatosPorUf[uf] = []
 	    		if (!candidatosPorUf[uf][cargo])
 	    			candidatosPorUf[uf][cargo] = []
 	    		if (!candidatosPorUf[uf][ano])
@@ -304,6 +319,7 @@ function loadCandidates (next) {
 	    			candidatosPorUf[uf][ano][cargo] = []
 	    		candidatosPorUf[uf][ano][cargo].push(candidato)
 	    		candidatosPorUf[uf][cargo].push(candidato) 
+	    		candidatosPorUf[uf].push(candidato)
 	    		candidatosPorId[id] = candidato
 	    	})	
 
@@ -465,7 +481,7 @@ function executeFunctions () {
 	executeNextFunction ()
 }
 
-
+print('Servidor do CEPESP Atlas Eleitoral')
 executeFunctions ()
 
 
