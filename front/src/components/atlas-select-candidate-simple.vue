@@ -195,7 +195,10 @@ export default {
 
         ordenarPorRelevancia (candidatos) {
         	var agrupadosPorNome = candidatos.reduce((dict, candidato) => {
-				var nome = candidato.nomeNormalizado
+				var nome = candidato.nomeCompleto   
+				// Temos que usar nomeCompleto para poder identificar corretamente os candidatos,
+				// pois vários candidatos mudam o nome de urna de eleição para eleição, enquanto
+				// outros utilizam nomes de urna iguais aos de políticos mais famosos
   				if (!dict[nome]) {
 				    dict[nome] = {
 				        lista: [],
@@ -218,6 +221,7 @@ export default {
   				return listaFinal
 			}, [])
 
+			console.log(ordenadosPorRelevancia.map((candidato) => candidato.nome))
 			return ordenadosPorRelevancia
         },
 
