@@ -1,3 +1,4 @@
+import CepespQuery from './cepespquery.js'
 import axios from 'axios'
 import Store from './store.js'		// *** REMOVE THIS LATER
 
@@ -66,6 +67,7 @@ function calcIdElection (ano, cargo, uf) {
 	return `${ano}-${cargo}-${uf.toUpperCase()}`
 }
 
+/*
 function addQuery (query, key, value) {
 	if (query)
 		query = query + '&'
@@ -80,7 +82,7 @@ function buildSearchQuery (key, value, position) {
 	query = query + '&' + column + '[search][value]=' + value
 	return query
 }
-
+*/
 
 function getArrayFromCSV (data, selectedFields) {
 
@@ -121,7 +123,7 @@ function getArrayFromCSV (data, selectedFields) {
 export default {
 	
 	getCitiesAndLocations (uf) {
-		var query = addQuery(null, 'uf', uf)
+		var query = '?uf=' + uf.toUpperCase()
 
 		return new Promise((resolve, reject) => {
 			axios.get(atlasURL + '/coordenadas' + query)
@@ -177,18 +179,19 @@ export default {
 		var cargoETurno = getCargoETurno(cargo, uf)
 		cargo = cargoETurno.cargo
 		var turno = cargoETurno.turno
-		var query = addQuery(null, 'cargo', cargo)
-		query = addQuery(query, 'ano', ano)
-		query = addQuery(query, 'agregacao_politica', 1) 
-		query = addQuery(query, 'agregacao_regional', 7)
-		query = query + '&' + buildSearchQuery('NUM_TURNO', turno, 0)
-		query = query + '&' + buildSearchQuery('UF', uf, 1)
-		query = query + '&' + buildSearchQuery('NUMERO_CANDIDATO', numero, 2)
 
-		//console.log(query);
+		var query = new CepespQuery ({
+			path: '/votos',
+			cargo,
+			ano,
+			agregacaoRegional: 7
+		})
+		query = query.addSearch('NUM_TURNO', turno)
+		  .addSearch('UF', uf)
+		  .addSearch('NUMERO_CANDIDATO', numero)
 
 		return new Promise ((resolve, reject) => {
-			axios.get(cepespURL + '/votos' + query)
+			axios.get(cepespURL + query.url())  
 			.then((response) => {
 				var data = getArrayFromCSV(response.data, {
 					'numero': 'NUMERO_CANDIDATO',
@@ -224,16 +227,16 @@ export default {
 		var cargoETurno = getCargoETurno(cargo, uf)
 		cargo = cargoETurno.cargo
 		var turno = cargoETurno.turno
-		var query = addQuery(null, 'ano', ano)
-		query = addQuery(query, 'cargo', cargo)
-		query = addQuery(query, 'agregacao_politica', 4) 
-		query = addQuery(query, 'agregacao_regional', 7)
-		query = query + '&' + buildSearchQuery('NUM_TURNO', turno, 0)
-		query = query + '&' + buildSearchQuery('UF', uf, 1)
 
-		// No time for niceties. The query below is guaranteed to work:
-		query = `?ano=${ano}&cargo=${cargo}&agregacao_regional=7&agregacao_politica=4&columns[0][name]=UF&columns[0][search][value]=${uf}&columns[1][name]=NUM_TURNO&columns[1][search][value]=${turno}`
-		//console.log(query);
+		var query = new CepespQuery({
+			path: '/tse',
+			ano,
+			cargo,
+			agregacaoRegional: 7,
+			agregacaoPolitica: 4
+		})
+		query.addSearch('UF', uf)
+		query.addSearch('NUM_TURNO', turno)
 
 /*
 		// Fallback para o caso de a API "/tse" do CEPESP parar de funcionar novamente
@@ -255,7 +258,7 @@ export default {
 
 		//O CÓDIGO COSTUMA FUNCIONAR, MAS ÀS VEZES A API DO CEPESP DÁ PROBLEMA
 		return new Promise ((resolve, reject) => {
-			axios.get(cepespURL + '/tse' + query)
+			axios.get(cepespURL + query.url())
 			.then((response) => {
 				var data = getArrayFromCSV(response.data, {
 					'ano': 'ANO_ELEICAO',
@@ -288,6 +291,72 @@ export default {
 // http://cepesp.io/api/consulta/votos?cargo=1&ano=2010&agregacao_politica=1&agregacao_regional=7&columns[0][name]=UF&columns[0][search][value]=SP&columns[1][name]=NUMERO_CANDIDATO&columns[1][search][value]=45&columns[2][name]=COD_MUN_TSE&colmns[2][search][value]=71072&selected_columns[0]=%22NUM_ZONA%22&selected_columns[1]=%22QTDE_VOTOS%22
 
 	},	
+
+	getElectionResultsByZoneAndCity ({ano, cargo, uf, codMunicipio, nomeMunicipio, zona}) {
+		if (!ano || !cargo || !uf)
+			return null
+		if (!codMunicipio && !nomeMunicipio)
+			return null
+		var cargoETurno = getCargoETurno(cargo, uf)
+		cargo = cargoETurno.cargo
+		var turno = cargoETurno.turno
+/*		
+		var query = `?ano=${ano}&cargo=${cargo}`
+		query += '&agregacao_regional=7&agregacao_politica=2&selected_columns[]=SIGLA_PARTIDO&selected_columns[]=NUM_TURNO&selected_columns[]=NOME_MUNICIPIO&selected_columns[]=COD_MUN_TSE&selected_columns[]=NUM_ZONA&selected_columns[]=DESCRICAO_CARGO&selected_columns[]=QTDE_VOTOS&selected_columns[]=NOME_CANDIDATO&selected_columns[]=NOME_URNA_CANDIDATO&selected_columns[]=NUMERO_CANDIDATO&selected_columns[]=UF'
+		query += `&columns[0][name]=UF&columns[0][search][value]=${uf}`
+		query += `&columns[1][name]=NUM_TURNO&columns[1][search][value]=${turno}`
+		if (codMunicipio) {
+			query += `&columns[2][name]=COD_TSE_MUN&columns[2][search][value]=${codMunicipio}`
+		}
+		else if (nomeMunicipio) {
+			query += `&columns[2][name]=NOME_MUNICIPIO&columns[2][search][value]=${nomeMunicipio}`	
+		}
+		if (zona){
+			query += `&columns[3][name]=NUM_ZONA&columns[3][search][value]=${zona}`
+		}	
+*/
+		query = new CepespQuery({
+			path: '/tse',
+			ano,
+			cargo,
+			agregacaoPolitica: 2,
+			agregacaoRegional: 7
+		})
+		if (codMunicipio) {
+			query = query.addSearch('COD_TSE_MUN', codMunicipio)
+		}
+		else if (nomeMunicipio) {
+			query = query.addSearch('NOME_MUNICIPIO', nomeMunicipio)
+		}
+		if (zona) {
+			query = query.addSearch('NUM_ZONA', zona)
+		}
+
+		return new Promise ((resolve, reject) => {
+			axios.get(cepespURL + query.url())
+			.then((response) => {
+				var data = getArrayFromCSV(response.data, {
+					'ano': 'ANO_ELEICAO',
+					'turno': 'NUM_TURNO',
+					'codigoZona': 'NUM_ZONA',
+					'codigoMunicipio': 'COD_MUN_TSE',
+					'nomeMunicipio': 'NOME_MUNICIPIO',
+					'uf': 'UF',
+					'nome': 'NOME_URNA_CANDIDATO',
+					'numero': 'NUMERO_CANDIDATO',
+					'votacao': 'QTDE_VOTOS',
+				})
+				data.forEach((candidato) => {
+					candidato.cargo = cargo
+				})
+				resolve(data)
+			})
+			.catch((error) => {
+				reject(error)
+			})	
+		})
+	},
+
 
 	getStateBordersMap (uf) {
 		var topoFileAddress = `/public/maps/state/${uf.toLowerCase()}-state.json`
