@@ -7,13 +7,22 @@
 		</v-btn>
 	</div>
 
-	<div v-for="zona in zonasInfo" class="pa-4 painel-zonas">
+	<div class="pl-4" style="text-align:right">
+		<v-switch 
+			v-show="zonasInfo.length > 1"
+			v-bind:label="'Agrupar distritos'" 
+			v-model="mostrarDadosAgrupados" 
+			color="info" 
+			hide-details></v-switch>
+	</div>	
+
+	<div v-show="!mostrarDadosAgrupados" v-for="zona in zonasInfo" class="pa-4 painel-zonas">
 
 		<h6>{{ zona.municipio }} &ndash; {{ zona.zona }}&ordf; ZE</h6>
 
 		<table class="zona-detalhes">
 
-			<tr class="zona-detalhes-tr" v-for="candidato in zona.candidatos" style="padding-bottom:10px;">
+			<tr class="zona-detalhes-tr" v-for="candidato in zona.candidatos">
 
 				<td style="min-width:20px;">
 					<div v-bind:style="'width:32px;height:32px;background-color:rgb('+candidato.color+');'">
@@ -21,19 +30,47 @@
 					</div>
 				</td>
 
-
 				<td width="100%">{{ candidato.nome}} ({{ candidato.partido}})
 					<br>
 					{{ labelCargo(candidato.cargo) }} {{ candidato.ano}}
 				</td>
 				<td align="right" >
-					{{ candidato.votos.numero }}&nbsp;votos<br>
+					{{ formatInt(candidato.votos.numero) }}&nbsp;votos<br>
 					{{ candidato.votos.porcentagem }}%
 				</td>
  
    			</tr>	
 
 		</table>
+
+	</div>
+
+	<div v-show="mostrarDadosAgrupados" class="pa-4 painel-zonas">
+
+		<h6 v-html="dadosAgrupados.rotulo" style="line-height:125%">{{ '' && dadosAgrupados.rotulo }}</h6>
+		
+		<table class="zona-detalhes">
+
+			<tr class="zona-detalhes-tr" v-for="candidato in dadosAgrupados.candidatos">
+
+				<td style="min-width:20px;">
+					<div v-bind:style="'width:32px;height:32px;background-color:rgb('+candidato.color+');'">
+						<v-icon class="pa-1" color="grey darken-3">account_circle</v-icon>
+					</div>
+				</td>
+
+				<td width="100%">{{ candidato.nome}} ({{ candidato.partido}})
+					<br>
+					{{ labelCargo(candidato.cargo) }} {{ candidato.ano}}
+				</td>
+				<td align="right" >
+					{{ formatInt(candidato.votos.numero) }}&nbsp;votos<br>
+					{{ candidato.votos.porcentagem }}%
+				</td>			
+
+			</tr>
+		
+		</table>		
 
 	</div>
 
@@ -56,7 +93,7 @@ table.zona-detalhes {
 	padding-bottom:2px;
 	padding-top:2px;
 	border: 1px solid #aaa;
-
+	padding-bottom:10px;
 }
 
 table.zona-detalhes tr td {
@@ -83,11 +120,18 @@ export default {
 
 		return {
 
+			mostrarDadosAgrupados: false,
+			mostrarTodosCandidatos: false,
 			zonasInfo: this.zonas.map((idZona) => {
 				return {
 					id: idZona
 				}
-			})
+			}),
+			dadosAgrupados: {
+				zonas: [],
+				rotulo: '',
+				candidatos: []
+			}
 
 		}
 
@@ -107,6 +151,36 @@ export default {
 				}
 			}).sort((a, b) => a.municipio > b.municipio ? 1 : a.municipio < b.municipio ? -1 : 0)
 			  .sort((a, b) => a.zona > b.zona ? 1 : a.zona < b.zona ? -1 : 0)
+
+			this.dadosAgrupados = {
+				zonas: [],
+				rotulo: '',
+				candidatos: []
+			}  
+			var dictMunicipios = Utils.groupBy(this.zonasInfo, zonaInfo => zonaInfo.municipio)
+			var arrRotulo = []
+			Object.keys(dictMunicipios).forEach((municipio) => {
+				var zonas = Utils.replaceLast(dictMunicipios[municipio]
+								.sort((a, b) => a.zona - b.zona)
+								.map((zona) => zona.zona + '&ordf;')
+								.join(', '), 
+							', ', ' e '),
+					zeStr = dictMunicipios[municipio].length > 1 ? 'ZEs' : 'ZE' 
+				arrRotulo.push(`${municipio} (${zonas} ${zeStr})`)
+			})
+			this.dadosAgrupados.zonas = this.zonasInfo
+			this.dadosAgrupados.rotulo = arrRotulo.join('<br>')
+			this.dadosAgrupados.candidatos = this.dadosAgrupados.zonas.reduce((candidatos, zonaInfo) => {
+				if (!candidatos) {
+					return Utils.clone(zonaInfo.candidatos)
+				}
+				for (var i=0; i<candidatos.length; i++) {
+					candidatos[i].votos.numero += zonaInfo.candidatos[i].votos.numero
+					candidatos[i].votos.totalZona += zonaInfo.candidatos[i].votos.totalZona
+					candidatos[i].votos.porcentagem = Math.round(candidatos[i].votos.numero * 10000 / candidatos[i].votos.totalZona) / 100
+				}
+				return candidatos
+			}, null)
 		}
 
 	},
@@ -114,14 +188,14 @@ export default {
 	methods: {
 
 		obterVotos (idZona) {
-			var candidatos = Store.candidatos
-			console.log(candidatos[0])
+			var candidatos = Store.candidatos.filter((candidato) => !candidato.disabled)
 			var votos = candidatos.map(({id, nome, ano, cargo, partido, color, votos}) => {
 				var votosZona = votos[idZona] 
 				if (!votosZona) {
+					debugger
 					votosZona = {
 						numero: 0,
-						total: 1
+						total: 1000
 					}
 				}	
 				return {
@@ -132,8 +206,9 @@ export default {
 					partido,
 					color,
 					votos: {
-						numero: Utils.formatInt(votosZona.numero),
-						porcentagem: Math.floor((votosZona.numero / votosZona.total) * 10000)/100
+						numero: votosZona.numero,
+						totalZona: votosZona.total,
+						porcentagem: Math.round((votosZona.numero / votosZona.total) * 10000)/100
 					}
 				}
 			})
@@ -142,6 +217,10 @@ export default {
 
 		labelCargo (codigoCargo) {
 			return Utils.obterNomeCargo(codigoCargo)
+		},
+
+		formatInt (numero) {
+			return Utils.formatInt(numero)
 		},
 
 		closePanel () {
