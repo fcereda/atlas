@@ -190,6 +190,29 @@ export default {
 
 	},
 
+	clone (obj) {
+		return JSON.parse(JSON.stringify(obj));
+	},
+
+	groupBy (arr, criteriaFunc) {
+	    return arr.reduce((dict, item) => {
+	        var id = criteriaFunc(item)
+	        dict[id] = (dict[id] || [])
+	        dict[id].push(item)
+	        return dict
+	    }, {})
+	},
+
+	replaceLast (str, substr, newsubstr) {
+    	var charpos = str.lastIndexOf(substr)
+    	if (charpos<0) {
+    		return str
+    	} 		
+    	var left = str.substring(0, charpos),
+    		right = str.substring(charpos+(substr.length))
+    	return left + newsubstr + right
+	},
+
 	obterNomeCargo (codigoCargo, curto) {
 
 		return curto ? CARGOS_CURTO[codigoCargo] : CARGOS[codigoCargo]

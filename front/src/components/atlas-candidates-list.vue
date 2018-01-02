@@ -181,6 +181,18 @@ export default {
     				}
     			})
 
+                // Adiciona registros ao Dict votes para os distritos onde o candidato não teve nenhum voto
+                for (var id in totalVotos) {
+                    if (!votes[id]) {
+                        votes[id] = {
+                            id,
+                            numero: 0,
+                            total: totalVotos[id],
+                            porcentagem: 0
+                        }
+                    }
+                }
+
     			// Vamos agora calcular o índice LQ (location quotient) de cada zona-município
     			// O LQ de um distrito é definido como: 
                 // (votos do candidato no distrito / total de votos do candidato) / (total de votos do distrito / total geral de votos)
@@ -192,13 +204,15 @@ export default {
 						totalVotosZona = totalVotos[id],
 						indiceLQ = (votosCandidatoZona / totalCandidato) / (totalVotosZona / totalGeral)
 
-					indices[id]	= {
-						id, 
-						indiceLQ,
-                        indicePareto: 1    // inicializamos o índice de Pareto com o valor menos significativo (1)
-					}
-
-					somaIndiceLQ += indiceLQ
+                    if (votosCandidatoZona) {
+                        // Calcula os índices apenas para os distritos onde o candidato teve pelo menos 1 voto
+        				indices[id]	= {
+    						id, 
+    						indiceLQ,
+                            indicePareto: 1    // inicializamos o índice de Pareto com o valor menos significativo (1)
+    					}
+    					somaIndiceLQ += indiceLQ
+                    }    
     			}
 
                 // Vamos agora calcular o "Índice de Pareto
