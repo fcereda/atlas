@@ -293,10 +293,9 @@ export default {
 	},	
 
 	getElectionResultsByZoneAndCity ({ano, cargo, uf, codMunicipio, nomeMunicipio, zona}) {
-		if (!ano || !cargo || !uf)
-			return null
-		if (!codMunicipio && !nomeMunicipio)
-			return null
+		if (!ano || !cargo || !uf || (!codMunicipio && !nomeMunicipio))
+			return new Promise((resolve, reject) => reject('Missing parameters'))
+
 		var cargoETurno = getCargoETurno(cargo, uf)
 		cargo = cargoETurno.cargo
 		var turno = cargoETurno.turno
@@ -315,23 +314,28 @@ export default {
 			query += `&columns[3][name]=NUM_ZONA&columns[3][search][value]=${zona}`
 		}	
 */
-		query = new CepespQuery({
+		var query = new CepespQuery({
 			path: '/tse',
 			ano,
 			cargo,
+			uf,
 			agregacaoPolitica: 2,
 			agregacaoRegional: 7
-		})
+		}).addStandardFields({
+			'agregacaoPolitica': 2,
+			'agregacaoRegional': 7
+		}).addField('NOME_URNA_CANDIDATO')
+		query = query.addSearch('NUM_TURNO', turno)
 		if (codMunicipio) {
-			query = query.addSearch('COD_TSE_MUN', codMunicipio)
+			query = query.addSearch('COD_MUN_TSE', ('00000'+codMunicipio).substr(-5))
 		}
 		else if (nomeMunicipio) {
 			query = query.addSearch('NOME_MUNICIPIO', nomeMunicipio)
 		}
 		if (zona) {
-			query = query.addSearch('NUM_ZONA', zona)
+			query = query.addSearch('NUM_ZONA', parseInt(zona))
 		}
-
+debugger
 		return new Promise ((resolve, reject) => {
 			axios.get(cepespURL + query.url())
 			.then((response) => {
@@ -344,9 +348,11 @@ export default {
 					'uf': 'UF',
 					'nome': 'NOME_URNA_CANDIDATO',
 					'numero': 'NUMERO_CANDIDATO',
+					'partido': 'SIGLA_PARTIDO',
 					'votacao': 'QTDE_VOTOS',
 				})
 				data.forEach((candidato) => {
+					candidato.votacao = parseFloat(candidato.votacao)
 					candidato.cargo = cargo
 				})
 				resolve(data)
