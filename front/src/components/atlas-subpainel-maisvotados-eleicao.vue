@@ -14,9 +14,7 @@
 	</div>
 
 	<div v-show="!loading && !collapsed">
-		<p v-show="message" class="text-xs-center pt-2">
-		{{ message }}
-		</p>
+		<p v-show="message" class="text-xs-center pt-2" v-html="message"></p>
 
 		<atlas-table-maisvotados-zona
 			v-show="!agrupar"
@@ -236,7 +234,7 @@ export default {
 				console.error(`Error trying to load election data for election ${self.id}`)
 				console.error(error)
 				self.loading = false
-				self.message = 'Não foi possível obter os dados para esta eleição nos distritos selecionados'
+				self.message = 'Não foi possível obter os dados para esta eleição<br>nos distritos selecionados'
 			})	
 		
 		},

@@ -7,8 +7,8 @@
 		grow
 		@input="tabInput"
 	>
-      <v-tabs-bar class="white">
-        <v-tabs-slider color="primary"></v-tabs-slider>
+      <v-tabs-bar class="white" style="overflow-x:hidden;">
+        <v-tabs-slider color="primary" style="overflow-x:hidden;"></v-tabs-slider>
 
         <v-tabs-item
           v-for="tab in tabs"
@@ -29,19 +29,12 @@
             id="candidatos"
         >
 			<atlas-candidates-list
-			    v-show="!mostrarPainelZonas"
 			    :uf="uf"
 			    :colorScale="colorScale"
 			    @add-candidate="addCandidate"
 			    @remove-candidate="removeCandidate"
 			    @show-indexes="showIndividualIndexes"
 			></atlas-candidates-list>
-
-			<atlas-painel-zonas
-			    v-show="mostrarPainelZonas"
-			    :zonas="zonasToDisplay"
-			    @close="closePainelZonas"
-			></atlas-painel-zonas> 
 
 		</v-tabs-content>
 		
@@ -50,6 +43,17 @@
 			id="parcial"
 		>
         </v-tabs-content>
+
+        <v-tabs-content
+        	key="detalhes"		
+        	id="detalhes"
+        >
+        	<atlas-painel-zonas
+        		v-show="1"
+			    :zonas="zonasToDisplay"
+			    @close="closePainelZonas"
+			></atlas-painel-zonas> 
+        </v-tabs-content>		
 
         <v-tabs-content
         	key="maisvotados"
@@ -62,18 +66,20 @@
         	></atlas-painel-maisvotados>	
 
         </v-tabs-content>
-        
-        <v-tabs-content
-        	key="eleicoes"		
-        	id="eleicoes"
-        >
-        	<p class="pa-4">Esta aba será incorporada à aba "Mais votados", já que a única funcionalidade adicional é o número efetivo de candidatos</p>
-        </v-tabs-content>		
+       
 
       </v-tabs-items>
     </v-tabs>
 
  </template>
+
+<style>
+
+.tabs__wrapper {
+	overflow-x: hidden;  /* Gambiarra para evitar que o Vuetify coloque uma scrollbar horizontal no tab */
+}
+
+</style>
 
 <script>
 
@@ -101,11 +107,11 @@ export default {
 				label: 'Candidatos',
 				key: 'candidatos',
 			}, {
+				label: 'Detalhes',
+				key: 'detalhes'
+			}, {	
 				label: 'Mais votados',
 				key: 'maisvotados'
-			}, {
-				label: 'Eleições',
-				key: 'eleicoes'
 			}]
 
 		}
@@ -128,6 +134,10 @@ export default {
 
 		closePainelZonas () {
 			this.$emit('close-painel-zonas')
+		},
+
+		showTabDetalhes () {
+			this.activeTab = 'detalhes'
 		},
 
 		tabInput (idTabSelecionado) {

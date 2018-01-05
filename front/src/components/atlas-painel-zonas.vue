@@ -1,13 +1,16 @@
 <template>
 
 <div style="width:100%;min-height:100px;color:#333;">
+
+<!--
 	<div style="text-align:left">
 		<v-btn flat color="grey darken-1" @click="closePanel" class="pl-0 pr-0 ml-0">
 			<i class="material-icons">keyboard_arrow_left</i><span>Voltar à lista de candidatos</span>
 		</v-btn>
 	</div>
+-->
 
-	<div class="pl-4" style="text-align:right">
+	<div class="pl-4 pt-2" style="text-align:right">
 		<v-switch 
 			v-show="zonasInfo.length > 1"
 			v-bind:label="'Agrupar distritos'" 
