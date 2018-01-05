@@ -1,9 +1,9 @@
 <template>
 
 <div style="width:100%;min-height:100px;color:#333;">
-	<div style="text-align:right">
-		<v-btn flat dark color="grey darken-1" @click="closePanel">
-			<v-icon>keyboard_arrow_left</v-icon>&nbsp;&nbsp;Voltar à seleção de candidatos
+	<div style="text-align:left">
+		<v-btn flat color="grey darken-1" @click="closePanel" class="pl-0 pr-0 ml-0">
+			<i class="material-icons">keyboard_arrow_left</i><span>Voltar à lista de candidatos</span>
 		</v-btn>
 	</div>
 
@@ -47,7 +47,12 @@
 
 	<div v-show="mostrarDadosAgrupados" class="pa-4 painel-zonas">
 
-		<h6 v-html="dadosAgrupados.rotulo" style="line-height:125%">{{ '' && dadosAgrupados.rotulo }}</h6>
+		<h6 v-show="false" v-html="dadosAgrupados.rotulo" style="line-height:125%">{{ '' && dadosAgrupados.rotulo }}</h6>
+
+		<template v-for="municipio in dadosAgrupados.municipios">
+		<span v-html="municipio.nome" style="font-size:20px;font-weight:500"></span> &ndash; 
+		<span v-html="municipio.zonas + ' ZE'" style="font-size:16px"></span><br>
+		</template>
 		
 		<table class="zona-detalhes">
 
@@ -121,7 +126,6 @@ export default {
 		return {
 
 			mostrarDadosAgrupados: false,
-			mostrarTodosCandidatos: false,
 			zonasInfo: this.zonas.map((idZona) => {
 				return {
 					id: idZona
@@ -129,7 +133,7 @@ export default {
 			}),
 			dadosAgrupados: {
 				zonas: [],
-				rotulo: '',
+				rotulos: '',
 				candidatos: []
 			}
 
@@ -168,6 +172,16 @@ export default {
 					zeStr = dictMunicipios[municipio].length > 1 ? 'ZEs' : 'ZE' 
 				arrRotulo.push(`${municipio} (${zonas} ${zeStr})`)
 			})
+			this.dadosAgrupados.municipios = Object.keys(dictMunicipios).map((municipio) => {
+				return {
+					nome: municipio,
+					zonas: Utils.replaceLast(dictMunicipios[municipio]
+								.sort((a, b) => a.zona - b.zona)
+								.map((zona) => zona.zona + '&ordf;')
+								.join(', '), 
+							', ', ' e '),
+				}
+			})
 			this.dadosAgrupados.zonas = this.zonasInfo
 			this.dadosAgrupados.rotulo = arrRotulo.join('<br>')
 			this.dadosAgrupados.candidatos = this.dadosAgrupados.zonas.reduce((candidatos, zonaInfo) => {
@@ -192,7 +206,6 @@ export default {
 			var votos = candidatos.map(({id, nome, ano, cargo, partido, color, votos}) => {
 				var votosZona = votos[idZona] 
 				if (!votosZona) {
-					debugger
 					votosZona = {
 						numero: 0,
 						total: 1000

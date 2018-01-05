@@ -325,17 +325,22 @@ export default {
 			'agregacaoPolitica': 2,
 			'agregacaoRegional': 7
 		}).addField('NOME_URNA_CANDIDATO')
-		query = query.addSearch('NUM_TURNO', turno)
+  		  .removeField('DESCRICAO_CARGO')
+		  .removeField('NUMERO_PARTIDO')
+		  .removeField('NOME_CANDIDATO')
+		  .addSearch('NUM_TURNO', turno)
 		if (codMunicipio) {
-			query = query.addSearch('COD_MUN_TSE', ('00000'+codMunicipio).substr(-5))
+			codMunicipio = ('00000'+codMunicipio).substr(-5)
+			query = query.addSearch('COD_MUN_TSE', codMunicipio)
 		}
 		else if (nomeMunicipio) {
 			query = query.addSearch('NOME_MUNICIPIO', nomeMunicipio)
 		}
+
 		if (zona) {
 			query = query.addSearch('NUM_ZONA', parseInt(zona))
 		}
-debugger
+
 		return new Promise ((resolve, reject) => {
 			axios.get(cepespURL + query.url())
 			.then((response) => {
@@ -352,7 +357,10 @@ debugger
 					'votacao': 'QTDE_VOTOS',
 				})
 				data.forEach((candidato) => {
-					candidato.votacao = parseFloat(candidato.votacao)
+					// Em alguns casos excepcionais, parseFloat(candidato.votacao) aparece como NaN
+					// Sabemos que um candidato só entra nesta tabela se tiver recebido pelo menos um voto
+					// Portanto, quando o candidato tiver recebido 0 ou NaN votos, convertemos para o menor valor válido
+					candidato.votacao = parseFloat(candidato.votacao) || 1	
 					candidato.cargo = cargo
 				})
 				resolve(data)
@@ -376,6 +384,33 @@ debugger
 
 	getParties () {
 		return axios.get('/api/partidos')
+	},
+
+	// This function should never be called by a client of the api object
+	runRequest (requestFunc, argsArray, index=0, results=[]) {
+		return requestFunc(argsArray[index])
+		.then((response) => {
+	        results.push(response)
+		    index += 1
+	        if (index < argsArray.length) {
+				return this.runRequest(requestFunc, argsArray, index, results)
+			}
+			else {
+				return new Promise ((resolve, reject) => resolve(results))
+			}
+		})    
+		.catch((error) => {
+			return new Promise((resolve, reject) => reject(error))
+		})
+	},
+
+	// Runs a sequence of api methods, back to back (NOT concurrently). 
+	// Accepts two arguments:
+	// requestFunc: the api method you want to call 
+	// argsArray: the arguments to be passed to requestFunc at each call
+	// Returns a promise. If successful, response contains an array of results
+	runRequestsInSequence (requestFunc, argsArray) {
+		return this.runRequest(requestFunc, argsArray)
 	}
 
 }
