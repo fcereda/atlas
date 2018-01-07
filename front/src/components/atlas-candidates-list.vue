@@ -30,6 +30,7 @@
 			@close="hideDetailsCandidate(candidato)"
 			@ver-indices="verIndicesIndividuais(candidato)"
 			@esconder-indices="verIndicesIndividuais(null)"
+            @ver-carreira="verCarreira(candidato)"
 		></atlas-candidate-chip>	
 
 	    <p></p>
@@ -41,6 +42,15 @@
         ></atlas-select-candidate>
 
 	</v-container>
+
+    <atlas-dialog-carreira
+        ref="dialogCarreira"
+        :show="showDialogCarreira"
+        :nome="candidatoDestacado.nome"
+        :nomeCompleto="candidatoDestacado.nomeCompleto"
+        :cpf="candidatoDestacado.cpf"
+        @close="showDialogCarreira = false"
+    ></atlas-dialog-carreira>    
 
     <v-snackbar
       :timeout="5000"
@@ -59,9 +69,11 @@
 
 <script>
 
-import AtlasSelectCandidate from './atlas-select-candidate-simple.vue'
-import AtlasSelectUf from './atlas-select-uf.vue'
-import AtlasCandidateChip from './atlas-candidate-panel.vue'
+import atlasSelectCandidate from './atlas-select-candidate-simple.vue'
+import atlasSelectUf from './atlas-select-uf.vue'
+import atlasCandidateChip from './atlas-candidate-panel.vue'
+import atlasDialogCarreira from './atlas-dialog-carreira.vue'
+
 import api from '../lib/api.js'
 import Store from '../lib/store.js'
 import Colors from '../lib/colors.js'
@@ -83,9 +95,10 @@ function getNextColor () {
 export default {
 
 	components: {
-		AtlasSelectCandidate,
-		AtlasSelectUf,
-		AtlasCandidateChip,
+		atlasSelectCandidate,
+		atlasSelectUf,
+		atlasCandidateChip,
+        atlasDialogCarreira,
 	},
 
 	props: [ 'uf', 'colorScale' ],
@@ -93,9 +106,11 @@ export default {
     data: () => ({
 
     	candidatosSelecionados: [],
+        candidatoDestacado: {},
 
     	colorSequence: new Colors.ColorSequence('categorical', 'standard'),
     	showBuscaAvancada: false,
+        showDialogCarreira: false,
     	snackbar: {
     		text: 'Erro tentando carregar dados',
     		visible: false
@@ -336,7 +351,15 @@ export default {
 
     	verIndicesIndividuais (candidato) {
     		this.$emit('show-indexes', candidato)
-    	}
+    	},
+
+        verCarreira (candidato) {
+            this.candidatoDestacado = candidato
+            this.$nextTick(function () {
+                this.$refs.dialogCarreira.carregarCarreira()
+                this.showDialogCarreira = true
+            }.bind(this))
+        }
 
     },
 

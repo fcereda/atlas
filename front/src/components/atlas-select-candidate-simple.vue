@@ -235,15 +235,18 @@ export default {
 
 
 		adicionarCandidato (candidato) {
-			var { nome, cargo, ano, partido, numero, classificacao, votacao } = candidato,
+			var { nome, nomeCompleto, cpf, cargo, ano, partido, numero, classificacao, votacao, resultado } = candidato,
 				newCandidate = {
 					nome: Utils.capitalizeName(nome), 
+					nomeCompleto: Utils.capitalizeName(nomeCompleto),
 					ano: parseInt(ano), 
+					cpf,
 					cargo, 
 					partido,
 					numero,
 					classificacao,
-					votacao
+					votacao,
+					resultado
 				}
 			this.$emit('add-candidate', newCandidate)
 		},

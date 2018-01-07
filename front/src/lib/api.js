@@ -1,6 +1,7 @@
 import CepespQuery from './cepespquery.js'
 import axios from 'axios'
 import Store from './store.js'		// *** REMOVE THIS LATER
+import Utils from './utils.js'
 
 const atlasURL = '/api'
 const cepespURL = '/cepesp/api/consulta'
@@ -368,6 +369,116 @@ export default {
 			.catch((error) => {
 				reject(error)
 			})	
+		})
+	},
+
+	
+	getCandidateCareer (cpf, nomeCompleto) {
+		var query = '/api/candidatos?'
+		if (cpf)
+			query = query + 'cpf=' + cpf
+		else if (nomeCompleto)
+			query = query + 'nome=' + nomeCompleto
+		else
+			return new Promise ((resolve, reject) => reject('getCandidateCareer: Invalid arguments'))
+
+		return new Promise ((resolve, reject) => {
+			function ehCandidatoAPresidente (candidato) {
+				return ['pr1', 'pr2'].includes(candidato.cargo)
+			}
+
+			axios.get(query)
+			.then((response) => {
+					// Eliminamos as linhas com uf == 'ZZ' porque os dados do CEPESP
+					// para as eleições aboard (ZZ) estão incorretos
+				var data = response.data.filter((cand) => cand.uf != 'ZZ'),
+					// Agrupamos as candidaturas por ano-cargo porque, para candidatos
+					// a presidente, a API retorna uma candidatura diferente para cada UF 
+					candidaturas = Utils.groupBy(data, (cand) => {
+						return cand.ano + '-' + cand.cargo
+					})
+
+				candidaturas = Object.keys(candidaturas).map((id) => {
+					var candPorId = candidaturas[id]
+					if (candPorId.length == 1) {
+						return candPorId[0]
+					}
+					return candPorId.reduce((candFinal, cand) => {
+						if (!candFinal) {
+							candFinal = {...cand, uf:'BR', classificacao: 0}
+						}
+						else {
+							candFinal.votacao += cand.votacao
+						}
+						return candFinal
+					}, null)
+				})
+
+
+				resolve(candidaturas)
+				return;
+
+				// O QUE VEM ABAIXO SERÁ APAGADO QUANDO O QUE VEM ACIMA ESTIVER FUNCIONANDO
+
+				// Para os candidatos a presidente, a API envia uma linha para cada 
+				// estado. Vamos deixar apenas um row indicando a candidatura a presidente,
+				// com uf = 'BR'
+
+
+
+
+				data = data.filter((candidatura) => {
+					if (!ehCandidatoAPresidente(candidatura))
+						return true
+					return (candidatura.uf == 'SP')	// filtramos por SP porque é o maior estado
+				}).map((candidatura) => {
+					candidatura.ano = parseInt(candidatura.ano)
+					candidatura.classificacao = parseInt(candidatura.classificacao)
+					candidatura.votacao = parseInt(candidatura.votacao)
+					if (candidatura.uf == 'SP' && ehCandidatoAPresidente(candidatura)) {
+						candidatura.uf = 'BR'
+						candidatura.id = candidatura.id.replace('SP', 'BR')
+					}
+					return candidatura
+				})
+				resolve(data)
+			})
+			.catch((error) => reject(error))
+		})
+
+	},
+
+	// A função abaixo não funciona direito infelizmente
+	getCandidateCareerFromCEPESP (cpf, nomeCompleto) {
+		// MAIS TARDE ATUALIZAMOS ESSA CHAMADA PARA USAR O OBJETO CepespQuery
+		var query = `/candidatos?ano=1998,2000,2002,2006,2010,2014&selected_columns[]=ANO_ELEICAO&selected_columns[]=CODIGO_CARGO&selected_columns[]=NUM_TURNO&selected_columns[]=DESCRICAO_CARGO&selected_columns[]=SIGLA_PARTIDO&selected_columns[]=NOME_CANDIDATO&selected_columns[]=NOME_URNA_CANDIDATO&selected_columns[]=SIGLA_UF&selected_columns[]=DESCRICAO_OCUPACAO&selected_columns[]=CODIGO_OCUPACAO&selected_columns[]=CPF_CANDIDATO&selected_columns[]=DESPESA_MAX_CAMPANHA&selected_columns[]=DESC_SIT_TOT_TURNO&columns[0][name]=CPF_CANDIDATO&columns[0][search][value]=(${cpf})`
+		//var query = `/api/candidatos?nome=
+
+		return new Promise ((resolve, reject) => {
+			axios.get(cepespURL + query)
+			.then((response) => {
+				var data = getArrayFromCSV(response.data, {
+					'ano': 'ANO_ELEICAO',
+					'turno': 'NUM_TURNO',
+					'codigoCargo': 'CODIGO_CARGO',
+					'descricaoCargo': 'DESCRICAO_CARGO',
+					'partido': 'SIGLA_PARTIDO',
+					'nomeCompleto': 'NOME_CANDIDATO',
+					'nome': 'NOME_URNA_CANDIDATO',
+					'uf': 'SIGLA_UF',
+					'descricaoOcupacao': 'DESCRICAO_OCUPACAO',
+					'codigoOcupacao': 'CODIGO_OCUPACAO',
+					'despesaMaximaCampanha': 'DESPESA_MAX_CAMPANHA',
+					'resultado': 'DESC_SIT_TOT_TURNO'				
+				})
+				data.forEach((candidato) => {
+					candidato.cargo = Utils.obterCodigoCargo(candidato.codigoCargo, candidato.turno)
+				})
+				resolve(data)
+			})
+			.catch((error) => {
+				reject(error)
+			})
 		})
 	},
 

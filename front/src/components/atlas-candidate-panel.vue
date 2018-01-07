@@ -54,9 +54,9 @@
 			</div>
 			<div class="pb-1" style="display:flex;flex-direction:row;">
 				<span style="flex:1"></span>
-				<v-btn v-if="false" color="blue-grey darken-1" @click="snackbar.display=true">Ver carreira</v-btn>
+				<v-btn color="blue-grey lighten-1" class="white--text" @click="verCarreira">Carreira</v-btn>
 				<v-btn v-show="!indicesIndividuais" color="primary" :disabled="disabled" @click="verIndicesIndividuais">Ver índices individuais</v-btn>
-				<v-btn v-show="indicesIndividuais" color="primary" :disabled="disabled" @click="esconderIndicesIndividuais">Voltar a gráficos comparativos</v-btn>				
+				<v-btn v-show="indicesIndividuais" color="primary" :disabled="disabled" @click="esconderIndicesIndividuais">Comparar no mapa</v-btn>				
 			</div>
 		</div>	
 	</div>
@@ -262,6 +262,10 @@ export default {
 			this.indicesIndividuais = false			
 			this.$emit('esconder-indices')	
 		},
+
+		verCarreira () {
+			this.$emit('ver-carreira')
+		}
 
 	}
 }		

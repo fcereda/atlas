@@ -231,6 +231,26 @@ export default {
 		return cargosArray.slice(0,8)	// Por enquanto, vamos ignorar os cargos municipais
 	},
 
+	obterCodigoCargo (numCargo, numTurno) {
+		const codigos = {
+			1: 'pr',
+			3: 'g',
+			5: 's',
+			6: 'df',
+			7: 'de',
+			8: 'dd'
+		}		
+		var codigo = codigos[numCargo]
+		if (!codigo)
+			return null
+		if (numCargo < 4) {
+			if (!numTurno)
+				return null
+			codigo = codigo + numTurno
+		}
+		return codigo
+	},
+
 	obterUfs () {
 		return UFS
 	},
@@ -238,6 +258,13 @@ export default {
 	obterUfPorCodIbge (codIbge) {
 		for (var i=0; i<UFS.length; i++)
 			if (UFS[i].codIbge == codIbge)
+				return UFS[i]
+		return null	
+	},
+
+	obterUfPorSigla (siglaUf) {
+		for (var i=0; i<UFS.length; i++)
+			if (UFS[i].sigla == siglaUf)
 				return UFS[i]
 		return null	
 	}
