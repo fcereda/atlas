@@ -76,6 +76,8 @@ function verboseprint () {
 }
 
 function normalizarNome (str) {
+	if (!str)
+		return null
 	return str.toUpperCase().
 		replace('Á', 'A').
 		replace('É', 'E').
@@ -91,7 +93,7 @@ function normalizarNome (str) {
 		replace('Ñ', 'N')
 }
 
-function filterCandidates (arrayCandidatos, uf, ano, cargo, nome, partido) {
+function filterCandidates (arrayCandidatos, uf, ano, cargo, nome, nomeCompleto, cpf, partido, resultado) {
 	return arrayCandidatos.filter((candidato) => {
 		if (uf && candidato.uf != uf)
 			return false
@@ -101,7 +103,13 @@ function filterCandidates (arrayCandidatos, uf, ano, cargo, nome, partido) {
 			return false
 		if (nome && candidato.nomeNormalizado.indexOf(nome) < 0)
 			return false
+		if (nomeCompleto && candidato.nomeCompletoNormalizado.indexOf(nomeCompleto) < 0)
+			return false
+		if (cpf && candidato.cpf != cpf)
+			return false
 		if (partido && candidato.partido != partido)
+			return false
+		if (resultado && candidato.resultado != resultado)
 			return false
 		return true
 	})
@@ -130,7 +138,8 @@ else {
 
 router.route('/api/candidatos')
 	.get(function (req, res) {
-		var { id, uf, ano, cargo, nome, partido } = req.query
+		var { id, uf, ano, cargo, nome, nomecompleto, nomeCompleto, cpf, partido, resultado } = req.query
+		nomeCompleto = nomeCompleto || nomecompleto
 		//if (cargo == 'pr1' || cargo == 'pr2')
 		//	uf = null
 		var arrayAFiltrar = []
@@ -160,9 +169,13 @@ router.route('/api/candidatos')
 			}
 			arrayAFiltrar = []
 		}	
-		if (nome)
-			nome = normalizarNome(nome)
-		return res.json(filterCandidates(arrayAFiltrar, uf, ano, cargo, nome, partido))
+		if (cpf) {
+			// Os CPFs têm pelo menos 9 dígitos. Normalizamos para 11 dígitos. 
+			cpf = ('00' + cpf).substr(-11)	
+		}
+		nome = normalizarNome(nome)
+		nomeCompleto = normalizarNome(nomeCompleto)
+		return res.json(filterCandidates(arrayAFiltrar, uf, ano, cargo, nome, nomeCompleto, cpf, partido, resultado))
 /*
 		map(({id, nome, uf, ano, partido, cargo, numero, classificacao, votacao}) => {
 			return {id, nome, uf, ano, partido, cargo, numero, classificacao, votacao}
@@ -227,6 +240,7 @@ function parseCandidateRow (row) {
 		partido = row['SIGLA_PARTIDO'],
 		cargo = cargos[parseInt(row['CODIGO_CARGO']) - 1],
 		numero = parseInt(row['NUMERO_CANDIDATO']),
+		resultado = row['DESC_SIT_TOT_TURNO'],
 		classificacao = parseInt(row['CLASSIFICACAO'] || -1),
 		votacao = parseInt(row['QTDE_VOTOS'])
 
@@ -236,6 +250,7 @@ function parseCandidateRow (row) {
 		nome,
 		nomeCompleto,
 		nomeNormalizado: normalizarNome(nome),
+		nomeCompletoNormalizado: normalizarNome(nomeCompleto),
 		cpf,
 		uf,
 		ano,
@@ -243,6 +258,7 @@ function parseCandidateRow (row) {
 		cargo,
 		numero,
 		id: uf + '-' + ano + '-' + cargo + '-' + numero,
+		resultado,
 		classificacao,
 		votacao
 	}
