@@ -19,60 +19,12 @@
         		:ano="eleicao.ano"
         		:cargo="eleicao.cargo"
                 :uf="eleicao.uf"
+                :ufAtual="uf.sigla"
         		:eleicoes="eleicao.desempenho"
                 @add-candidate="addCandidate"
         	></atlas-item-carreira>
         	
         	<br><br>	
-
-<!--
-
-
-
-        	<table width="100%">
-        	<template v-for="candidatura in candidaturas">
-        	<tr>
-        		<td rowspan="2">
-        			<h5>{{ candidatura.ano }}</h5>
-        		</td>
-        		<td>{{ candidatura.nomeCargo }}	por {{ candidatura.uf }}</td>
-        	</tr>	
-        	<tr>
-        		<td>
-        			{{ candidatura.resultado }} com {{ formatInt(candidatura.votacao) }}votos 
-	        		<span v-if="candidatura.classificacao"> ({{ candidatura.classificacao }}&ordf; lugar)</span>
-        		</td>	
-        	</tr>	
-        	</template>
-        	</table>
--->
-
-<!--
-
-			<p><b>Trajetória eleitoral desde 1998</b></p>        	
-        	<table width="100%">
-        	<tr>
-        		<td>Ano</td>
-        		<td>Cargo</td>
-        		<td>Estado</td>
-        		<td>Partido</td>
-        		<td align="right">Votação</td>
-        		<td align="right">Classificação</td>
-        		<td align="right">Resultado</td>
-        	</tr>	
-        	<template v-for="candidatura in candidaturas">
-        	 <tr v-if="candidatura">
-        		<td>{{ candidatura.ano }}</td>
-        		<td>{{ candidatura.nomeCargo }}</td>
-        		<td>{{ candidatura.uf }}</td>
-        		<td>{{ candidatura.partido }}</td>
-        		<td align="right">{{ formatInt(candidatura.votacao) }}</td>
-        		<td align="right">{{ candidatura.classificacao }}&ordm;</td>
-        		<td align="right">{{ candidatura.resultado }}</td>
-        	</tr>
-        	</template>
-        	</table>
--->            
 
         </v-card-text>
         <v-divider></v-divider>
@@ -115,23 +67,13 @@ export default {
 		atlasItemCarreira
 	},
 
-	props: ['show', 'nome', 'nomeCompleto', 'cpf'],
+	props: ['show', 'uf', 'nome', 'nomeCompleto', 'cpf'],
 
 	data () {
 
 		return {
 			candidaturas: [],
             eleicoes: [],
-		}
-
-	},
-
-	watch: {
-
-		show () {
-			if (this.show) {
-				console.log('should open the dialog')
-			}
 		}
 
 	},
@@ -192,7 +134,7 @@ export default {
         },
 
         addCandidate (candidato) {
-            alert('Ainda não implementado')
+            this.$emit('add-candidate', candidato)
         }
 
     }    

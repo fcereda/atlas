@@ -12,10 +12,12 @@
             </div>
                 <div v-for="eleicao in eleicoes" style="font-size:17px;width:100%;">
                 <span v-html="descricaoResultado(eleicao)"></span>&nbsp;
+                <template v-if="podeAdicionarCandidato">
                 <v-tooltip bottom>
                     <v-icon class="pointer" color="primary" slot="activator" @click="verNoMapa(eleicao)">add_box</v-icon>
                     <span>Ver no mapa</span>
                 </v-tooltip>    
+                </template>
             </div>
         </div>        
 
@@ -38,7 +40,7 @@ import Utils from '../lib/utils.js'
 
 export default {
 
-	props: ['ano', 'cargo', 'uf', 'eleicoes'],
+	props: ['ano', 'cargo', 'uf', 'eleicoes', 'ufAtual'],
 
 	data () {
 
@@ -88,6 +90,10 @@ export default {
             else {
                 return `${ this.desempenho[0].resultado } com ${ Utils.formatInt(this.desempenho[0].votacao) } votos (${ this.desempenho[0].classificacao }&ordm; lugar)`
             }
+        },
+
+        podeAdicionarCandidato () {
+            return (this.uf == this.ufAtual) || (this.uf == 'BR')
         }
 
     },
@@ -125,6 +131,7 @@ export default {
         },
 
         verNoMapa (eleicao) {
+            debugger
             this.$emit('add-candidate', eleicao)
         }
 

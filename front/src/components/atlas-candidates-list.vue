@@ -46,10 +46,12 @@
     <atlas-dialog-carreira
         ref="dialogCarreira"
         :show="showDialogCarreira"
+        :uf="uf"
         :nome="candidatoDestacado.nome"
         :nomeCompleto="candidatoDestacado.nomeCompleto"
         :cpf="candidatoDestacado.cpf"
         @close="showDialogCarreira = false"
+        @add-candidate="addCandidate"
     ></atlas-dialog-carreira>    
 
     <v-snackbar
@@ -151,6 +153,9 @@ export default {
         },
 
     	addCandidate: function (candidate) {
+
+            console.log('Vamos adicionaro seguinte candidato:')
+            console.log(candidate)
 
     		var color = 'black',  
     			candidateObj = {...candidate, color, loading: true, disabled: false, showDetails: false},
