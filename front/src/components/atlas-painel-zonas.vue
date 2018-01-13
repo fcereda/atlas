@@ -9,6 +9,10 @@
 		</v-btn>
 	</div>
 -->
+	<div v-show="!temZonaSelecionada" class="pa-3">
+	Clique em um distrito no mapa para ver o desempenho dos candidatos selecionados naquele distrito.
+	</div>
+
 
 	<div class="pl-4 pt-2" style="text-align:right">
 		<v-switch 
@@ -140,6 +144,14 @@ export default {
 				candidatos: []
 			}
 
+		}
+
+	},
+
+	computed: {
+
+		temZonaSelecionada () {
+			return this.zonas && this.zonas.length
 		}
 
 	},

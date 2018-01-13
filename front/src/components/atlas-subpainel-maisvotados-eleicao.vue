@@ -60,18 +60,6 @@ export default {
 
 	data () {
 
-		/*  
-			this.zonas = {
-				candidatos: Array,
-				id: String,
-				loading: Boolean,
-				municiopio: String,
-				resultadosEleicoes: Array,
-				zona: Number
-		    }
-
-		*/
-
 		return {
 
 			totalVotos: 0,
@@ -141,7 +129,7 @@ export default {
 	methods: {
 
 		reload () {
-			var self = this  // Will be used in the then() callback
+			var self = this  // Save context for the then() callback
 
 			if (!this.zonas || !this.zonas.length || !this.id)
 				return
@@ -265,19 +253,6 @@ export default {
 			})
 
 			return api.runRequestsInSequence(api.getElectionResultsByZoneAndCity, argsArray)
-
-
-			// O CÓDIGO ABAIXO NÃO SERÁ EXECUTADO, ESTÁ AÍ PORQUE AINDA NÃO SEI SE A ABORDAGEM ACIMA VAI FUNCIONAR
-
-			// zonaId é no formato "codMunicipio-numeroZona"
-			var codMunicipios = [],
-				numeroZonas = []
-			idZonas.forEach((zonaId) => {
-				var [codMunicipio, numeroZona] = zonaId.split('-')
-				codMunicipios.push(parseInt(codMunicipio))
-				numeroZonas.push(parseInt(numeroZona))
-			})
-			return api.getElectionResultsByZoneAndCity ({ano, cargo, uf, codMunicipio:codMunicipios, zona:numeroZonas})
 		},		
 
 	},

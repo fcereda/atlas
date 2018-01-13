@@ -274,10 +274,11 @@ export default {
     			candidateObj.total = totalCandidato
                 candidateObj.totalEleicao = totalGeral
     			candidateObj.somaIndiceLQ = somaIndiceLQ
-                this.$emit('add-candidate', {...candidateObj, votos: votes, indices})
+                var newCandidate = {...candidateObj, votos: votes, indices}
+                this.$emit('add-candidate', newCandidate)
                 // Se a escala de cores for linear, refazemos o esquema de cores para refletir a mudança no número de candidastos
                 if (this.colorScale.type == 'linear')
-                    this.setColorScale()    
+                    this.setColorScale()  
                 // Retorna uma Promise para permitir que this.addMultipleCandidates comece 
                 // a carregar o próximo candidato somente depois que o candidato atual
                 // tenha sido carregado
@@ -294,7 +295,7 @@ export default {
     	},
 
         addMultipleCandidates (candidates) {
-            var that = this  // Hack to keep context for addNextCandidate()
+            var that = this  // Traditional hack to save context for addNextCandidate()
 
             function addNextCandidate(index) {
                 if (index >= candidates.length)
