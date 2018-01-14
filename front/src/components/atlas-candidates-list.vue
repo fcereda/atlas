@@ -82,25 +82,12 @@ import Colors from '../lib/colors.js'
 import Charts from '../lib/charts.js'
 import Candidato from '../classes/candidato.js'
 
-import axios from 'axios'
-
-var currentColorIndex = 0
-
-function getNextColor () {
-	var baseColors = ['deep-orange', 'indigo', 'pink', 'blue', 'purple', 'cyan', 'deep-purple', 'light-blue',
-		'green', 'amber', 'lime', 'red', 'blue-grey', 'orange'];
-	var color = baseColors[currentColorIndex % baseColors.length] + ' darken-' + (currentColorIndex / baseColors.length + 1)
-	currentColorIndex += 1;
-	return color; 	
-}
-
-
 export default {
 
 	components: {
-		atlasSelectCandidate,
-		atlasSelectUf,
-		atlasCandidateChip,
+        atlasSelectCandidate,
+        atlasSelectUf,
+        atlasCandidateChip,
         atlasDialogCarreira,
 	},
 
@@ -159,9 +146,7 @@ export default {
             console.log(candidate)
 
     		var color = 'black',  
-    			candidateObj = {...candidate, uf: this.uf.sigla, color, loading: true, disabled: false, showDetails: false},
-    			totalVotos = {},
-    			totalGeral = 0
+    			candidateObj = {...candidate, uf: this.uf.sigla, color, loading: true, disabled: false, showDetails: false}
   		
             this.candidatosSelecionados.push(candidateObj)
             var newCandidate = new Candidato (candidateObj)            
@@ -169,15 +154,12 @@ export default {
             .then(() => {
                 candidateObj.loading = false
                 candidateObj.color = this.colorSequence.getNextColor()
-                debugger
                 candidateObj.total = newCandidate.total
                 candidateObj.totalEleicao = newCandidate.totalEleicao
 
-                //newCandidate.loading = false
-                newCandidate.showDetails = false
                 newCandidate.habilitado = true
-                //newCandidate.disabled = false
-                newCandidate.color = candidateObj.color
+                //newCandidate.showDetails = false
+                //newCandidate.color = candidateObj.color
                 this.$emit('add-candidate', newCandidate)
                 // Se a escala de cores for linear, refazemos o esquema de cores para refletir a mudança no número de candidastos
                 if (this.colorScale.type == 'linear')
