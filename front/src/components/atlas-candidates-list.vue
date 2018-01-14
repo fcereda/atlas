@@ -71,6 +71,8 @@
 
 <script>
 
+'use strict'
+
 import atlasSelectCandidate from './atlas-select-candidate-simple.vue'
 import atlasSelectUf from './atlas-select-uf.vue'
 import atlasCandidateChip from './atlas-candidate-panel.vue'
@@ -142,9 +144,6 @@ export default {
 
     	addCandidate: function (candidate) {
 
-            console.log('Vamos adicionar o seguinte candidato:')
-            console.log(candidate)
-
     		var color = 'black',  
     			candidateObj = {...candidate, uf: this.uf.sigla, color, loading: true, disabled: false, showDetails: false}
   		
@@ -159,7 +158,7 @@ export default {
 
                 newCandidate.habilitado = true
                 //newCandidate.showDetails = false
-                //newCandidate.color = candidateObj.color
+                newCandidate.color = candidateObj.color
                 this.$emit('add-candidate', newCandidate)
                 // Se a escala de cores for linear, refazemos o esquema de cores para refletir a mudança no número de candidastos
                 if (this.colorScale.type == 'linear')
