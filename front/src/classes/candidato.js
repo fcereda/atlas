@@ -28,9 +28,12 @@ class Candidato {
         if (![1998,2000,2002,2004,2006,2008,2010,2012,2014,2016].includes(ano)) 
             throw Error('Error in constructor Candidato: invalid value for property ano in argument object')
         console.log(Utils)
-        this.nome = Utils.capitalizeName(nome)
-        if (nomeCompleto)  
-            this.nomeCompleto = Utils.capitalizeName(nomeCompleto)
+        numero = parseInt(numero)
+        if (!['df', 'de', 'dd'].includes(cargo) || numero > 100) {
+            this.nome = Utils.capitalizeName(nome)
+            if (nomeCompleto)  
+                this.nomeCompleto = Utils.capitalizeName(nomeCompleto)
+        }    
         this.cpf = cpf
         this.cargo = cargo
         this.ano = ano
@@ -181,6 +184,13 @@ class Candidato {
         return `${obj.ano}-${obj.cargo}-${obj.numero}`      
         return `${ obj.uf.toUpperCase() }-${obj.ano}-${obj.cargo}-${obj.numero}`      
     }
+
+    // Candidato.ePartido() retorna true se a combinação cargo,numero corresponde à
+    // candidatura de um partido político em eleições legislativas ("votos de legenda")
+    static ePartido (cargo, numero) {
+        debugger
+        return ['df', 'de', 'dd'].includes(cargo.toLowerCase()) && (numero < 100)
+    }    
   
     get id () {
 	      return Candidato.calcularId(this)

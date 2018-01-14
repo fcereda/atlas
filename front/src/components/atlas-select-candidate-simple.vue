@@ -34,7 +34,7 @@
 	            @blur="onBlur"
 	        >
  	       		<template slot="item" scope="candidato">
-	       		{{ capitalizeName(candidato.item.nome) }}&nbsp;
+	       		{{ capitalizeName(candidato.item.nome, candidato.item.cargo, candidato.item.numero) }}&nbsp;
 	       		<small class="detail">({{ candidato.item.partido }})&nbsp;{{nomeCargo(candidato.item.cargo)}} {{candidato.item.ano}}</small>
 	       		</template>
 
@@ -78,6 +78,7 @@
 
 import axios from 'axios'
 import Utils from '../lib/utils.js'
+import Candidato from '../classes/candidato.js'
 import atlasDialogBuscaAvancada from './atlas-dialog-busca-avancada.vue'
 
 export default {
@@ -225,8 +226,11 @@ export default {
 			return ordenadosPorRelevancia
         },
 
-        capitalizeName (nome) {
-        	return Utils.capitalizeName(nome)
+        capitalizeName (nome, cargo, numero) {
+        	if (!cargo)
+        		return Utils.capitalizeName(nome)
+
+        	return Candidato.ePartido(cargo, numero) ? nome : Utils.capitalizeName(nome)
         },
 
         nomeCargo (cargo) {
