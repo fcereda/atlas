@@ -80,6 +80,7 @@ import api from '../lib/api.js'
 import Store from '../lib/store.js'
 import Colors from '../lib/colors.js'
 import Charts from '../lib/charts.js'
+import Candidato from '../classes/candidato.js'
 
 import axios from 'axios'
 
@@ -154,132 +155,29 @@ export default {
 
     	addCandidate: function (candidate) {
 
-            console.log('Vamos adicionaro seguinte candidato:')
+            console.log('Vamos adicionar o seguinte candidato:')
             console.log(candidate)
 
     		var color = 'black',  
-    			candidateObj = {...candidate, color, loading: true, disabled: false, showDetails: false},
+    			candidateObj = {...candidate, uf: this.uf.sigla, color, loading: true, disabled: false, showDetails: false},
     			totalVotos = {},
     			totalGeral = 0
+  		
+            this.candidatosSelecionados.push(candidateObj)
+            var newCandidate = new Candidato (candidateObj)            
+    		return newCandidate.carregarVotacao()
+            .then(() => {
+                candidateObj.loading = false
+                candidateObj.color = this.colorSequence.getNextColor()
+                debugger
+                candidateObj.total = newCandidate.total
+                candidateObj.totalEleicao = newCandidate.totalEleicao
 
-    		this.candidatosSelecionados.push(candidateObj)
-    		return api.getTotalVotesByZoneAndCity({...candidate, uf: this.uf.sigla})
-    		.then((data) => {
-    			//console.log('** CARREGAMOS VOTOS TOTAIS POR ZONA E MUNICIPIO!')
-    			//console.log(`${data.length} rows carregados`)
-    			data.forEach(({codigoMunicipio, codigoZona, votos}) => {
-    				var id = Store.calcCoordenadaId(codigoMunicipio, codigoZona)
-    				if (totalVotos[id])
-    					totalVotos[id] += votos
-    				else
-    					totalVotos[id] = votos
-    				totalGeral += votos
-				})    				
-				// Somente carregamos os votos do candidato quando tivermos os votos totais das zonas
-				return api.getVotesByZoneAndCity({...candidate, uf: this.uf.sigla})
-			})    		
-    		.then((data) => {
-    			// Neste momento, temos um array de objetos
-    			// Agora vamos converter esse array em um dicionário	
-    			
-    			var votes = {},
-                    votesArray = [],
-    				totalCandidato = 0
-    			data.forEach(({ codigoMunicipio, codigoZona, votos }) => {
-    				var id = Store.calcCoordenadaId(codigoMunicipio, codigoZona),
-                        votesObj = {
-                            id,
-                            numero: votos,
-                            total: totalVotos[id],
-                            porcentagem: votos / totalVotos[id]
-                        }
-    				votes[id] = votesObj
-                    votesArray.push(votesObj)
-    				totalCandidato += votos	
-    				if (!totalVotos[id]) {
-    					console.error('No voting total for local ' + id)
-    				}
-    			})
-
-                // Adiciona registros ao Dict votes para os distritos onde o candidato não teve nenhum voto
-                for (var id in totalVotos) {
-                    if (!votes[id]) {
-                        votes[id] = {
-                            id,
-                            numero: 0,
-                            total: totalVotos[id],
-                            porcentagem: 0
-                        }
-                    }
-                }
-
-    			// Vamos agora calcular o índice LQ (location quotient) de cada zona-município
-    			// O LQ de um distrito é definido como: 
-                // (votos do candidato no distrito / total de votos do candidato) / (total de votos do distrito / total geral de votos)
-
-    			var indices = {},
-    				somaIndiceLQ = 0
-    			for (var id in votes) {
-					let votosCandidatoZona = votes[id].numero,
-						totalVotosZona = totalVotos[id],
-						indiceLQ = (votosCandidatoZona / totalCandidato) / (totalVotosZona / totalGeral)
-
-                    if (votosCandidatoZona) {
-                        // Calcula os índices apenas para os distritos onde o candidato teve pelo menos 1 voto
-        				indices[id]	= {
-    						id, 
-    						indiceLQ,
-                            indicePareto: 1    // inicializamos o índice de Pareto com o valor menos significativo (1)
-    					}
-    					somaIndiceLQ += indiceLQ
-                    }    
-    			}
-
-                // Vamos agora calcular o "Índice de Pareto
-                // O objetivo é determinar quais distritos são responsáveis por 20% dos votos, por 40%
-                // por 60% e por 80% dos votos
-                // Para isso, ordenamos os distritos por votos (do mais votado ao menos votado) e 
-                // calculamos o acumulado das porcentagens 
-
-                // Sabemos que indices{} contém um dictionary com as zonas/municipios, então o objetivo
-                // final é popular essa zona com um campo IP que indicará a porcentagem acumulada 
-                // daquela zona/municipio
-                // votesArray já contém os votos por id (zona/município)
-                // totalCandidato contém a votação total do candidato
-
-                votesArray.sort((a, b) => b.numero - a.numero)
-                    .reduce((acumulado, distrito) => {
-                    var porcentagem = distrito.numero / totalCandidato    
-                    acumulado += porcentagem
-                    distrito.acumulado = acumulado
-                    return acumulado
-                }, 0)
-                votesArray.forEach(({ id, acumulado }) => {
-                    indices[id].indicePareto = acumulado
-                })
-
-/*
-    			var minLQ = 1000,
-    				maxLQ = -1000,
-    				mediaLQ = 0,
-    				contador = 0
-    			for (var id in indices) {
-    				var indiceLQ = indices[id].indiceLQ
-    				mediaLQ += indiceLQ
-    				minLQ = Math.min(minLQ, indiceLQ)
-    				maxLQ = Math.max(maxLQ, indiceLQ)
-    				contador += 1
-    			}
-    			mediaLQ = mediaLQ / contador
-    			console.log(`Índice LQ: média ${mediaLQ}, mínimo ${minLQ}, máximo ${maxLQ}`)
-*/    			
-   			
-    			candidateObj.loading = false
-    			candidateObj.color = this.colorSequence.getNextColor()
-    			candidateObj.total = totalCandidato
-                candidateObj.totalEleicao = totalGeral
-    			candidateObj.somaIndiceLQ = somaIndiceLQ
-                var newCandidate = {...candidateObj, votos: votes, indices}
+                //newCandidate.loading = false
+                newCandidate.showDetails = false
+                newCandidate.habilitado = true
+                //newCandidate.disabled = false
+                newCandidate.color = candidateObj.color
                 this.$emit('add-candidate', newCandidate)
                 // Se a escala de cores for linear, refazemos o esquema de cores para refletir a mudança no número de candidastos
                 if (this.colorScale.type == 'linear')
@@ -288,15 +186,14 @@ export default {
                 // a carregar o próximo candidato somente depois que o candidato atual
                 // tenha sido carregado
                 return new Promise((resolve, reject) => resolve())
-    		})
-    		.catch((error) => {
-    			console.error(`Error trying to load candidate data`)
-    			console.error(error)
-    			this.snackbar.visible = true
-    			this.removeCandidate(candidateObj)
+            })
+            .catch((error) => {
+                console.error(`Error trying to load candidate data`)
+                console.error(error)
+                this.snackbar.visible = true
+                this.removeCandidate(candidateObj)
                 return new Promise((resolve, reject) => reject())
-    		})
-
+            })
     	},
 
         addMultipleCandidates (candidates) {

@@ -234,7 +234,7 @@ export default {
 				legendTitle: 'Quociente de locação',
 				legendLabels: ['Até 0,1', '0,1 \u2014 0,25', '0,25 \u2014 0,5', '0,5 \u2014 1,0', '1,0 \u2014 2.0', '2.0 \u2014 4.0', '4.0 \u2014 8.0', '8,0 ou mais', '16.0 ou mais']
 			}, {
-				name: 'indicePareto',
+				name: 'indiceRI',
 				label: 'IP',
 				palette: ['#fed976','#feb24c','#fd8d3c','#f03b20','#bd0026'],
 				domain: [1, 0.8, 0.6, 0.4, 0.2],
@@ -243,7 +243,7 @@ export default {
 				legendDomain: [0.2, 0.4, 0.6, 0.8, 1.0],
 				legendLabels: ['20% mais importantes', '20% \u2014 40%', '40% \u2014 60%', '60% \u2014 80%', '80% \u2014 100%'],
 			}],
-			indexChartType: 'indicePareto',	
+			indexChartType: 'indiceRI',	
 
 			radiusTypes: [{
 				name: 'variable',
@@ -352,7 +352,7 @@ export default {
 				this.mostrarIndicesIndividuais = true
 			}
 			else {
-				Charts.setChartType(this.chartType)
+				Charts.setChartType(this.chartType, this.radiusType)
 				this.setMapLegendFromIndex(null)
 				this.mostrarIndicesIndividuais = false
 			}
