@@ -50,8 +50,7 @@ export default {
 	},
 
 	calcCoordenadaId (codigoMunicipio, codigoZona) {
-		return ("0000" + parseInt(codigoMunicipio)).slice(-5) + '-' + ("00" + parseInt(codigoZona)).slice(-3)
-		return codigoMunicipio + '-' + ("00" + parseInt(codigoZona)).slice(-3)
+		throw Error('Store.calcCoordenadaId moved to Utils.calcCoordenadaId')
 	},
 
 	calcCandidatoId ({ ano, cargo, numero }) {

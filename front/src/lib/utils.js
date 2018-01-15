@@ -267,6 +267,10 @@ export default {
 			if (UFS[i].sigla == siglaUf)
 				return UFS[i]
 		return null	
+	},
+
+	calcCoordenadaId (codigoMunicipio, codigoZona) {
+		return ("0000" + parseInt(codigoMunicipio)).slice(-5) + '-' + ("00" + parseInt(codigoZona)).slice(-3)
 	}
 
 }

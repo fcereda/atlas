@@ -1,7 +1,6 @@
 'use strict'
 
 import api from '../lib/api.js'
-import Store from '../lib/store.js'
 import Utils from '../lib/utils.js'
 
 /*
@@ -62,7 +61,7 @@ class Candidato {
         return api.getTotalVotesByZoneAndCity(this)
         .then((data) => {
             data.forEach(({codigoMunicipio, codigoZona, votos}) => {
-                var id = Store.calcCoordenadaId(codigoMunicipio, codigoZona)
+                var id = Utils.calcCoordenadaId(codigoMunicipio, codigoZona)
                 if (totalVotos[id])
                     totalVotos[id] += votos
                 else
@@ -82,7 +81,7 @@ class Candidato {
                 totalCandidato = 0
                 
             data.forEach(({ codigoMunicipio, codigoZona, votos }) => {
-                var id = Store.calcCoordenadaId(codigoMunicipio, codigoZona),  // NÃO DEVERIA SER Store.calcDistritoId () ?
+                var id = Utils.calcCoordenadaId(codigoMunicipio, codigoZona),  // NÃO DEVERIA SER Utils.calcDistritoId () ?
                     votesObj = {
                         id,
                         numero: votos,
@@ -188,7 +187,6 @@ class Candidato {
     // Candidato.ePartido() retorna true se a combinação cargo,numero corresponde à
     // candidatura de um partido político em eleições legislativas ("votos de legenda")
     static ePartido (cargo, numero) {
-        debugger
         return ['df', 'de', 'dd'].includes(cargo.toLowerCase()) && (numero < 100)
     }    
   
