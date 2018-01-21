@@ -2,20 +2,15 @@
 
 import api from '../lib/api.js'
 import Utils from '../lib/utils.js'
+import Store from '../lib/store.js'
+
+var SimpleStats = require('simple-statistics')
 
 /*
-var api,
-    Utils
-
-if (!window) {
-    console.log("Running in node.js")
-    api = require('./api.js')
-    Utils = require('./utils.js')
-}
-else {
-    api = require('../lib/api.js')
-    Utils = require('../lib/utils.js')
-} 
+var api = require('./api.js'),
+    Utils = require('./utils.js'),
+    ArrayMath = require('./array-math.js'),
+    Coordenadas = require('./coordenadas.js')
 */
 
 class Candidato {
@@ -26,7 +21,6 @@ class Candidato {
         ano = parseInt(ano)
         if (![1998,2000,2002,2004,2006,2008,2010,2012,2014,2016].includes(ano)) 
             throw Error('Error in constructor Candidato: invalid value for property ano in argument object')
-        console.log(Utils)
         numero = parseInt(numero)
         if (!['df', 'de', 'dd'].includes(cargo) || numero > 100) {
             this.nome = Utils.capitalizeName(nome)
@@ -45,15 +39,16 @@ class Candidato {
         
         this.votosPorDistrito = {}
         this.indices = {}
-		this.habilitado = false	// O estado inicial do objeto candidato é desabilitado
+        this.habilitado = false // O estado inicial do objeto candidato é desabilitado
     }
 
     // carregarVotacao() usa a API do CEPESP para obter os dados de votação do
     // candidato por distrito (zona-município) e calcula os índices LQ, LD e IP
     // Retorna uma promise que, no caso de êxito, envia o próprio objeto this para o callback .then()
-	
+    
     carregarVotacao () {
-        var totalVotos = {},
+        var coordenadas = Store.coordenadas,
+            totalVotos = {},
             totalGeral = 0
         
         // Primeiro obtemos a votação total de cada distrito. Isso é necessário
@@ -73,15 +68,15 @@ class Candidato {
         }) 
         .then((data) => {
             // Neste momento, data é um array de objetos {codigoMunicipio, codigoZonas, votos}
-		    // que contém os votos totais de todos os distritos do estado
+            // que contém os votos totais de todos os distritos do estado
             // Vamos converter esse array em um dicionário
 
             var votes = {},
                 votesArray = [],
                 totalCandidato = 0
                 
-            data.forEach(({ codigoMunicipio, codigoZona, votos }) => {
-                var id = Utils.calcCoordenadaId(codigoMunicipio, codigoZona),  // NÃO DEVERIA SER Utils.calcDistritoId () ?
+            votesArray = data.map(({ codigoMunicipio, codigoZona, votos }) => {
+                var id = Utils.calcCoordenadaId(codigoMunicipio, codigoZona),  // NÃO DEVERIA SER Store.calcDistritoId () ?
                     votesObj = {
                         id,
                         numero: votos,
@@ -89,14 +84,14 @@ class Candidato {
                         porcentagem: votos / totalVotos[id]
                     }
                 votes[id] = votesObj
-                votesArray.push(votesObj)
-                totalCandidato += votos	
+                totalCandidato += votos 
                 if (!totalVotos[id]) {
                     console.error('No voting total for district ' + id)
                 }
+                return votesObj
             })
-            // Adiciona registros ao dicionário votes para os distritos onde o candidato não teve nenhum voto
-			// Note que totalVotos contém os votos de TODOS os distritos do estado
+            // Adiciona registros a votes e a votesArray para os distritos onde o candidato não teve nenhum voto
+            // Note que totalVotos contém os votos de TODOS os distritos do estado
             for (var id in totalVotos) {
                 if (!votes[id]) {
                     votes[id] = {
@@ -105,13 +100,55 @@ class Candidato {
                         total: totalVotos[id],
                         porcentagem: 0
                     }
+                    votesArray.push(votes[id])
                 }
             }
-            // Vamos agora calcular os índices LQ (location quotient) e LD (location difference) de cada distrito
+            
+            // Vamos calcular o desvio padrão e o z-score de cada distrito
+            // A média será calculada com base no número total de distritos
+/*
+            var media = (totalCandidato / totalGeral)
+            var variancia = votesArray
+                .map(({porcentagem}) => Math.pow(porcentagem - media, 2))
+                .reduce((soma=0, valor) => soma + valor)
+                variancia = variancia / votesArray.length
+            var desvioPadrao = Math.sqrt(variancia)
+
+            console.log('media = ', media)   
+            console.log('variancia = ', variancia)
+            console.log('desvio padrão = ', desvioPadrao)
+*/
+            var porcentagemArray = votesArray.map(({porcentagem}) => porcentagem),
+                media = SimpleStats.mean(porcentagemArray),
+                desvioPadrao = SimpleStats.standardDeviation(porcentagemArray)
+            /*
+            var zScoreArray = ArrayMath.zScores(porcentagemArray)
+            .sort((a, b) => b - a)
+            .slice(0, 10)
+            */
+            
+            console.log('media = ', media)   
+            //console.log('variancia = ', variancia)
+            console.log('desvio padrão = ', desvioPadrao)
+            //console.log('zScores = ', zScoreArray)
+            
+            votesArray.forEach((voteObj) => {
+                // votesArray aponta para os mesmos objetos do dict votes, 
+                // então basta atualizar em votesArray
+                voteObj.media = media
+                //voteObj.variancia = variancia
+                voteObj.desvioPadrao = desvioPadrao
+                voteObj.valorZ = (voteObj.porcentagem - media) / voteObj.desvioPadrao
+            })
+
+            // Vamos agora calcular os índices LQ (location quotient), LD (location difference) e 
+            // LI (local Moran's I) de cada distrito
             // O LQ de um distrito é definido como: 
             // (votos do candidato no distrito / total de votos do candidato) / (total de votos do distrito / total geral de votos)
             // O LD de um distrito é definidi como:
             // (votos do candidato no distrito / total de votos do distrito) - (total de votos do candidato / total geral de votos)
+            // O LI de um distrito é definido como:
+            // zScore do distrito * média do zScore dos distritos vizinhos
             var indices = {},
                 somaIndiceLQ = 0        
             for (var id in votes) {
@@ -119,17 +156,32 @@ class Candidato {
                 if (votosCandidatoDistrito) {
                     // Calcula os índices apenas para os distritos onde o candidato teve pelo menos 1 voto
                     let totalVotosDistrito = totalVotos[id],
+                        indiceZ = votes[id].valorZ,     
                         indiceLQ = (votosCandidatoDistrito / totalCandidato) / (totalVotosDistrito / totalGeral),
-                        indiceLD = (votosCandidatoDistrito / totalVotosDistrito) - (totalCandidato / totalGeral)
+                        indiceLD = (votosCandidatoDistrito / totalVotosDistrito) - (totalCandidato / totalGeral),
+                        vizinhos = coordenadas[id] ? coordenadas[id].vizinhos || [] : []
+                    if (!vizinhos.length) {
+                        // Se entrar aqui, temos um problema com o banco de dados de coordenadas
+                        if (!coordenadas[id])
+                            console.error('id ' + id + ' não existe no banco de dados de coordenadas')
+                        else
+                            console.error('id ' + id + ' não tem vizinhos')
+                    }
+                    let valoresZVizinhos = vizinhos.map(id => votes[id] ? votes[id].valorZ : 0) 
+                    if (!valoresZVizinhos.length)
+                        valoresZVizinhos = [0]      // HACK to prevent an exception below
+                    let localMoran = votes[id].valorZ * SimpleStats.mean(valoresZVizinhos)
 
-                    indices[id]	= {
+                    indices[id] = {
                         id, 
-                        tamanhoDistrito: totalVotosDistrito,	// tamanhoDistrio será necessário para plotar o gráfico do índice com o tamanho certo
+                        tamanhoDistrito: totalVotosDistrito,    // tamanhoDistrio será necessário para plotar o gráfico do índice com o tamanho certo
                         indiceLQ,
                         indiceLD,
-                        indiceRI: 1.0    // já inicializamos o índice de relevância com o valor menos significativo (1.0)
+                        indiceZ,                                // Incluímos o valor-z como indiceZ
+                        indiceRI: 1.0,                          // já inicializamos o índice de relevância com o valor menos significativo (1.0)
+                        indiceLI: localMoran
                     }
-                    somaIndiceLQ += indiceLQ		// ISSO ESTÁ ERRADO MAS AINDA NÃO SEI COMO É O CERTO
+                    somaIndiceLQ += indiceLQ        // ISSO ESTÁ ERRADO MAS AINDA NÃO SEI COMO É O CERTO
                 }    
             }
             // Vamos agora calcular o "Índice de Relevância" (RI)
@@ -142,20 +194,25 @@ class Candidato {
             .sort((a, b) => b.numero - a.numero)
             .reduce((acumulado, distrito) => {
                 var porcentagem = distrito.numero / totalCandidato    
-                // Note que o distrito mais votado sempre tem o índice IP de 0,
+                // Note que o distrito mais votado sempre tem o índice RI de 0 -- é o mais importante
                 distrito.acumulado = acumulado  
                 acumulado += porcentagem
                 return acumulado
             }, 0)
-            votesArray.forEach(({ id, acumulado }) => {
-                indices[id].indiceRI = acumulado
+            votesArray.forEach(({ id, acumulado, numero }) => {
+                // Inclui o indice RI apenas para os distritos em que o candidato foi votado
+                if (numero) {
+                    indices[id].indiceRI = acumulado
+                }    
             })
 
-            this.total = totalCandidato  			// totalCandidato deve ser igual a this.votacao
+            this.total = totalCandidato             // totalCandidato deve ser igual a this.votacao
             this.totalEleicao = totalGeral  
-            this.indiceLQGlobal = somaIndiceLQ		// NOTE QUE O CÁLCULO DE somaIndiceLQ AINDA ESTÁ ERRADO
-
-            this.votos = votes
+            this.indiceLQGlobal = somaIndiceLQ      // NOTE QUE O CÁLCULO DE somaIndiceLQ AINDA ESTÁ ERRADO
+            this.votosArray = votesArray
+            this.votosDict = votes
+            this.votos = votes                      // Should be deprecated once we adjust Charts.js
+          
             this.indices = indices
 
             return new Promise((resolve, reject) => resolve(this))
@@ -165,7 +222,7 @@ class Candidato {
         })
    
     }
-	
+    
     get nomeCargo () {
         return Utils.obterNomeCargo(this.cargo)
     }
@@ -177,7 +234,7 @@ class Candidato {
             return 2
         return 1
     }
-	
+    
     static calcularId (obj) {
         //  TEMPORARIAMENTE VAMOS DEIXAR DE UTILIZAR A uf
         return `${obj.ano}-${obj.cargo}-${obj.numero}`      
@@ -191,32 +248,49 @@ class Candidato {
     }    
   
     get id () {
-	      return Candidato.calcularId(this)
+        return Candidato.calcularId(this)
     }
-	
+    
     obterVotacaoNoDistrito (distritoId) {
         return this.votos[distritoId] 
     }
-	
+    
     obterVotacaoPorDistrito (incluirDistritosSemVoto = false) {
         var votacaoDict = {}
 
         for (var distritoId in this.votos) {
             if (incluirDistritosSemVoto || this.votos[distritoId].numero) {
-                votacaoDict[distritoId] = this.votos[distritoId]			
+                votacaoDict[distritoId] = this.votos[distritoId]            
             }    
         }
         return votacaoDict
-	  }
+      }
 
     obterIndicePorDistrito (nomeIndice) {
         var indicesDict = {}
+
+        if (['LQ', 'LD', 'RI', 'Z', 'LI'].includes(nomeIndice)) {
+            nomeIndice = 'indice' + nomeIndice
+        }    
+        if (!['indiceLQ', 'indiceLD', 'indiceRI', 'indiceLI', 'indiceZ'].includes(nomeIndice)) {
+            throw Error('Error in Candidato.obterIndicePorDistrito: index ' + nomeIndice + ' does not exist')
+        }    
 
         for (var distritoId in this.indices) {
             indicesDict[distritoId] = this.indices[distritoId][nomeIndice]
         }
 
         return indicesDict
+    }
+    
+    obterIndice (nomeIndice) {
+        var indicePorDistrito = this.obterIndicePorDistrito(nomeIndice)
+        return Object.keys(indicePorDistrito).map(idDistrito => {
+            return {
+                id: idDistrito,
+                indice: indicePorDistrito[idDistrito]
+            }
+        })
     }
 
 }

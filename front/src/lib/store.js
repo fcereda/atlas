@@ -1,5 +1,8 @@
-var _coordsPorUf = {},
-	_coordenadas = {},
+'use strict'
+
+import Coordenadas from '../classes/coordenadas.js'
+
+var _coordenadas = {},
 	_municipios  = {},
 	_municipiosArr = [],
 	_candidatos = [],
@@ -19,8 +22,8 @@ function callCallbacksCandidato (action, candidato) {
 export default {
 
 	set coordenadas(coords) {
-		_coordenadas = coords
-		return coords	
+		_coordenadas = new Coordenadas(coords)	// o constructor de Coordenadas já calcula os vizinhos
+		return _coordenadas
 	},
 
 	get coordenadas() {
