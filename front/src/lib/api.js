@@ -132,7 +132,7 @@ export default {
 				var data = response.data
 
 				//**********************************************************************	
-				Store.coordenadas = data   // MOVE THIS TO THE CORRECT PLACE, IN APP.VUE  
+				//Store.coordenadas = data    MOVE THIS TO THE CORRECT PLACE, IN APP.VUE  
 				//**********************************************************************
 
 				// data is an array. We will convert it to a lookup table
