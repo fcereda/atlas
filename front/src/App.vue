@@ -45,21 +45,19 @@
         ></atlas-display-uf> 
       </div>  
 
-      <atlas-candidates-list
+      <atlas-sidebar-tabs
+        ref="sidebarTabs"
         v-if="!modoInicial"
-        v-show="!mostrarPainelZonas"
         :uf="uf"
         :colorScale="colorScale"
+        :mostrarPainelZonas="mostrarPainelZonas"
+        :zonasToDisplay="zonasHover"
         @add-candidate="addCandidate"
         @remove-candidate="removeCandidate"
         @show-indexes="showIndividualIndexes"
-      ></atlas-candidates-list>
+        @close-painel-zonas="mostrarPainelZonas = false">
+      </atlas-sidebar-tabs>
 
-      <atlas-painel-zonas
-        v-show="!modoInicial && mostrarPainelZonas"
-        :zonas="zonasHover"
-        @close="mostrarPainelZonas = false"
-      ></atlas-painel-zonas>  
 
     </v-navigation-drawer>
 
@@ -99,6 +97,7 @@
   import atlasSelectUf from './components/atlas-select-uf.vue'
   import atlasDisplayUf from './components/atlas-display-uf.vue'
   import atlasPainelZonas from './components/atlas-painel-zonas.vue'
+  import atlasSidebarTabs from './components/atlas-sidebar-tabs.vue'
 
   export default {
 
@@ -107,7 +106,8 @@
       'atlas-map': atlasMap,
       'atlas-select-uf': atlasSelectUf,
       'atlas-display-uf': atlasDisplayUf,
-      'atlas-painel-zonas': atlasPainelZonas
+      'atlas-painel-zonas': atlasPainelZonas,
+      'atlas-sidebar-tabs': atlasSidebarTabs,
     },
 
     data: () => ({
@@ -181,12 +181,18 @@
       },
 
       onMapClick (zonas) {
+        if (this.modoInicial)
+          return
+
         if (!zonas || !zonas.length) {
           zonas = []
           this.mostrarPainelZonas = false
         }
         else {
-          this.mostrarPainelZonas = true
+          if (this.$refs.sidebarTabs.activeTab == 'candidatos') {
+            this.$refs.sidebarTabs.showTabDetalhes()
+            this.mostrarPainelZonas = true
+          }  
         }
         this.zonasHover = zonas
       },
