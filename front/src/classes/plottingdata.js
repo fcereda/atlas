@@ -16,8 +16,11 @@ class PlottingData {
         }    
         if (typeof data != 'object') {
             plottingDataError('data argument must be a dictionary')
-        }    
-
+        }  
+          
+        if (typeof colors == 'function') {
+            colors = colors(Object.keys(data).map(districtId => data[districtId]))
+        }   
         if (!colors.length) {
             colors = [colors]
         }    
