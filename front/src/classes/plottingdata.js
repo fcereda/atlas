@@ -1,5 +1,7 @@
 'use strict'
 
+import Store from '../lib/store.js'
+
 class PlottingData {
 
     constructor (colors, data, legend) {
@@ -20,7 +22,9 @@ class PlottingData {
             colors = [colors]
         }    
         
-        var numColors = colors.length
+        var numColors = colors.length,
+        	coordenadas = Store.coordenadas
+
         this.colors = colors
         this.data = Object.keys(data).map(districtId => {
             let item = data[districtId],    
@@ -38,37 +42,46 @@ class PlottingData {
 
             let sumValues = values.reduce((total, value) => total + value, 0),
                 size = item.size ? item.size : sumValues,
+                accumulatedPercentage = 0
                 points = values.map((value, index) => {
-                    let proportion = value / sumValues
+                    let proportion = value / sumValues,
+                    	percentage = Math.round(proportion * 100)
+                    accumulatedPercentage += percentage
                     return {
                         color: colors[index],
                         value,
                         proportion,
-                        percentage: Math.round(proportion * 100)
+                        percentage,
+                        accumulatedPercentage
                     }
                 }),
                 orderedPoints = points.slice().sort((a, b) => b.value - a.value),    
                 //points.slice().sort sorts a copy of the original array, keeping it intact
                 firstTwoPoints = orderedPoints
             if (orderedPoints.length >= 2) {
+            	accumulatedPercentage = 0
                 firstTwoPoints = orderedPoints.slice(0, 2).map(point => {
-                    let proportion = point.value / (orderedPoints[0].value + orderedPoints[1].value)  
+                    let proportion = point.value / (orderedPoints[0].value + orderedPoints[1].value),
+                    	percentage = Math.round(proportion * 100),
+                    	accumulatedPercentage += percentage
                     return {
                         ...point,
                         value,
                         proportion,
-                        percentage: Math.round(proportion * 100)
+                        percentage,
+                        accumulatedPercentage
                     }
                 })
             } 
  
             return {
                 id: districtId,
-                lat: 0,
-                long: 0,
+                lat: coordenadas[districtId].lat,
+                long: coordenadas[districtId].long,
                 size,
                 colors,
                 values,
+                numPoints: points.length,
                 points,
                 orderedPoints,
                 firstTwoPoints
