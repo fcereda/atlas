@@ -1,19 +1,58 @@
 'use strict'
 
-const Candidato = require('./candidato.js')
+import Candidato from './candidato.js'
 
-function Candidatos () {
+class Candidatos {
 
     constructor () {
         this.length = 0
+        this.callbacks = []
     }    
 
     adicionarCandidato (candidato) {
+        const ERROR_PREFIX = 'Error in Candidato.adicionarCandidato: '
         if (!candidato instanceof Candidato)
-            throw Error('Error in Candidato.adicionarCandidato: argument must be a Candidato object')
+            throw Error(ERROR_PREFIX + ' argument must be a Candidato object')
+        if (this.obterCandidato(candidato))
+            throw Error(ERROR_PREFIX + ' argument candidato already exists')
         this[this.length] = candidato
         this.length += 1
+
+        this.callCallbacksCandidato('adicionar', candidato)
+        return candidato
     }
+
+    callCallbacksCandidato (action, candidato) {
+        if (!this.callbacks) {
+            return
+        }
+        this.callbacks.forEach(({ callback, contexto }) => {
+            callback.call(contexto, action, candidato)
+        })
+    }
+
+    adicionarCallback (callback, contexto) { 
+        if (!this.callbacks) {
+            this.callbacks = []
+        }
+        for (var index = this.callbacks.length-1; index >= 0; index--)
+            if (this.callbacks[index].callback == callback) {
+                this.callbacks[index].contexto = contexto
+                return this.callbacks[index]
+            }
+
+        var callbackObj = { callback, contexto }
+        this.callbacks.push(callbackObj)
+        return callbackObj 
+    }
+
+    removerCallbackCandidatos (callback) {
+        for (var index = this.callbacks.length-1; index >= 0; index--)
+            if (this.callbacks[index].callback == callback) {
+                return this.callbacks.splice(index, 1)
+            }
+        return null
+    }    
 
     indexOf ({ ano, cargo, numero }) {
         if (!ano || !cargo || !numero)
@@ -45,6 +84,28 @@ function Candidatos () {
         delete this[this.length-1]
         this.length -= 1
         return candidato
+    }
+
+    removerTodosCandidatos () {
+        while (this.length) {
+            var candidato = this[this.length-1]
+            callCallbacksCandidato('remover', candidato)
+            this.length -= 1
+        }
+    }
+
+    desabilitarCandidato (candidato) {
+        candidato = this.obterCandidato(candidato)
+        if (!candidato)
+            throw Error('Error in Candidatos.desabilitarCandidato: argument candidato not found')
+        candidato.disabled = true
+    }
+
+    habilitarCandidato (candidato) {
+        candidato = this.obterCandidato(candidato)
+        if (!candidato)
+            throw Error('Error in Candidatos.habilitarCandidato: argument candidato not found')
+        candidato.disabled = false
     }
 
     obterVotacoes (args) {
@@ -146,6 +207,11 @@ function Candidatos () {
     }
 
 }
+
+//module.exports = Candidatos
+
+export default Candidatos
+
 
 /*
 
@@ -327,4 +393,3 @@ class Candidatos {
 }
 */
 
-module.exports = Candidatos

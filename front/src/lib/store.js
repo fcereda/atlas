@@ -1,11 +1,13 @@
 'use strict'
 
 import Coordenadas from '../classes/coordenadas.js'
+import Candidatos from '../classes/candidatos.js'
 
 var _coordenadas = {},
 	_municipios  = {},
 	_municipiosArr = [],
-	_candidatos = [],
+	_candidatos = [], 
+	//_candidatos = new Candidatos(),
 	_candidatosPorId = {},
 	_callbackCandidatos = []
 
