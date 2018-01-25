@@ -175,8 +175,79 @@ export default {
 			}
 		}
 
-	}	
+	},	
 
+
+	getColorFunction (options) {
+	    if (!options)
+	        options = {}
+	    var { classes, colors, domain, breakFunction, numClusters, numBreaks } = options
+
+	    numBreaks = numBreaks || numClusters || 7
+
+	    if (breakFunction) {    
+	        if (breakFunction == 'ckmeans' || breakFunction == 'jenks')
+	            breakFunction = SS.ckmeans
+	        else if (breakFunction == 'equalInterval')
+	            breakFunction = SS.equalIntervalBreaks
+	        if (typeof breakFunction != 'function') { 
+	           throw Error('Error in getColorFunction: property breakFunction of argument must be either "ckmeans", "equalInterval" or a clustering function')
+	        }    
+	    }    
+	    if (!classes && !colors && !domain && !breakFunction) {
+	        console.warn('Warning on getColorFunction: no options supplied, using default ckmeans clustering')
+	        breakFunction = SS.ckmeans
+	    }
+	        
+	    
+	    function colorFunction(colorScale, data) {
+	        
+	        function calcDomain(chunks) {
+	            var domain = chunks
+	                .map(chunk => Array.isArray(chunk) ? SS.min(chunk) : parseFloat(chunk))
+	                .concat(Array.isArray(chunks[chunks.length-1]) ? SS.max(chunks[chunks.length-1]) : parseFloat(chunks[chunks.length-1]))
+	            return domain
+	        }
+	      
+	        if (breakFunction) {
+	            let chunks = breakFunction(data, numBreaks)
+	            classes = calcDomain(chunks)
+	        }    
+
+	        var scale = chroma.scale(colorScale)
+	        if (domain) {
+	            scale = scale.domain(domain)
+	        }    
+	        if (classes) {
+	            scale = scale.classes(classes)
+	        }    
+	        if (colors) {
+	            scale = scale.colors(colors)
+	        }    
+
+	        return scale
+	    }
+	    
+	    return colorFunction
+	    
+	},
+
+	calcColor (color, value) {
+        if (typeof color == 'string')
+            return color
+        if (typeof color == 'number' || (typeof color == 'object' && color.length && color.length == 3))
+            return chroma(color).rgb()
+        if (color.rgb) {
+            console.log('color.rgb:')
+            console.log(color.rgb)
+            return color.rgb()
+        }  
+        if (typeof color != 'function') {
+            throw Error('Error in MapCharts.calcColor: invalid color ' + color)
+        }    
+        color = color(value)
+        return color.rgb()
+    }    
 
 }
 
