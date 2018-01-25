@@ -6,9 +6,9 @@ import Candidatos from '../classes/candidatos.js'
 var _coordenadas = {},
 	_municipios  = {},
 	_municipiosArr = [],
-	_candidatos = [], 
-	//_candidatos = new Candidatos(),
-	_candidatosPorId = {},
+	//_candidatos = [], 
+	_candidatos = new Candidatos(),
+	//_candidatosPorId = {},
 	_callbackCandidatos = []
 
 function calcCandidatoId ({ ano, cargo, numero }) {
@@ -63,81 +63,36 @@ export default {
 	},
 
 	adicionarCandidato (candidato) {
-		if (!candidato.id)
-			candidato.id = calcCandidatoId(candidato)
-		if (_candidatos.indexOf(candidato) < 0)
-			_candidatos.push(candidato)
-		_candidatosPorId[candidato.id] = candidato
-		callCallbacksCandidato('adicionar', candidato)
-		return candidato
+		return _candidatos.adicionarCandidato(candidato)
 	},
 
 	removerCandidato (candidato) {
-		// The _candidatos array contains objects that are not the same
-		// as the candidato object referenced in the function, so we
-		// must look it up by id
-		var id = this.calcCandidatoId(candidato),
-			index = _candidatos.map((esteCandidato) => esteCandidato.id).indexOf(id)
-		if (index >= 0) {
-			_candidatos.splice(index, 1)
-			_candidatosPorId[id] = null
-			callCallbacksCandidato('remover', candidato)
-			return candidato
-		}
-		return null
+		return _candidatos.removerCandidato(candidato)
 	},
 
 	removerTodosCandidatos () {
-		while (_candidatos.length) {
-			var candidato = _candidatos.pop()
-			callCallbacksCandidato('remover', candidato)
-		}
-	},
-
-	obterCandidatoPorId (id) {
-		return _candidatosPorId[id]
+		return _candidatos.removerTodosCandidatos()
 	},
 
 	obterCandidato (candidato) {
-		return this.obterCandidatoPorId(this.calcCandidatoId(candidato))
+		return _candidatos.obterCandidato(candidato)
 	},
 
 	desabilitarCandidato (candidato) {
-		var id = this.calcCandidatoId(candidato) 
-		if (!_candidatosPorId[id]) 
-			return null
-		_candidatosPorId[id].disabled = true
-		callCallbacksCandidato('desabilitar', _candidatosPorId[id])
-		return true
+		return _candidatos.desabilitarCandidato(candidato)
 	},
 
 	habilitarCandidato (candidato) {
-		var id = this.calcCandidatoId(candidato)
-		if (!_candidatosPorId[id])
-			return null
-		_candidatosPorId[id].disabled = false
-		callCallbacksCandidato('habilitar', _candidatosPorId[id])
+		return _candidatos.habilitarCandidato(candidato)
 	},
 
-	adicionarCallbackCandidatos (callback, contexto) { 
-		for (var index = _callbackCandidatos.length-1; index > 0; index--)
-			if (_callbackCandidatos[index].callback == callback) {
-				_callbackCandidatos[index].contexto = contexto
-				return _callbackCandidatos[index]
-			}
-
-		var callbackObj = {	callback, contexto }
-		_callbackCandidatos.push(callbackObj)
-		return callbackObj 
+	adicionarCallbackCandidatos (callback, contexto) {
+		return _candidatos.adicionarCallback (callback, contexto)
 	},
 
 	removerCallbackCandidatos (callback) {
-		for (var index = _callbackCandidatos.length-1; index >= 0; index--)
-			if (_callbackCandidatos[index].callback == callback) {
-				return _callbackCandidatos.splice(index, 1)
-			}
+		return _candidatos.removerCallback(callback)
+	},
 
-		return null
-	}
 
 }
