@@ -9,9 +9,14 @@ class Coordenadas {
 		for (var id in coords) {
 			this[id] = coords[id]
 			//console.log(id)
-			if (!vizinhos[id])
-				console.error('Erro calculando vizinhos do id ' + id)
-			this[id].vizinhos = vizinhos[id].vizinhos
+			if (!vizinhos[id]) {
+				// ESTA SITUAÇÃO NÃO DEVERIA ACONTECER!
+				console.error('Erro calculando vizinhos do id ' + id)	
+				this[id].vizinhos = []
+			}
+			else {
+				this[id].vizinhos = vizinhos[id].vizinhos
+			}	
 		}
 
 		return this
