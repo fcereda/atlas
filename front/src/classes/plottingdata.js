@@ -17,16 +17,13 @@ class PlottingData {
         if (typeof data != 'object') {
             plottingDataError('data argument must be a dictionary')
         }  
-          
-        if (typeof colors == 'function') {
-            colors = colors(Object.keys(data).map(districtId => data[districtId]))
-        }   
-        if (!colors.length) {
+        if (!Array.isArray(colors)) {
             colors = [colors]
         }    
         
         var numColors = colors.length,
-        	coordenadas = Store.coordenadas
+        	coordenadas = Store.coordenadas,
+        	maxSize = 0
 
         this.colors = colors
         this.data = Object.keys(data).map(districtId => {
@@ -45,7 +42,7 @@ class PlottingData {
 
             let sumValues = values.reduce((total, value) => total + value, 0),
                 size = item.size ? item.size : sumValues,
-                accumulatedPercentage = 0
+                accumulatedPercentage = 0,
                 points = values.map((value, index) => {
                     let proportion = value / sumValues,
                     	percentage = Math.round(proportion * 100)
@@ -55,7 +52,7 @@ class PlottingData {
                         value,
                         proportion,
                         percentage,
-                        accumulatedPercentage
+                        accumulatedPercentage: Math.min(accumulatedPercentage, 100)
                     }
                 }),
                 orderedPoints = points.slice().sort((a, b) => b.value - a.value),    
@@ -64,23 +61,37 @@ class PlottingData {
             if (orderedPoints.length >= 2) {
             	accumulatedPercentage = 0
                 firstTwoPoints = orderedPoints.slice(0, 2).map(point => {
-                    let proportion = point.value / (orderedPoints[0].value + orderedPoints[1].value),
-                    	percentage = Math.round(proportion * 100),
-                    	accumulatedPercentage += percentage
+                    let value = point.value,
+                    	proportion = value / (orderedPoints[0].value + orderedPoints[1].value),
+                    	percentage = Math.round(proportion * 100)
+                    accumulatedPercentage += percentage
                     return {
                         ...point,
                         value,
                         proportion,
                         percentage,
-                        accumulatedPercentage
+                        accumulatedPercentage: Math.min(accumulatedPercentage, 100)
                     }
                 })
             } 
- 
+            if (points.length > 0) {
+            	points[points.length-1].accumulatedPercentage = 100
+            	//orderedPoints[numPoints-1].accumulatedPercentage = 100
+            	firstTwoPoints[firstTwoPoints.length-1].accumulatedPercentage = 100
+            }
+            var lat = 0,  
+            	long = 0
+            if (coordenadas[districtId]) {
+            	lat = coordenadas[districtId].lat
+            	long = coordenadas[districtId].long
+            }	
+            else {
+            	console.warn('Coordenadas ' + districtId + ' não encontradas!')
+            }
             return {
                 id: districtId,
-                lat: coordenadas[districtId].lat,
-                long: coordenadas[districtId].long,
+                lat,
+                long,
                 size,
                 colors,
                 values,
@@ -90,6 +101,7 @@ class PlottingData {
                 firstTwoPoints
             }
         })
+        this.maxSize = this.data.reduce((maximo, {size}) => Math.max(size, maximo), 0)
         this.legend = legend
     }
 
@@ -115,4 +127,6 @@ class PlottingData {
     
 }
 
-module.exports = PlottingData
+export default PlottingData
+
+//module.exports = PlottingData

@@ -66,6 +66,7 @@
           <atlas-map 
             :uf="uf"
             :show-indexes="showIndexes"
+            :colorScale="colorScale"
             style="z-index:0;"
             @click="onMapClick"
             @set-uf="changeUf"

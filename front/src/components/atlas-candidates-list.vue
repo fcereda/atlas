@@ -81,7 +81,7 @@ import atlasDialogCarreira from './atlas-dialog-carreira.vue'
 import api from '../lib/api.js'
 import Store from '../lib/store.js'
 import Colors from '../lib/colors.js'
-import Charts from '../lib/charts.js'
+import MapCharts from '../lib/mapcharts.js'
 import Candidato from '../classes/candidato.js'
 
 export default {
@@ -137,8 +137,8 @@ export default {
                     Store.obterCandidato(candidato).color = candidato.color
                 })
                 // Como mudamos as cores, repintamos os gráficos
-                Charts.calcPlottingData()
-                Charts.redrawCharts()   
+                //Charts.calcPlottingData()
+                MapCharts.redrawCharts()   
             }
         },
 
@@ -224,12 +224,14 @@ export default {
     	},
 
     	disableCandidate (candidato) {
-    		Store.desabilitarCandidato(candidato)
+    		//Store.desabilitarCandidato(candidato)
+            Store.candidatos.desabilitarCandidato(candidato)
     		candidato.disabled = true
     	},
 
     	enableCandidate (candidato) {
-    		Store.habilitarCandidato(candidato)
+    		//Store.habilitarCandidato(candidato)
+            Store.candidatos.habilitarCandidato(candidato)
     		candidato.disabled = false
     	},
 

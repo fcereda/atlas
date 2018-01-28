@@ -135,7 +135,9 @@
 import api from '../lib/api.js'
 import utils from '../lib/utils.js'
 import Store from '../lib/store.js'
-import Charts from '../lib/charts.js'
+import MapCharts from '../lib/mapcharts.js'
+import PlottingData from '../classes/plottingdata.js'
+//import Charts from '../lib/charts.js'
 //import DataLayers from '../lib/datalayers.js'
 import axios from 'axios'
 import chroma from 'chroma-js'
@@ -155,7 +157,7 @@ export default {
 		atlasMapLegend
 	},
 
-	props: [ 'uf', 'showIndexes'],
+	props: [ 'uf', 'showIndexes', 'colorScale' ],
 
 	data () {
 
@@ -235,10 +237,10 @@ export default {
 				legendLabels: ['Até 0,1', '0,1 \u2014 0,25', '0,25 \u2014 0,5', '0,5 \u2014 1,0', '1,0 \u2014 2.0', '2.0 \u2014 4.0', '4.0 \u2014 8.0', '8,0 ou mais', '16.0 ou mais']
 			}, {
 				name: 'indiceRI',
-				label: 'IP',
-				palette: ['#fed976','#feb24c','#fd8d3c','#f03b20','#bd0026'],
+				label: 'IR',
+				palette: ['#fed976','#feb24c','#fd8d3c','#f03b20','#bd0026'].reverse(),
 				domain: [1, 0.8, 0.6, 0.4, 0.2],
-				legendTitle: 'Índice de importância',
+				legendTitle: 'Índice de relevância',
 				legendPalette: ['#fed976','#feb24c','#fd8d3c','#f03b20','#bd0026'].reverse(),
 				legendDomain: [0.2, 0.4, 0.6, 0.8, 1.0],
 				legendLabels: ['20% mais importantes', '20% \u2014 40%', '40% \u2014 60%', '60% \u2014 80%', '80% \u2014 100%'],
@@ -333,30 +335,43 @@ export default {
 				//this.loadIbgeData(this.uf)
 			}
 			else {
-				Charts.removeCharts()
+				MapCharts.removeCharts()
 				this.fitBoundsToBrazil()
 				this.loadStatesBorders()
 			}
 		},
 
+		colorScale () {
+			// Recalcs plotting data 
+			this.$nextTick(() => {
+				this.setMapData()
+				MapCharts.redrawCharts()
+			})
+		},	
+
 		showIndexes () {
 			if (this.showIndexes) {
+				// Se entrar aqui, this.showIndexes contém o objeto Candidato
+				// do candidato selecionado pelo usuário
 				var indexObj = this.indexChartTypes[0]
 				for (var i=1; i<this.indexChartTypes.length; i++) {
 					if (this.indexChartTypes[i].name == this.indexChartType)
 						indexObj = this.indexChartTypes[i]
 				}
-				var chromaColor = chroma.scale(indexObj.palette).domain(indexObj.domain)
-				Charts.setChartType('index', this.radiusType, this.showIndexes, this.indexChartType, chromaColor)
-				this.setMapLegendFromIndex(indexObj)
+
+				this.changeIndexChartType(indexObj)
 				this.mostrarIndicesIndividuais = true
 			}
 			else {
-				Charts.setChartType(this.chartType, this.radiusType)
+				this.setMapData({
+					mapDataType: 'votes',
+					showDisabled: false
+				})
+				MapCharts.setChartType(this.chartType, this.radiusType)
 				this.setMapLegendFromIndex(null)
 				this.mostrarIndicesIndividuais = false
 			}
-    		Charts.redrawCharts()			
+    		MapCharts.redrawCharts()			
 		}
 
  	},
@@ -367,7 +382,7 @@ export default {
 		window.addEventListener('resize', () => {
 			this.map.invalidateSize()
 			this.mapHeight = this.calcMapHeight()
-			Charts.redrawCharts()
+			MapCharts.redrawCharts()
 		})
 
 		// Events for viewing district data on the side panel
@@ -375,14 +390,14 @@ export default {
 
 		var that = this
 		var onHover = function (e) {
-			// This function is an called by the Leaflet element,
-			// thus the event object is a different from the regular one
-			var posicoesCharts = Charts.posicoesCharts,
+			// This function is called by the Leaflet element,
+			// thus the event object is particular to Leaflet
+			var posicoesCharts = MapCharts.posicoesCharts,
 				chartsEncontrados = []
 		    for (let i = posicoesCharts.length - 1; i >= 0; i--) {
 				let thisPosicao = posicoesCharts[i].bounds,
-		    		x = e.containerPoint.x, //e.offsetX, 
-		    		y = e.containerPoint.y  //e.offsetY 
+		    		x = e.containerPoint.x, 
+		    		y = e.containerPoint.y  
 				if (thisPosicao[0][0] <= x &&
 		    		thisPosicao[0][1] <= y &&
 		    		thisPosicao[1][0] >= x &&
@@ -402,11 +417,7 @@ export default {
 		//this.$refs.map.addEventListener('mousemove', onHover.bind(this))
 
 		var onClick = function (e) {
-			var posicoesCharts = Charts.posicoesCharts
-			/*
-			for (var i=0; i<posicoesCharts.length; i++)
-				console.log(posicoesCharts[i].bounds[0][0], posicoesCharts[i].bounds[0][1])
-			*/	
+			var posicoesCharts = MapCharts.posicoesCharts
 			if (this.zonasSobMouse && this.zonasSobMouse.length)
 				this.$emit('click', this.zonasSobMouse)
 		}
@@ -446,7 +457,7 @@ export default {
 		this.map.addEventListener('mousemove', onHover.bind(this))
 		this.map.addEventListener('click', onClick.bind(this))
 
-		Charts.setUpCanvasLayer(this.map)
+		MapCharts.setUpCanvasLayer(this.map)
 
 		// Code below by Ryan Clark (https://blog.webkid.io/maps-with-leaflet-and-topojson/)
 		L.TopoJSON = L.GeoJSON.extend({  
@@ -463,6 +474,7 @@ export default {
 			}  
 		});
 
+		// We wait one second before starting to load state borders
 		setTimeout(() => this.loadStatesBorders(), 1000)
 
     },
@@ -741,43 +753,116 @@ export default {
 		},
 
 		onAlterouCandidatos (acao, candidato) {
-			Charts.calcPlottingData()
-			Charts.redrawCharts()
+			//var votingData = Store.candidatos.obterVotacoesDict(true)
+			//var colors = Store.candidatos.filter(cand => !cand.disabled).map(cand => cand.color)
+			//var plottingData = new PlottingData (colors, votingData)
+			//MapCharts.setPlottingData(plottingData)
+			        //MapCharts.setChartType('winner', 'variable')
+			
+			// Redesenha os gráficos somente se o mapa estiver mostrando gráficos de comparações entre os candidatos
+			if (this.mostrarIndicesIndividuais) {
+				return        
+			}
+			this.setMapData({
+				dataType: 'votes',
+				showDisabled: false
+			})        
+
+			MapCharts.redrawCharts()
 			this.displayChartTypes = Store.candidatos.length
 		},
 
+		setMapData (options) {
+			// options: object 
+			// For displaying comparison data of all enabled candidates, the
+			// following properties must be set:
+			// .showDisabled: truty if data of all candidates is to be displayed; falsy otherwise
+			// For displaying an index of a candidate, the following properties
+			// must be set:
+			// .candidate: Candidate object 
+			// .index: String containing the index to be displayed
+			// .colors: chroma object containing the color scale to be used
+
+			var plottingData
+
+			if (options) {
+				this.setMapData.options = options
+			}
+			else {
+				options = this.setMapData.options
+			}
+
+			if (options.candidate) {
+				let candidate = Store.candidatos.obterCandidato(options.candidate)
+				let index = options.index || 'indiceLQ'
+				let colors = options.colors 
+				let indiceDict = candidate.obterIndicePorDistrito(index)
+				let votosDict = candidate.obterVotacaoPorDistrito(false)
+				let data = {}
+
+				Object.keys(votosDict).forEach(districtId => {
+					data[districtId] = {
+						size: votosDict[districtId].total,
+						values: [ indiceDict[districtId] ]
+					}
+				})
+				// Os dados para PlottingData estão na variável data
+				plottingData = new PlottingData(colors, data)
+			}
+			else {
+				// When comparing candidates, we always show only enabled candidates
+				let votingData = Store.candidatos.obterVotacoesDict(true)
+				let colors = Store.candidatos.filter(cand => !cand.disabled).map(cand => cand.color)
+				plottingData = new PlottingData(colors, votingData)
+			}			
+			MapCharts.setPlottingData(plottingData)
+			        //MapCharts.setChartType('winner', 'variable')
+		},
+
 		changeChartType (chartType) {
-    		Charts.setChartType(chartType, this.radiusType)	
-    		Charts.redrawCharts()
+    		MapCharts.setChartType(chartType, this.radiusType)	
+    		MapCharts.redrawCharts()
     		this.chartType = chartType
 		},
 
 		changeIndexChartType (chart) {
 			var indexType = chart.name,
 				palette = chart.palette, 
-				domain = chart.domain
-			// this.indexes contains the candidate for whom we are generating the individual index
+				domain = chart.domain,
+				candidate = this.showIndexes
+				// this.showIndexes contains the candidate for whom we are generating the individual index
+			
 			palette = palette || ['#fee5d9', '#a50f15']
 			domain = domain || [0, 1]
 			var chromaColor = chroma.scale(palette).domain(domain)
-			Charts.setChartType('index', this.radiusType, this.showIndexes, indexType, chromaColor)
-			Charts.redrawCharts()
+
+			this.setMapData({
+				mapDataType: 'index',
+				candidate: candidate,
+				index: 'indiceLQ',
+				colors: chromaColor,
+			})
+
+			MapCharts.setChartType('index', this.radiusType, this.showIndexes, indexType, chromaColor)
+			MapCharts.redrawCharts()
 			this.indexChartType = indexType
 			this.setMapLegendFromIndex(chart)
 		},
 
 		changeRadiusType (radiusType) {
-			Charts.setRadiusType(radiusType)
-			Charts.redrawCharts()
+			MapCharts.setRadiusType(radiusType)
+			MapCharts.redrawCharts()
+
 			this.radiusType = radiusType
 		},
 
 		setMapLegendFromIndex (indexObj) {
-			if (!indexObj) 
+			if (!indexObj) {
 				this.mapLegend = {
 					show:false
 				}
-			else	
+			}	
+			else { 
 				this.mapLegend = {
 					show: true,
 					title: indexObj.legendTitle,
@@ -786,7 +871,8 @@ export default {
 					domain: indexObj.legendDomain || indexObj.domain,
 					padding: indexObj.padding,
 					labels: indexObj.legendLabels,
-				}				
+				}	
+			}				
 		}
 	}	
 
@@ -852,10 +938,6 @@ export default {
 	.leaflet-bar a {
 		border:0;
 		border-radius: 0 !important;
-/*
-		background-color:#424242 !important;
-		color:#eee !important;
-*/
 		color:rgb(61,61,61) !important;	 	
 	}
 

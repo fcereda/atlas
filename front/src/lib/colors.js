@@ -232,21 +232,24 @@ export default {
 	    
 	},
 
-	calcColor (color, value) {
+	calcColor (color, value, opacity=0.8) {
+
+		function rgba(color) {
+			return `rgba(${color},${opacity})`
+		}
+
         if (typeof color == 'string')
-            return color
+            return rgba(color)
         if (typeof color == 'number' || (typeof color == 'object' && color.length && color.length == 3))
-            return chroma(color).rgb()
+            return rgba(chroma(color).rgb())
         if (color.rgb) {
-            console.log('color.rgb:')
-            console.log(color.rgb)
-            return color.rgb()
+            return rgba(color.rgb())
         }  
         if (typeof color != 'function') {
             throw Error('Error in MapCharts.calcColor: invalid color ' + color)
         }    
         color = color(value)
-        return color.rgb()
+        return rgba(color.rgb())
     }    
 
 }

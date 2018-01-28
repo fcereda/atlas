@@ -1,6 +1,7 @@
 'use strict'
 
 import PlottingData from '../classes/plottingdata.js'
+import Colors from './colors.js'
 import './L.CanvasLayer.js'
 
 const FIXED_RADIUS = 0,
@@ -23,7 +24,6 @@ var MapCharts = {
         function throwError(msg) {
             throw Error('Error in MapCharts.setPlottingData: ' + msg)
         }
-        
         if (!data)
             throwError('missing argument')
         if (arguments > 3)
@@ -51,13 +51,35 @@ var MapCharts = {
     removeCharts () {
         plottingData = []
         chartCanvas.needRedraw()
-    }
+    },
   
   
     setChartType (chartType, radiusType, legendOptions) {
-    
+        var options = {
+            radiusType: radiusType == 'variable' ? VARIABLE_RADIUS : FIXED_RADIUS
+        }
+        this.chartType = chartType
+        if (radiusType) {
+            this.radiusType = radiusType
+        }
+        if (legendOptions) {
+            this.legendOptions = legendOptions
+        }    
+        //this.candidato = candidato
+        //this.indice = indice
+        //this.chromaColor = chromaColor
+        this.onDrawLayer = this.drawChartFactory(chartType, options) //, candidato, indice, chromaColor)
     },
-  
+
+    setRadiusType (radiusType) {
+        this.radiusType = radiusType
+        this.setChartType(this.chartType, this.radiusType, this.legendOptions)
+    },
+
+    setLegend (legendOptions) {
+        this.legendOptions = legendOptions
+        this.setChartType(this.chartType, this.radiusType, this.legendOptions)
+    },
 
     drawChartFactory (chartType, options, candidato, indice, chromaColor) {
         var candidatoSelecionado = null,
@@ -66,182 +88,119 @@ var MapCharts = {
             baseRadius,  
             radius,
             lineWidth,
+            opacity = 0.8,
             drawFunction = null;
 
         var noChart = function () {}    
 
+        var drawWinnerChart = function (ctx, dot, d, index) {
+            if (index)
+                return     
+            ctx.beginPath()
+            ctx.moveTo(dot.x, dot.y)
+            ctx.arc(dot.x, dot.y, radius, 0, doisPI)
+            ctx.fillStyle = Colors.calcColor(d.orderedPoints[0].color, opacity)
+            ctx.fill()
+            ctx.closePath()
+        }        
+
         var drawPieChart = function (ctx, dot, d, index) {
             ctx.beginPath();
-            ctx.moveTo(dot.x, dot.y);       
-            //ctx.arc(dot.x, dot.y, radius, d.angulosIniciais[index] - noventaGraus, d.angulosIniciais[index+1] - noventaGraus);
+            ctx.moveTo(dot.x, dot.y);  
             ctx.arc(
                 dot.x, 
                 dot.y, 
                 radius, 
                 (index > 0 ? radianos[d.points[index - 1].accumulatedPercentage] : 0 ) - noventaGraus,
-                radianos[d.points[index].percentage] - noventaGraus,
+                radianos[d.points[index].accumulatedPercentage] - noventaGraus
             )
-            ctx.fillStyle = colors[index];
+            ctx.fillStyle = Colors.calcColor(colors[index])
             ctx.fill();
             ctx.closePath();
         }
 
         var drawDonutChart = function (ctx, dot, d, index) {
             ctx.beginPath();
-            ctx.arc(dot.x, dot.y, radius * 3/ 4, d.angulosIniciais[index] - noventaGraus, d.angulosIniciais[index+1] - noventaGraus);         
-            ctx.strokeStyle = colors[index]
+            ctx.arc(
+                dot.x, 
+                dot.y, 
+                radius * 3/ 4, 
+                (index > 0 ? radianos[d.points[index - 1].accumulatedPercentage] : 0 ) - noventaGraus,
+                radianos[d.points[index].accumulatedPercentage] - noventaGraus
+            )    
+            ctx.strokeStyle = Colors.calcColor(colors[index], opacity)
             ctx.lineWidth = radius / 2
             ctx.stroke();
             ctx.closePath();
         }
-        
-        var drawCircleChart = function (ctx, dot, d, index) {
-            var thisRadius = radius + index * lineWidth,
-                angle = d.anglesForCircleChart[index]       
-            ctx.beginPath()
-            ctx.moveTo(dot.x + thisRadius, dot.y)
-            ctx.arc(dot.x, dot.y, thisRadius, 0, angle)
-            ctx.strokeStyle = colors[index]
-            ctx.lineWidth = lineWidth
-            ctx.stroke()    
-            ctx.closePath()
-        }
-
-        var drawWinnerChart = function (ctx, dot, d, index) {
-            if (index == d.maisVotado) {
-                ctx.beginPath()
-                ctx.moveTo(dot.x, dot.y)
-                ctx.arc(dot.x, dot.y, radius, 0, doisPI)
-                ctx.fillStyle = colors[index]
-                ctx.fill()
-                ctx.closePath()
-            }
-        }
 
         var drawBarChart = function (ctx, dot, d, index) {
-            let proporcao = d.proporcoes[index] / d.proporcoes[d.maisVotado],
-                numBarras = Math.max(d.proporcoes.length, 2),
+            let proporcao = d.points[index].percentage / d.orderedPoints[0].percentage,
+                numBarras = Math.max(d.points.length, 2),
                 barWidth = radius * 2 / numBarras
 
             ctx.beginPath()
             ctx.moveTo(dot.x - radius + index*barWidth, dot.y + radius)
             ctx.lineTo(dot.x - radius + index*barWidth, dot.y + radius - radius * 2 * proporcao)
-            ctx.strokeStyle = colors[index]
+            ctx.strokeStyle = Colors.calcColor(colors[index], opacity)
             ctx.lineWidth = barWidth
             ctx.stroke()
             ctx.closePath()   
         }
 
         var drawHorizontalBarChart = function (ctx, dot, d, index) {
-            let porcentagem = d.porcentagens[index],
-                porcentagemMaisVotado = d.porcentagens[d.maisVotado],
-                barHeight = Math.min(radius * 2 / d.porcentagens.length, radius / 2),
-                posicaoRanking = d.ranking.indexOf(index),
+            let porcentagem = d.orderedPoints[index].percentage,
+                porcentagemMaisVotado = d.orderedPoints[0].percentage,
+                barHeight = Math.min(radius * 2 / d.orderedPoints.length, radius / 2),
+                posicaoRanking = index,
                 posicaoY = -radius + posicaoRanking * barHeight
                 
             ctx.beginPath()
             ctx.moveTo(dot.x - radius, dot.y + posicaoY)
             ctx.lineTo(dot.x - radius + radius * 2 * (porcentagem / porcentagemMaisVotado), dot.y + posicaoY)
-            ctx.strokeStyle = colors[index]
+            ctx.strokeStyle = Colors.calcColor(d.orderedPoints[index].color, opacity)
             ctx.lineWidth = barHeight
             ctx.stroke()
             ctx.closePath()
         }
 
         var drawPillChart = function (ctx, dot, d, index) {
-            var posicaoNoRanking = d.ranking.indexOf(index)
-            if (posicaoNoRanking >= 2)
-                return    // Pill Chart only displays data for the winner candidate and the runner-up
+            if (index > 1)
+                return
 
-            var left, 
+            var left,
                 width,
-                numCandidatos = d.proporcoes.length,
-                total = numCandidatos > 1 ? d.proporcoes[d.ranking[0]] + d.proporcoes[d.ranking[1]] : 1.0,
-                porcentagem = d.proporcoes[index] / total
+                proportion = d.firstTwoPoints[index].percentage / 100
+            
 
-            if (posicaoNoRanking) 
-                // Candidate is the 2nd place; their bar will be displayed at the right
-                left = -radius + (1-porcentagem) * radius * 2
-            else 
-                // Candidate is the winner. their bar will be displayed on the left
-                left = -radius
-            width = porcentagem * radius * 2
-
-            if (porcentagem > 1) {
-                // This should never occur, so we do display an error before correcting the problem
-                console.error('percentage > 1')
-                console.log(`posicaoNoRanking = ${posicaoNoRanking}` + 
-                    `d.porcentagens[d.ranking[0]] = ${d.porcentagens[d.ranking[0]]}` + 
-                    `d.porcentagens[d.ranking[1]] = ${d.porcentagens[d.ranking[1]]}` +
-                    `total = ${total}`)
-                    console.log(d.ranking)
-                    console.log(d.proporcoes)
-
-                porcentagem = 1    
-            }      
-
-            ctx.beginPath()
-            ctx.fillStyle = colors[index]
-            ctx.fillRect(dot.x + left, dot.y - radius * (4/8), width, radius * (8/8))
-            ctx.closePath()                          
-        }
-
-        var drawDiamondChart = function (ctx, dot, d, index) {
-            var posicaoNoRanking = d.ranking.indexOf(index)
-            if (posicaoNoRanking >= 2)
-                return    // Diamond Chart only displays data for the winner candidate and the runner-up
-
-            var left, 
-                top, 
-                numCandidatos = d.proporcoes.length,
-                total = numCandidatos > 1 ? d.proporcoes[d.ranking[0]] + d.proporcoes[d.ranking[1]] : 1.0,
-                porcentagem = d.proporcoes[index] / total
-
-            ctx.beginPath()
-            ctx.fillStyle = colors[index]
-            if (!posicaoNoRanking) {
-                // Winner in the district
-                left = radius * (1 - Math.sqrt((1 - porcentagem) * 2))
-                top = radius - left
-                ctx.moveTo(dot.x - radius, dot.y)
-                ctx.lineTo(dot.x, dot.y - radius)
-                ctx.lineTo(dot.x + left, dot.y - top)
-                ctx.lineTo(dot.x + left, dot.y + top)
-                ctx.lineTo(dot.x, dot.y + radius)
-                ctx.lineTo(dot.x - radius, dot.y)
+            if (index) {
+                // Candidate is the 2nd place; their bar is displayed at the right
+                left = -radius + (1-proportion) * radius * 2
             }
             else {
-                // Runner-up
-                left = radius * (1 - Math.sqrt(porcentagem * 2))
-                top = radius - left
-                ctx.moveTo(dot.x + left, dot.y - top)
-                ctx.lineTo(dot.x + radius, dot.y)
-                ctx.lineTo(dot.x + left, dot.y + top)
-                ctx.lineTo(dot.x + left, dot.y - top)
+                // Candidate is the winner of this district. Their bar is diplayed at the left
+                left = -radius
             }
-            ctx.fill()
-            ctx.closePath()
-        }        
+            width = proportion * radius * 2
 
+            ctx.beginPath()
+            ctx.fillStyle = Colors.calcColor(d.firstTwoPoints[index].color, opacity)
+            ctx.fillRect(dot.x + left, dot.y - radius * (4/8), width, radius * (8/8))
+            ctx.closePath()    
+                     
+        }
 
         var drawIndexChart = function (ctx, dot, d, index) {
-            if (index != indexCandidatoSelecionado)
+            const OPACITY = 0.75
+            if (index)
                 return
-
-            // Somente plota alguma coisa caso realmente tenhamos um índice
-            if (!d.indices[index])
-                return
-            if (d.indices[index][indice] == undefined)
-                return
-
-            var steps = [], 
-                valorIndice = d.indices[index][indice],          // at this time, indice may be 'indiceLQ' or 'indicePareto'
-                color = chromaColor(valorIndice).rgb() 
-
+            var valor = d.points[index].value,
+                color = d.points[index].color
             ctx.beginPath()
             ctx.moveTo(dot.x, dot.y)
             ctx.arc(dot.x, dot.y, radius, 0, doisPI)
-            ctx.fillStyle = `rgba(${color[0]},${color[1]},${color[2]},0.75)`
+            ctx.fillStyle = Colors.calcColor(color, valor, OPACITY)  
+            //ctx.fillStyle = `rgba(${color[0]},${color[1]},${color[2]},0.75)`
             ctx.fill()
             ctx.closePath()
         }
@@ -252,38 +211,39 @@ var MapCharts = {
 
         const functionsByChartType = {
             'bar'    : drawBarChart,
-            'circle' : drawCircleChart,
             'donut'  : drawDonutChart,
             'pie'    : drawPieChart,
             'winner' : drawWinnerChart,
             'pill'   : drawPillChart,
             'hbar'   : drawHorizontalBarChart,
             'index'  : drawIndexChart,
-            'diamond': drawDiamondChart,
             'empty'  : drawEmptyChart
         }       
 
         function drawChart (params) {
             var ctx = params.canvas.getContext('2d'),
+                maxSize = plottingData.maxSize,
                 maxTotalVotos = 0,
                 minRadius = 5,
                 maxRadius = 40
+
+            if (options.radiusType === FIXED_RADIUS) {
+                baseRadius = Math.pow(2, Math.min(params.zoom, 12) / 2.2)                 
+            }
+            else {
+                baseRadius = Math.pow(2, Math.min(params.zoom, 10)) / 12
+                minRadius = Math.max(minRadius, params.zoom/2)
+            }    
 
             ctx.clearRect(0, 0, params.canvas.width, params.canvas.height);
             posicoesCharts = []    
 
             for (var i = 0; i < plottingData.length; i++) {
-                var d = plottingData[i] /*,
-                    numCandidatos = (drawFunction == drawIndexChart) ? d.indices.length : d.votos.length;
-*/
-/*
+                var d = plottingData.data[i] 
+
                 if (options.radiusType == VARIABLE_RADIUS) {
-                    let tamanhoDistrito = 0
-                    if (chartType == 'index')     
-                        tamanhoDistrito = d.totaisUrnas ? d.totaisUrnas[indexCandidatoSelecionado] : 0
-                    else
-                        tamanhoDistrito = d.totalVotos
-                    radius = baseRadius * Math.pow(tamanhoDistrito / maxTotalVotos, 0.5)    
+                    let size = d.size
+                    radius = baseRadius * Math.pow(size / maxSize, 0.5)
                     if (radius < minRadius)
                         radius = minRadius
                     if (radius > maxRadius)
@@ -293,11 +253,8 @@ var MapCharts = {
                 else {
                     radius = baseRadius
                 }        
-*/
-                // Só para começar, fazemos todos os charts com o mesmo raio
-                radius = baseRadius
 
-                if (params.bounds.contains([d.lat, d.long]) && d.totalVotos) {    
+                if (params.bounds.contains([d.lat, d.long]) && d.size) {    
                     let dot = params.layer._map.latLngToContainerPoint([d.lat, d.long]); 
 
                     for (var j = 0; j < d.numPoints; j++) {
@@ -314,87 +271,7 @@ var MapCharts = {
                     })                      
                 }
             } 
-  
-
-
         }
-
-
-        function drawChart0 (params) {
-            var ctx = params.canvas.getContext('2d'),
-                maxTotalVotos = 0,
-                minRadius = 5,
-                maxRadius = 40
-
-            if (candidatoSelecionado) 
-                indexCandidatoSelecionado = Store.candidatos.indexOf(candidatoSelecionado)
-            else
-                indexCandidatoSelecionado = null
-
-            if (options.radiusType === FIXED_RADIUS) {
-                baseRadius = Math.pow(2, Math.min(params.zoom, 12) / 2.2)                 
-            }
-            else {
-                baseRadius = Math.pow(2, Math.min(params.zoom, 10)) / 12
-                minRadius = Math.max(minRadius, params.zoom/2)
-                if (chartType == 'index') {  
-                    for (var i=0; i<plottingData.length; i++) {
-                        if (plottingData[i] && plottingData[i].totaisUrnas) {
-                            if (plottingData[i].totaisUrnas[indexCandidatoSelecionado] > maxTotalVotos)
-                                maxTotalVotos = plottingData[i].totaisUrnas[indexCandidatoSelecionado]
-                        }    
-                    }
-                }
-                else {
-                    for (var i=0; i<plottingData.length; i++) {
-                        if (plottingData[i].totalVotos > maxTotalVotos)
-                            maxTotalVotos = plottingData[i].totalVotos
-                    }
-                }    
-            }
-
-            ctx.clearRect(0, 0, params.canvas.width, params.canvas.height);
-            posicoesCharts = []
-
-            for (var i = 0; i < plottingData.length; i++) {
-                var d = plottingData[i],
-                    numCandidatos = (drawFunction == drawIndexChart) ? d.indices.length : d.votos.length;
-
-                if (options.radiusType == VARIABLE_RADIUS) {
-                    let tamanhoDistrito = 0
-                    if (chartType == 'index')     
-                        tamanhoDistrito = d.totaisUrnas ? d.totaisUrnas[indexCandidatoSelecionado] : 0
-                    else
-                        tamanhoDistrito = d.totalVotos
-                    radius = baseRadius * Math.pow(tamanhoDistrito / maxTotalVotos, 0.5)    
-                    if (radius < minRadius)
-                        radius = minRadius
-                    if (radius > maxRadius)
-                        radius = maxRadius
-                    lineWidth = radius / 4                
-                }
-                else {
-                    radius = baseRadius
-                }        
-
-                if (params.bounds.contains([d.lat, d.long]) && d.totalVotos) {    
-                    let dot = params.layer._map.latLngToContainerPoint([d.lat, d.long]); 
-
-                    for (var j = 0; j < numCandidatos; j++) {
-                        colors = d.colors
-                        drawFunction(ctx, dot, d, j)
-                    }
-
-                    posicoesCharts.push({ 
-                        id: d.id,
-                        bounds: [
-                          [dot.x - radius, dot.y - radius],
-                          [dot.x + radius, dot.y + radius]
-                        ]
-                    })                      
-                }
-            } 
-        }   
 
 /*
         if (candidato) {
@@ -410,8 +287,14 @@ var MapCharts = {
         } 
         return noChart
     },
+
+    get posicoesCharts () {
+        return posicoesCharts
+    },
  
 }
 
 
-module.exports = MapCharts
+export default MapCharts
+
+//module.exports = MapCharts

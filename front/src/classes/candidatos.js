@@ -12,9 +12,9 @@ class Candidatos {
     adicionarCandidato (candidato) {
         const ERROR_PREFIX = 'Error in Candidato.adicionarCandidato: '
         if (!candidato instanceof Candidato)
-            throw Error(ERROR_PREFIX + ' argument must be a Candidato object')
+            throw Error(ERROR_PREFIX + 'argument must be a Candidato object')
         if (this.obterCandidato(candidato))
-            throw Error(ERROR_PREFIX + ' argument candidato already exists')
+            throw Error(ERROR_PREFIX + 'argument `candidato` already exists')
         this[this.length] = candidato
         this.length += 1
 
@@ -83,13 +83,14 @@ class Candidatos {
         }
         delete this[this.length-1]
         this.length -= 1
+
+        this.callCallbacksCandidato('remover', candidato)
         return candidato
     }
 
     removerTodosCandidatos () {
         while (this.length) {
             var candidato = this[this.length-1]
-            callCallbacksCandidato('remover', candidato)
             this.length -= 1
         }
     }
@@ -99,6 +100,7 @@ class Candidatos {
         if (!candidato)
             throw Error('Error in Candidatos.desabilitarCandidato: argument candidato not found')
         candidato.disabled = true
+        this.callCallbacksCandidato('desabilitar', candidato)
     }
 
     habilitarCandidato (candidato) {
@@ -106,13 +108,15 @@ class Candidatos {
         if (!candidato)
             throw Error('Error in Candidatos.habilitarCandidato: argument candidato not found')
         candidato.disabled = false
+        this.callCallbacksCandidato('habilitar', candidato)
     }
 
     obterVotacoes (args) {
         var mapFunction = (candidato) => candidato.votos    
+
         if (typeof args == 'object') {
-            var indicesAIncluir = args
-            return indicesAIncluir.map(index => this[index]).map(mapFunction)
+            var indicesCandidatosAIncluir = args
+            return indicesCandidatosAAIncluir.map(index => this[index]).map(mapFunction)
         }    
         else if (args) {
             return this.filter(cand => !cand.disabled).map(mapFunction)
@@ -120,6 +124,31 @@ class Candidatos {
         else
             return this.map(mapFunction)
     } 
+
+    obterVotacoesDict (args) {
+        var votacoesPorCandidato = this.obterVotacoes(args),
+            distritos = {},
+            index = 0
+
+        votacoesPorCandidato.forEach(votacaoCandidato => {
+            Object.keys(votacaoCandidato).forEach(districtId => {
+                if (!distritos[districtId]) {
+                    distritos[districtId] = {
+                        values: [],
+                        size: 0
+                    }
+                }
+                
+                while (distritos[districtId].values.length < index)
+                    distritos[districtId].values.push(0)
+                distritos[districtId].values.push(votacaoCandidato[districtId].porcentagem)
+                distritos[districtId].size += votacaoCandidato[districtId].numero
+            })
+            index += 1
+        })    
+        return distritos
+    }
+
 
     filter (callback) {
         var returnArray = []
@@ -162,11 +191,11 @@ class Candidatos {
         
         this.filter(candidato => !candidato.disabled || incluirDesabilitados )
         .forEach(candidato => {
-            Object.keys(candidato.votosPorDistrito).forEach(idDistrito => {
+            Object.keys(candidato.votosDict).forEach(idDistrito => {
                 var votosObj = {
                     id: idDistrito,
                     candidato,
-                    votos: candidato.votosPorDistrito[idDistrito],
+                    votos: candidato.votosDict[idDistrito],
                     porcentagem: null
                 }
                 if (votosPorDistrito[idDistrito]) {
