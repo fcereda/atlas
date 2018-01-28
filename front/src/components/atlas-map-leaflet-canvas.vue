@@ -238,7 +238,7 @@ export default {
 			}, {
 				name: 'indiceRI',
 				label: 'IR',
-				palette: ['#fed976','#feb24c','#fd8d3c','#f03b20','#bd0026'].reverse(),
+				palette: ['#fed976','#feb24c','#fd8d3c','#f03b20','#bd0026'],
 				domain: [1, 0.8, 0.6, 0.4, 0.2],
 				legendTitle: 'Índice de relevância',
 				legendPalette: ['#fed976','#feb24c','#fd8d3c','#f03b20','#bd0026'].reverse(),
@@ -753,12 +753,6 @@ export default {
 		},
 
 		onAlterouCandidatos (acao, candidato) {
-			//var votingData = Store.candidatos.obterVotacoesDict(true)
-			//var colors = Store.candidatos.filter(cand => !cand.disabled).map(cand => cand.color)
-			//var plottingData = new PlottingData (colors, votingData)
-			//MapCharts.setPlottingData(plottingData)
-			        //MapCharts.setChartType('winner', 'variable')
-			
 			// Redesenha os gráficos somente se o mapa estiver mostrando gráficos de comparações entre os candidatos
 			if (this.mostrarIndicesIndividuais) {
 				return        
@@ -769,7 +763,7 @@ export default {
 			})        
 
 			MapCharts.redrawCharts()
-			this.displayChartTypes = Store.candidatos.length
+			this.displayChartTypes = (Store.candidatos.length > 0)
 		},
 
 		setMapData (options) {
@@ -793,6 +787,8 @@ export default {
 			}
 
 			if (options.candidate) {
+				// Will display a candidate's index
+				// options.candidate contains the candidate id object
 				let candidate = Store.candidatos.obterCandidato(options.candidate)
 				let index = options.index || 'indiceLQ'
 				let colors = options.colors 
@@ -806,10 +802,14 @@ export default {
 						values: [ indiceDict[districtId] ]
 					}
 				})
+
+				//console.warn(PlottingData.calcBreaks(data, 7))
+
 				// Os dados para PlottingData estão na variável data
 				plottingData = new PlottingData(colors, data)
 			}
 			else {
+				// Will compare the enabled candidates
 				// When comparing candidates, we always show only enabled candidates
 				let votingData = Store.candidatos.obterVotacoesDict(true)
 				let colors = Store.candidatos.filter(cand => !cand.disabled).map(cand => cand.color)
@@ -839,7 +839,7 @@ export default {
 			this.setMapData({
 				mapDataType: 'index',
 				candidate: candidate,
-				index: 'indiceLQ',
+				index: indexType,
 				colors: chromaColor,
 			})
 
