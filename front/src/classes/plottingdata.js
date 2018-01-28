@@ -2,6 +2,8 @@
 
 import Store from '../lib/store.js'
 
+var SimpleStats = require('simple-statistics')
+
 class PlottingData {
 
     constructor (colors, data, legend) {
@@ -123,6 +125,26 @@ class PlottingData {
     
     reduce (callback, initialValue) {
         return this.data.reduce(callback, initialValue)
+    }
+
+    static calcClusters (data, numClusters) {
+    	const breakFunction = SimpleStats.ckmeans
+
+        function calcDomain(chunks) {
+            var clusters = chunks
+                .map(chunk => Array.isArray(chunk) ? SimpleStats.min(chunk) : parseFloat(chunk))
+                .concat(Array.isArray(chunks[chunks.length-1]) ? SimpleStats.max(chunks[chunks.length-1]) : parseFloat(chunks[chunks.length-1]))
+            return clusters
+        }
+
+    	let values = Object.keys(data).map(districtId => {
+            let item = data[districtId],    
+                values = item.values ? item.values : item
+            return Array.isArray(values) ? values[0] : values
+		})                 	
+		let chunks = breakFunction(values, numClusters)
+		let clusters = calcDomain(chunks)
+		return clusters
     }
     
 }
