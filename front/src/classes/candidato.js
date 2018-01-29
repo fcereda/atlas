@@ -22,7 +22,7 @@ class Candidato {
         if (![1998,2000,2002,2004,2006,2008,2010,2012,2014,2016].includes(ano)) 
             throw Error('Error in constructor Candidato: invalid value for property ano in argument object')
         numero = parseInt(numero)
-        if (!['df', 'de', 'dd'].includes(cargo) || numero > 100) {
+        if (!Candidato.ePartido(cargo, numero)) {
             this.nome = Utils.capitalizeName(nome)
             if (nomeCompleto)  
                 this.nomeCompleto = Utils.capitalizeName(nomeCompleto)
@@ -104,39 +104,17 @@ class Candidato {
                 }
             }
             
-            // Vamos calcular o desvio padrão e o z-score de cada distrito
-            // A média será calculada com base no número total de distritos
-/*
-            var media = (totalCandidato / totalGeral)
-            var variancia = votesArray
-                .map(({porcentagem}) => Math.pow(porcentagem - media, 2))
-                .reduce((soma=0, valor) => soma + valor)
-                variancia = variancia / votesArray.length
-            var desvioPadrao = Math.sqrt(variancia)
+            // Vamos calcular o z-score de cada distrito
 
-            console.log('media = ', media)   
-            console.log('variancia = ', variancia)
-            console.log('desvio padrão = ', desvioPadrao)
-*/
             var porcentagemArray = votesArray.map(({porcentagem}) => porcentagem),
                 media = SimpleStats.mean(porcentagemArray),
                 desvioPadrao = SimpleStats.standardDeviation(porcentagemArray)
-            /*
-            var zScoreArray = ArrayMath.zScores(porcentagemArray)
-            .sort((a, b) => b - a)
-            .slice(0, 10)
-            */
-            
-            console.log('media = ', media)   
-            //console.log('variancia = ', variancia)
-            console.log('desvio padrão = ', desvioPadrao)
-            //console.log('zScores = ', zScoreArray)
             
             votesArray.forEach((voteObj) => {
                 // votesArray aponta para os mesmos objetos do dict votes, 
-                // então basta atualizar em votesArray
+                // então basta atualizar em votesArray para que os objetos
+                // referenciados por votes {} sejam atualizados
                 voteObj.media = media
-                //voteObj.variancia = variancia
                 voteObj.desvioPadrao = desvioPadrao
                 voteObj.valorZ = (voteObj.porcentagem - media) / voteObj.desvioPadrao
             })
@@ -229,7 +207,6 @@ class Candidato {
 
     get turno () {
         var cargosSegundoTurno = ['pr2', 'g2']
-
         if (cargosSegundoTurno.includes(this.cargo))
             return 2
         return 1
@@ -238,7 +215,7 @@ class Candidato {
     static calcularId (obj) {
         //  TEMPORARIAMENTE VAMOS DEIXAR DE UTILIZAR A uf
         return `${obj.ano}-${obj.cargo}-${obj.numero}`      
-        return `${ obj.uf.toUpperCase() }-${obj.ano}-${obj.cargo}-${obj.numero}`      
+        //return `${ obj.uf.toUpperCase() }-${obj.ano}-${obj.cargo}-${obj.numero}`      
     }
 
     // Candidato.ePartido() retorna true se a combinação cargo,numero corresponde à

@@ -8,7 +8,6 @@ class Coordenadas {
 		var vizinhos = Coordenadas.calcularVizinhos(coords)
 		for (var id in coords) {
 			this[id] = coords[id]
-			//console.log(id)
 			if (!vizinhos[id]) {
 				// ESTA SITUAÇÃO NÃO DEVERIA ACONTECER!
 				console.error('Erro calculando vizinhos do id ' + id)	

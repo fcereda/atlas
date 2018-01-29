@@ -1,6 +1,5 @@
 import CepespQuery from './cepespquery.js'
 import axios from 'axios'
-import Store from './store.js'		// *** REMOVE THIS LATER
 import Utils from './utils.js'
 
 const atlasURL = '/api'
@@ -130,11 +129,6 @@ export default {
 			axios.get(atlasURL + '/coordenadas' + query)
 			.then((response) => {
 				var data = response.data
-
-				//**********************************************************************	
-				//Store.coordenadas = data    MOVE THIS TO THE CORRECT PLACE, IN APP.VUE  
-				//**********************************************************************
-
 				// data is an array. We will convert it to a lookup table
 				if (!data || !data.length) {
 					return reject('No data')

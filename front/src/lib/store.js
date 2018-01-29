@@ -6,14 +6,9 @@ import Candidatos from '../classes/candidatos.js'
 var _coordenadas = {},
 	_municipios  = {},
 	_municipiosArr = [],
-	//_candidatos = [], 
 	_candidatos = new Candidatos(),
-	//_candidatosPorId = {},
 	_callbackCandidatos = []
 
-function calcCandidatoId ({ ano, cargo, numero }) {
-	return ano + '-' + cargo + '-' + numero
-}
 
 function callCallbacksCandidato (action, candidato) {
 	_callbackCandidatos.forEach((callbackObj) => {
@@ -56,10 +51,6 @@ export default {
 
 	calcCoordenadaId (codigoMunicipio, codigoZona) {
 		throw Error('Store.calcCoordenadaId moved to Utils.calcCoordenadaId')
-	},
-
-	calcCandidatoId ({ ano, cargo, numero }) {
-		return `${ano}-${cargo}-${numero}`
 	},
 
 	adicionarCandidato (candidato) {

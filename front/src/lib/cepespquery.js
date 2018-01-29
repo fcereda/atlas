@@ -218,12 +218,6 @@ class CepespQuery {
 			addSubquery('selected_columns[]=' + field)
 		})
 
-		/*
-		console.log('Fields incluindos automaticamente:')
-		console.log(standardFields)
-		console.log(this.fields)
-		*/
-
 		this.searches.forEach((search, index) => {
 			if (![...standardFields, ...this.fields].includes(search.field)) {
 				console.log('Não encontrou o campo ' + search.field)

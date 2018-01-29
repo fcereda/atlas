@@ -57,8 +57,8 @@ class PlottingData {
                         accumulatedPercentage: Math.min(accumulatedPercentage, 100)
                     }
                 }),
+                //sorts a copy of the original array, keeping the original intact
                 orderedPoints = points.slice().sort((a, b) => b.value - a.value),    
-                //points.slice().sort sorts a copy of the original array, keeping it intact
                 firstTwoPoints = orderedPoints
             if (orderedPoints.length >= 2) {
             	accumulatedPercentage = 0
