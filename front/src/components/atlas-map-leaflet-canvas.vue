@@ -137,9 +137,6 @@ import utils from '../lib/utils.js'
 import Store from '../lib/store.js'
 import MapCharts from '../lib/mapcharts.js'
 import PlottingData from '../classes/plottingdata.js'
-//import Charts from '../lib/charts.js'
-//import DataLayers from '../lib/datalayers.js'
-import axios from 'axios'
 import chroma from 'chroma-js'
 
 import atlasSearchMunicipalities from './atlas-search-municipalities.vue'
@@ -413,15 +410,12 @@ export default {
 	    		that.mouseOverChart = false
 	    	}	
 		}
-		//this.$refs.map.addEventListener('mouseover', onHover.bind(this))		
-		//this.$refs.map.addEventListener('mousemove', onHover.bind(this))
 
 		var onClick = function (e) {
 			var posicoesCharts = MapCharts.posicoesCharts
 			if (this.zonasSobMouse && this.zonasSobMouse.length)
 				this.$emit('click', this.zonasSobMouse)
 		}
-		//this.$refs.map.addEventListener('click', onClick.bind(this))
 
 		// this.onAlterouCandidatos() will be called every time a candidate 
 		// is added to or removed from Store.the candidatos list
@@ -684,76 +678,10 @@ export default {
 				this.map.removeLayer(this.topoLayer)
 		},
 
-/*
-		loadIbgeData (uf) {
-			var that = this
-			setTimeout(() => {
-				DataLayers.carregarMapaMunicipiosUf(uf)
-				.then((response) => {
-					return DataLayers.carregarDadosIbge(uf)
-				})
-				.then((response) => {
-					DataLayers.mostrarLayer(that.map, 'gini2010', chroma.scale(['#fff', '#000']).domain([0.2, 0.7]))
-				})
-			}, 500)	
-		},
-
-		showDataLayer (dataLayer) {
-			if (dataLayer.id == 'nolayer') {
-				return DataLayers.removerLayer(this.map)
-			}
-			console.log(dataLayer)
-
-			DataLayers.mostrarLayer(
-				this.map, 
-				dataLayer.id, 
-				chroma.scale(dataLayer.chromaScale).domain(dataLayer.chromaDomain)
-			)
-		},
-*/
-
-		// THE METHOD BELOW IS NOT CURRENTLY IN USE
-		drawMunicipalities () {
-			var topoFileAddress = '/public/maps/topojson-brasil/35.json' 		// São Paulo
-			//topoFileAddress = "http://servicodados.ibge.gov.br/api/v2/malhas/35?resolucao=5"
-			var that = this
-
-			const colorScale = chroma
-  				.scale(['#D5E3FF', '#003171'])
-  				.domain([0,1]);
-
-			function handleLayer(layer) {
-				layer.setStyle({
-				    fillColor: `rgb(${colorScale(Math.random()).rgb().join(',')})`,
-				    fillOpacity: 0.3,
-				    color: '#444',
-				    weight: 0,
-				    opacity: 0.6
-				});
-			}
-
-			function addTopoData(topoData) { 
-			    topoLayer.addData(topoData);
-			    topoLayer.addTo(that.map);
-			    topoLayer.eachLayer(handleLayer);
-			}
-	
-			if (this.topoLayer)
-				this.map.removeLayer(this.topoLayer)
-
-			const topoLayer = new L.TopoJSON();
-			this.topoLayer = topoLayer
-			
-			axios.get(topoFileAddress)
-			.then((response) => addTopoData(response.data))
-		},
-
-		onResize () {
-
-		},
-
 		onAlterouCandidatos (acao, candidato) {
-			// Redesenha os gráficos somente se o mapa estiver mostrando gráficos de comparações entre os candidatos
+			// Redesenha os gráficos somente se o mapa estiver mostrando gráficos de comparações entre os candidatos.
+			// Caso o gráfico esteja mostrando os índices do candidato que foi removido, a prop showIndexes 
+			// será alterada, provocando a chamada correta a setMapData() 
 			if (this.mostrarIndicesIndividuais) {
 				return        
 			}
@@ -803,7 +731,7 @@ export default {
 					}
 				})
 
-				//console.warn(PlottingData.calcBreaks(data, 7))
+				console.warn(PlottingData.calcClusters(data, 7))
 
 				// Os dados para PlottingData estão na variável data
 				plottingData = new PlottingData(colors, data)
