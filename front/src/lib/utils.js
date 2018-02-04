@@ -172,6 +172,7 @@ export default {
 			replace('Ã', 'A').
 			replace('À', 'A').
 			replace('Õ', 'O').
+			replace('Ô', 'O').
 			replace('Ç', 'C').
 			replace('Ñ', 'N')
 	},	
