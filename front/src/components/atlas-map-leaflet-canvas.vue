@@ -182,31 +182,39 @@ export default {
 			displayChartTypes: false,
 			chartTypes: [{
 				name: 'winner',
-				icon: 'fiber_manual_record'
+				icon: 'fiber_manual_record',
+                tooltip: 'Mostra o candidato mais votado'
 			}, {
 				name: 'pie',
-				icon: 'pie_chart'
+				icon: 'pie_chart',
+                tooltip: 'Mostra a votação de cada candidato usando gráfico pizza'
 			}, {
 				name: 'donut',
-				icon: 'donut_large'
+				icon: 'donut_large',
+                tooltip: 'Mostra a votação de cada candidato usando gráfico de rosca'
 			}, {	
 				name: 'bar',
-				icon: 'equalizer'
+				icon: 'equalizer',
+                tooltip: 'Mostra a votação de cada candidato usando gráfico de barras'
 			}, {
 				name: 'pill',
-				icon: 'chrome_reader_mode'
+				icon: 'chrome_reader_mode',
+                tooltip: 'Mostra o primeiro e o segundo candidatos mais votados'
 			},{		
 				name: 'hbar',
-				icon: 'format_align_left'
+				icon: 'format_align_left',
+                tooltip: 'Mostra o ranking de votação dos candidatos'
 			}, {
 				name: 'empty',
-				icon: 'not_interested'
+				icon: 'not_interested',
+                tooltip: 'Não mostra gráficos'
 			}],
 			chartType: 'winner',
 
 			indexChartTypes: [{
 				name: 'indiceLQ',
-				label: 'LQ',
+				label: 'QL',
+                tooltip: 'Ver coeficientes de locação',
 				palette: ['#d73027','#f46d43','#fdae61','#fee090','#ffffbf','#abd9e9','#74add1','#4575b4','#313695'],
 				domain: [0, 0.1, 0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0],
 				legendTitle: 'Quociente de locação',
@@ -214,13 +222,15 @@ export default {
 			}, {
                 name: 'indiceLI',
                 label: 'IL',
+                tooltip: 'Ver índices I de Moran locais',
                 palette: 'RdYlBu',
                 domain: [-5, -2.5, -1, -0.5, -0,1, 0.1, 0.5, 1, 2.5, 5],
                 legendTitle: 'I de Moran Local',
                 legendLabels: ['-5 ou inferior', '-5 a -2,5', '-2,5 a -1', '-1 a 0', '0 a 1', '1 a 2,5', '2,5 a 5', 'Mais de 5']
             }, {
                 name: 'indiceLD',
-                label: 'LD',
+                label: 'DL',
+                tooltip: 'Ver diferenças de locação',
                 palette: 'RdYlBu', //['#d73027','#f46d43','#fdae61','#fee090','#ffffbf','#abd9e9','#74add1','#4575b4','#313695'].reverse(),
                 domain: [-0.10, 0.10],
                 legendTitle: 'Diferença de locação',
@@ -229,10 +239,12 @@ export default {
             }, {
                 name: 'indiceZ',
                 label: 'Z',
+                tooltip: 'Ver valores Z',
                 palette: 'RdYlBu',
                 domain: [-3, 3],
                 legendTitle: 'Valor Z',
                 legendLabels: [-3, -2, -1, 0, +1, +2, +3]
+/*
             }, {    
 				name: 'indiceRI',
 				label: 'IR',
@@ -242,6 +254,7 @@ export default {
 				legendPalette: ['#fed976','#feb24c','#fd8d3c','#f03b20','#bd0026'].reverse(),
 				legendDomain: [0.2, 0.4, 0.6, 0.8, 1.0],
 				legendLabels: ['20% mais importantes', '20% \u2014 40%', '40% \u2014 60%', '60% \u2014 80%', '80% \u2014 100%'],
+*/                
 			}],
 			indexChartType: 'indiceLQ',	
 

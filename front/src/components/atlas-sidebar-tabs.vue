@@ -51,6 +51,7 @@
         	<atlas-painel-zonas
         		v-show="1"
 			    :zonas="zonasToDisplay"
+			    :candidato="candidatoSelecionado"
 			    @close="closePainelZonas"
 			></atlas-painel-zonas> 
         </v-tabs-content>		
@@ -100,9 +101,7 @@ export default {
 	data () {
 
 		return {
-
 			activeTab: 'candidatos',
-		
 			tabs: [{
 				label: 'Candidatos',
 				key: 'candidatos',
@@ -112,8 +111,8 @@ export default {
 			}, {	
 				label: 'Mais votados',
 				key: 'maisvotados'
-			}]
-
+			}],
+			candidatoSelecionado: null
 		}
 
 	},
@@ -129,6 +128,7 @@ export default {
 		},
 
 		showIndividualIndexes (e) {
+			this.candidatoSelecionado = e
 			this.$emit('show-indexes', e)
 		},
 

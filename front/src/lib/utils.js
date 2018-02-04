@@ -188,7 +188,14 @@ export default {
 		} while (thisNum)
 
 		return str.replace(/^0{1,2}/gm, '')
+	},
 
+	formatFloat (num, digits) {
+		if (!num.toFixed)
+			return num
+		if (digits == null)
+			digits = 2
+		return num.toFixed(digits).replace('.', ',')
 	},
 
 	clone (obj) {

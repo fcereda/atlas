@@ -68,6 +68,8 @@ class Candidatos {
     }
 
     obterCandidato (candidato) {
+        if (!candidato)
+            return null
         var indiceCandidato = this.indexOf(candidato)
         if (indiceCandidato >= 0)
             return this[indiceCandidato]

@@ -2,24 +2,36 @@
 
 <div>
 
-	<div 
-		v-for="button in buttons" 
-		@click="onClick(button)" 
-		v-bind:class="value==button.name?'selected-button':''"
-	>
-		<v-icon 
-			v-if="button.icon" 
-			class="pa-1" 
-			:color="value==button.name?'blue darken-2':'grey darken-2'"
-			:style="button.transform? 'transform:' + button.transform + ';' : '' "
-		>
-		{{ button.icon }}
-		</v-icon>
-		<div 
-			v-if="button.label"
-			class="char-icon"
-		>{{ button.label }}</div>
-	</div>
+	<template v-for="button in buttons">
+
+		<v-tooltip 
+			left 
+			open-delay="300">
+
+			<div 
+				@click="onClick(button)" 
+				v-bind:class="value==button.name?'selected-button':''"
+				slot="activator"
+			>
+				<v-icon 
+					v-if="button.icon" 
+					class="pa-1" 
+					:color="value==button.name?'blue darken-2':'grey darken-2'"
+					:style="button.transform? 'transform:' + button.transform + ';' : '' "
+				>
+				{{ button.icon }}
+				</v-icon>
+				<div 
+					v-if="button.label"
+					class="char-icon"
+				>{{ button.label }}</div>
+
+			</div>
+
+		<span>{{ button.tooltip }}</span>
+		</v-tooltip>
+
+	</template>
 
 </div>
 
