@@ -1,13 +1,13 @@
 <template>
 
-    <v-container fluid fill-height pa-0>
+	<v-container fluid fill-height pa-0>
 
 		<div id="map" ref="map" v-bind:style="mapStyle">
 		</div>
 
 		<div class="map-controls" v-show="displayChartTypes" v-if="0">
 			<div v-for="chart in chartTypes" @click="changeChartType(chart.name)" v-bind:class="chartType==chart.name?'selected-chart':''"><i class="material-icons">{{ chart.icon }}</i></div>
-    	</div>	
+		</div>	
 
 		<div class="map-controls map-control-chart-type" v-show="displayChartTypes">
 			<div 
@@ -33,30 +33,30 @@
 			><div class="char-icon">{{ chart.label }}</div>
 			</div>	
 
-    	</div>	
+		</div>	
 
-    	<div class="map-controls map-control-radius-type" v-show="displayChartTypes">
-    		<div 
-    			v-for="radius in radiusTypes"
-    			@click="changeRadiusType(radius.name)"
-    			v-bind:class="radiusType == radius.name?'selected-chart':''"
-    		>
-    			<v-icon class="pa-1" :color="radiusType==radius.name?'blue darken-2':'grey darken-2'">{{ radius.icon }}</v-icon>
-    		</div>	
+		<div class="map-controls map-control-radius-type" v-show="displayChartTypes">
+			<div 
+				v-for="radius in radiusTypes"
+				@click="changeRadiusType(radius.name)"
+				v-bind:class="radiusType == radius.name?'selected-chart':''"
+			>
+				<v-icon class="pa-1" :color="radiusType==radius.name?'blue darken-2':'grey darken-2'">{{ radius.icon }}</v-icon>
+			</div>	
 
-    	</div>
+		</div>
 
 <!--
-            <div class="map-control-radius-type" style="position:absolute; right:100px; top:20px; z-index:1000;">
-	            <v-btn-toggle v-model="radiusType" mandatory>
-	              	<v-tooltip bottom v-for="rtype in radiusTypes">
-		            	<v-btn flat slot="activator" @click="display(radiusType)" :value="rtype.nome" :depressed="true">
-		            		<v-icon>{{ rtype.icon }}</v-icon>
-		            	</v-btn>	
-		            	<span>{{ rtype.tooltip }}</span>
-	            	</v-tooltip>    
-	            </v-btn-toggle>
-	        </div>    
+			<div class="map-control-radius-type" style="position:absolute; right:100px; top:20px; z-index:1000;">
+				<v-btn-toggle v-model="radiusType" mandatory>
+					<v-tooltip bottom v-for="rtype in radiusTypes">
+						<v-btn flat slot="activator" @click="display(radiusType)" :value="rtype.nome" :depressed="true">
+							<v-icon>{{ rtype.icon }}</v-icon>
+						</v-btn>	
+						<span>{{ rtype.tooltip }}</span>
+					</v-tooltip>    
+				</v-btn-toggle>
+			</div>    
 -->
 
 		<!-- Para habilitar as camadas de dados, remova a diretiva  v-if="false" abaixo -->
@@ -88,29 +88,29 @@
 			full-width
 			z-index="10000"
 		>
-		    <v-list dense>
-		    	<v-subheader>CAMADAS DE DADOS</v-subheader>
-		    	<template v-for="item in dataLayers">
-			        <v-list-tile v-if="item.name" @click="showDataLayer(item)">
-			        	<i class="material-icons" :style="item.selected ? 'color:#aaa;' : 'color:transparent;'">done</i>&nbsp;
-			        	<v-list-tile-title @click="showLayersMenu = false" >
-			        		<span>{{ item.name }}</span></v-list-tile-title>
-			        </v-list-tile>	
-			        <v-divider v-if="!item.name"></v-divider>
-		        </template>
-		    </v-list>
-	    </v-menu>		
+			<v-list dense>
+				<v-subheader>CAMADAS DE DADOS</v-subheader>
+				<template v-for="item in dataLayers">
+					<v-list-tile v-if="item.name" @click="showDataLayer(item)">
+						<i class="material-icons" :style="item.selected ? 'color:#aaa;' : 'color:transparent;'">done</i>&nbsp;
+						<v-list-tile-title @click="showLayersMenu = false" >
+							<span>{{ item.name }}</span></v-list-tile-title>
+					</v-list-tile>	
+					<v-divider v-if="!item.name"></v-divider>
+				</template>
+			</v-list>
+		</v-menu>		
 
 <!--
-    	<div class="map-controls" style="position:relative;left:12px;top:12px;width:1px">
-    		<div @click="zoomIn">
-    			<v-icon class="pa-1" color="grey lighten-2">zoom_in</v-icon>
+		<div class="map-controls" style="position:relative;left:12px;top:12px;width:1px">
+			<div @click="zoomIn">
+				<v-icon class="pa-1" color="grey lighten-2">zoom_in</v-icon>
 			</div>
-    		<div @click="zoomOut">
-    			<v-icon class="pa-1" color="grey lighten-2">zoom_out</v-icon>
+			<div @click="zoomOut">
+				<v-icon class="pa-1" color="grey lighten-2">zoom_out</v-icon>
 			</div>
-    		<div @click="zoomFitBoundaries">
-    			<v-icon class="pa-1 pt-4" color="grey lighten-2">zoom_out_map</v-icon>
+			<div @click="zoomFitBoundaries">
+				<v-icon class="pa-1 pt-4" color="grey lighten-2">zoom_out_map</v-icon>
 			</div>
 		</div>	
 -->
@@ -138,6 +138,7 @@ import Store from '../lib/store.js'
 import MapCharts from '../lib/mapcharts.js'
 import PlottingData from '../classes/plottingdata.js'
 import chroma from 'chroma-js'
+var SimpleStats = require('simple-statistics')
 
 import atlasSearchMunicipalities from './atlas-search-municipalities.vue'
 import atlasMapLegend from './atlas-map-legend.vue'
@@ -154,12 +155,11 @@ export default {
 		atlasMapLegend
 	},
 
-	props: [ 'uf', 'showIndexes', 'colorScale' ],
+	props: [ 'uf', 'showIndexes', 'colorScale', 'showSidebarOpen', 'sidebarOpen' ],
 
 	data () {
 
 		return {
-
 			map: null,
 			mapHeight: this.calcMapHeight(),
 			mouseOverChart: false,
@@ -231,8 +231,29 @@ export default {
 				palette: ['#d73027','#f46d43','#fdae61','#fee090','#ffffbf','#abd9e9','#74add1','#4575b4','#313695'],
 				domain: [0, 0.1, 0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0],
 				legendTitle: 'Quociente de locação',
-				legendLabels: ['Até 0,1', '0,1 \u2014 0,25', '0,25 \u2014 0,5', '0,5 \u2014 1,0', '1,0 \u2014 2.0', '2.0 \u2014 4.0', '4.0 \u2014 8.0', '8,0 ou mais', '16.0 ou mais']
+				legendLabels: ['Até 0,1', '0,1 \u2014 0,25', '0,25 \u2014 0,5', '0,5 \u2014 1,0', '1,0 \u2014 2.0', '2.0 \u2014 4.0', '4.0 \u2014 8.0', '8,0 \u2014 16,0', '16.0 ou mais']
 			}, {
+                name: 'indiceLI',
+                label: 'IL',
+                palette: 'RdYlBu',
+                domain: [-5, -2.5, -1, -0.5, -0,1, 0.1, 0.5, 1, 2.5, 5],
+                legendTitle: 'I de Moran Local',
+                legendLabels: ['-5 ou inferior', '-5 a -2,5', '-2,5 a -1', '-1 a 0', '0 a 1', '1 a 2,5', '2,5 a 5', 'Mais de 5']
+            }, {
+                name: 'indiceLD',
+                label: 'LD',
+                palette: 'RdYlBu', //['#d73027','#f46d43','#fdae61','#fee090','#ffffbf','#abd9e9','#74add1','#4575b4','#313695'].reverse(),
+                domain: [-0.10, 0.10],
+                legendTitle: 'Diferença de locação',
+                legendLabels: ['-10%', '-8%', '-5%', '-2.5%', '0', '+2,5%', '+5%', '+8%', '+10%']
+            }, {
+                name: 'indiceZ',
+                label: 'Z',
+                palette: 'RdYlBu',
+                domain: [-3, 3],
+                legendTitle: 'Valor Z',
+                legendLabels: [-3, -2, -1, 0, +1, +2, +3]
+            }, {    
 				name: 'indiceRI',
 				label: 'IR',
 				palette: ['#fed976','#feb24c','#fd8d3c','#f03b20','#bd0026'],
@@ -242,7 +263,7 @@ export default {
 				legendDomain: [0.2, 0.4, 0.6, 0.8, 1.0],
 				legendLabels: ['20% mais importantes', '20% \u2014 40%', '40% \u2014 60%', '60% \u2014 80%', '80% \u2014 100%'],
 			}],
-			indexChartType: 'indiceRI',	
+			indexChartType: 'indiceLQ',	
 
 			radiusTypes: [{
 				name: 'variable',
@@ -368,10 +389,10 @@ export default {
 				this.setMapLegendFromIndex(null)
 				this.mostrarIndicesIndividuais = false
 			}
-    		MapCharts.redrawCharts()			
+			MapCharts.redrawCharts()			
 		}
 
- 	},
+	},
 
 
 	mounted () {
@@ -391,24 +412,24 @@ export default {
 			// thus the event object is particular to Leaflet
 			var posicoesCharts = MapCharts.posicoesCharts,
 				chartsEncontrados = []
-		    for (let i = posicoesCharts.length - 1; i >= 0; i--) {
+			for (let i = posicoesCharts.length - 1; i >= 0; i--) {
 				let thisPosicao = posicoesCharts[i].bounds,
-		    		x = e.containerPoint.x, 
-		    		y = e.containerPoint.y  
+					x = e.containerPoint.x, 
+					y = e.containerPoint.y  
 				if (thisPosicao[0][0] <= x &&
-		    		thisPosicao[0][1] <= y &&
-		    		thisPosicao[1][0] >= x &&
-		    		thisPosicao[1][1] >= y) {
-		  			chartsEncontrados.push(posicoesCharts[i].id)
-	        	}
-	    	}
-	    	that.zonasSobMouse = chartsEncontrados
-	    	if (chartsEncontrados.length) {
-	    		that.mouseOverChart = true
-	    	}
-	    	else {
-	    		that.mouseOverChart = false
-	    	}	
+					thisPosicao[0][1] <= y &&
+					thisPosicao[1][0] >= x &&
+					thisPosicao[1][1] >= y) {
+					chartsEncontrados.push(posicoesCharts[i].id)
+				}
+			}
+			that.zonasSobMouse = chartsEncontrados
+			if (chartsEncontrados.length) {
+				that.mouseOverChart = true
+			}
+			else {
+				that.mouseOverChart = false
+			}	
 		}
 
 		var onClick = function (e) {
@@ -441,11 +462,14 @@ export default {
 		var OpenStreetMap_Wikimedia = L.tileLayer('https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png', {
 			maxZoom: 18,
 			attribution: '<a href="https://wikimediafoundation.org/wiki/Maps_Terms_of_Use">Wikimedia maps</a> | Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    	});
+		});
 
-		mapnikTileLayer.addTo(this.map);
+		mapnikTileLayer.addTo(this.map)
+        this.addControls(this.map)
+        this.map.zoomControl.setPosition('topleft')       
 
-		this.fitBoundsToBrazil();
+
+		this.fitBoundsToBrazil()
 
 		this.map.addEventListener('mouseover', onHover.bind(this))		
 		this.map.addEventListener('mousemove', onHover.bind(this))
@@ -455,23 +479,23 @@ export default {
 
 		// Code below by Ryan Clark (https://blog.webkid.io/maps-with-leaflet-and-topojson/)
 		L.TopoJSON = L.GeoJSON.extend({  
-		    addData: function (jsonData) {    
-			    if (jsonData.type === 'Topology') {
-			        for (var key in jsonData.objects) {
-				        var geojson = topojson.feature(jsonData, jsonData.objects[key]);
-				        L.GeoJSON.prototype.addData.call(this, geojson);
-	 		        }
-			    }    
-			    else {
-			        L.GeoJSON.prototype.addData.call(this, jsonData);
-			    }
+			addData: function (jsonData) {    
+				if (jsonData.type === 'Topology') {
+					for (var key in jsonData.objects) {
+						var geojson = topojson.feature(jsonData, jsonData.objects[key])
+						L.GeoJSON.prototype.addData.call(this, geojson)
+					}
+				}    
+				else {
+					L.GeoJSON.prototype.addData.call(this, jsonData)
+				}
 			}  
 		});
 
 		// We wait one second before starting to load state borders
 		setTimeout(() => this.loadStatesBorders(), 1000)
 
-    },
+	},
 
 	methods: {
 
@@ -479,17 +503,68 @@ export default {
 			return document.documentElement.offsetHeight
 		},
 
+
+		addControls (map) {
+            var that = this
+			L.Control.OpenSidebarMenu = L.Control.extend({
+				onAdd: function (map) {
+					var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom')
+
+					function containerInnerHTML (menuOpen) {
+						return `
+						<div style="padding:4px;padding-top:9px;background-color:white;">
+							<i class="material-icons">${ menuOpen ? 'keyboard_arrow_left' : 'keyboard_arrow_right' }</i>
+						</div>
+						`
+					}
+
+                    function setContainerInnerHTML () {
+                        that.$nextTick(() => container.innerHTML = containerInnerHTML(that.sidebarOpen))
+                    }
+					
+					container.style.backgroundColor = 'white';     
+					container.style.width = '30px';
+					container.style.height = '60 px';
+					container.style.paddingRight = '0px';	
+					container.style.overflow = 'hidden'
+					container.style.marginLeft = '0'  //'-2px'
+					container.style.border = "1px solid #aaa"
+					container.style.borderLeft = '0'
+					container.style.cursor = 'pointer' 
+
+					container.addEventListener('click', () => {
+                        that.$emit('input', !that.sidebarOpen)
+						setContainerInnerHTML()
+					})
+
+					setContainerInnerHTML()
+
+					return container
+				}
+			}) 	
+
+            if (this.showSidebarOpen) {
+                var openSidebarControl = new L.Control.OpenSidebarMenu({ position: 'topleft' })
+                openSidebarControl.addTo(map)
+            }    
+
+        },
+
+
+
+
+
 		calcBrazilBoundaries () {
-		    var bounds = [ [ 1000, 1000], [-1000, -1000] ]
+			var bounds = [ [ 1000, 1000], [-1000, -1000] ]
 
-		    for (var state in this.stateBoundaries) {
-		        bounds[0][0] = Math.min(bounds[0][0], this.stateBoundaries[state][0][0])
-		        bounds[0][1] = Math.min(bounds[0][1], this.stateBoundaries[state][0][1])
-		        bounds[1][0] = Math.max(bounds[1][0], this.stateBoundaries[state][1][0])
-		        bounds[1][1] = Math.max(bounds[1][1], this.stateBoundaries[state][1][1])
-		    }
+			for (var state in this.stateBoundaries) {
+				bounds[0][0] = Math.min(bounds[0][0], this.stateBoundaries[state][0][0])
+				bounds[0][1] = Math.min(bounds[0][1], this.stateBoundaries[state][0][1])
+				bounds[1][0] = Math.max(bounds[1][0], this.stateBoundaries[state][1][0])
+				bounds[1][1] = Math.max(bounds[1][1], this.stateBoundaries[state][1][1])
+			}
 
-		    return bounds;
+			return bounds;
 
 		},
 
@@ -523,14 +598,14 @@ export default {
 		},	
 
 		showMenu (e) {
-	        e.preventDefault()
-	        this.showLayersMenu = false
-	        this.layersMenuPositionX = e.clientX
-	        this.layersMenuPositionY = e.clientY
-	        var that = this
-	        this.$nextTick(() => {
-	          that.showLayersMenu = true
-	        })  
+			e.preventDefault()
+			this.showLayersMenu = false
+			this.layersMenuPositionX = e.clientX
+			this.layersMenuPositionY = e.clientY
+			var that = this
+			this.$nextTick(() => {
+			  that.showLayersMenu = true
+			})  
 		},
 
 		loadStatesBorders () {
@@ -538,29 +613,29 @@ export default {
 
 			function addTopoData (topoData) { 
 				const topoLayer = new L.TopoJSON();
-			    topoLayer.addData(topoData);
-			    topoLayer.addTo(that.map);
-			    topoLayer.eachLayer(handleStateLayer);
-			    statesBordersLayer = topoLayer
+				topoLayer.addData(topoData);
+				topoLayer.addTo(that.map);
+				topoLayer.eachLayer(handleStateLayer);
+				statesBordersLayer = topoLayer
 			}
 
 			function handleStateLayer (layer) {
-			    var fillColor = '#ff0000' 
-			    if (layer.feature.properties.cod != 3550308)
-			        fillColor = 'rgba(255,255,255,0.4)'   
+				var fillColor = '#ff0000' 
+				if (layer.feature.properties.cod != 3550308)
+					fillColor = 'rgba(255,255,255,0.4)'   
 			  
 				layer.setStyle({
-				    fillColor: '#444',
-				    fillOpacity: 0,
-				    color: '#555',
-				    weight: 1,
-				    opacity: 0.2
+					fillColor: '#444',
+					fillOpacity: 0,
+					color: '#555',
+					weight: 1,
+					opacity: 0.2
 				});
 
 				layer.on({
-				    mouseover: enterLayer,
-				    mouseout: leaveLayer,
-				    click: clickLayer
+					mouseover: enterLayer,
+					mouseout: leaveLayer,
+					click: clickLayer
 				});
 
 			}
@@ -570,18 +645,18 @@ export default {
 
 				this.bringToFront();
 				this.setStyle({
-				    weight:1,
-				    opacity: 1,
-				    fillOpacity: 0.05,
+					weight:1,
+					opacity: 1,
+					fillOpacity: 0.05,
 				});
 			}
 
 			function leaveLayer () {
 				this.bringToBack();
 				this.setStyle({
-				    weight:1,
-				    opacity:.2,
-				    fillOpacity: 0
+					weight:1,
+					opacity:.2,
+					fillOpacity: 0
 				});
 			}
 
@@ -610,18 +685,18 @@ export default {
 				nome = uf.nome.toUpperCase()
 
 			function handleStateLayer(layer) {
-  			    if (layer.feature.id == codIbge) {
-	  			  	layer.setStyle({
-				  	    fillOpacity: 0,
-				  		weight: 1,
-				  		opacity: 0.4
-				  	})
+				if (layer.feature.id == codIbge) {
+					layer.setStyle({
+						fillOpacity: 0,
+						weight: 1,
+						opacity: 0.4
+					})
 				}
 				else {
 					layer.setStyle({
-				  	  	fillOpacity: 0,
-				  		opacity: 0
-				 	})
+						fillOpacity: 0,
+						opacity: 0
+					})
 				}
 				layer.off('mouseover')
 				layer.off('mouseout')
@@ -639,11 +714,11 @@ export default {
 
 			function handleLayer(layer) {
 				layer.setStyle({
-				    fillColor: 'rgba(255, 255, 255)',
-				    fillOpacity: 0.0,
-				    color: '#444',
-				    weight: 2,
-				    opacity: 0.4
+					fillColor: 'rgba(255, 255, 255)',
+					fillOpacity: 0.0,
+					color: '#444',
+					weight: 2,
+					opacity: 0.4
 				});
 
 				layer.on({
@@ -657,9 +732,9 @@ export default {
 			}
 
 			function addTopoData(topoData) { 
-			    topoLayer.addData(topoData);
-			    topoLayer.addTo(that.map);
-			    topoLayer.eachLayer(handleLayer);
+				topoLayer.addData(topoData);
+				topoLayer.addTo(that.map);
+				topoLayer.eachLayer(handleLayer);
 			}
 	
 			if (this.topoLayer)
@@ -698,14 +773,15 @@ export default {
 			// options: object 
 			// For displaying comparison data of all enabled candidates, the
 			// following properties must be set:
-			// .showDisabled: truty if data of all candidates is to be displayed; falsy otherwise
-			// For displaying an index of a candidate, the following properties
-			// must be set:
+			// .showDisabled: true if data of all candidates is to be displayed; false otherwise
+			// For displaying an index of a specific candidate, set the following properties:
 			// .candidate: Candidate object 
-			// .index: String containing the index to be displayed
+			// .index: string containing the index to be displayed
 			// .colors: chroma object containing the color scale to be used
+            // Calling setMapData() without arguments recalculates and resets the plotting data 
 
-			var plottingData
+			var plottingData,
+                domain = null
 
 			if (options) {
 				this.setMapData.options = options
@@ -715,7 +791,7 @@ export default {
 			}
 
 			if (options.candidate) {
-				// Will display a candidate's index
+				// Will display one index from a candidate's data
 				// options.candidate contains the candidate id object
 				let candidate = Store.candidatos.obterCandidato(options.candidate)
 				let index = options.index || 'indiceLQ'
@@ -731,7 +807,18 @@ export default {
 					}
 				})
 
-				console.warn(PlottingData.calcClusters(data, 7))
+                if (index == 'indiceLD') {
+                    let max = PlottingData.max(data) * 0.9
+                    let min = PlottingData.min(data) * 0.9
+                    if (max + min > 0)
+                        domain = [-max, max]
+                    else
+                        domain = [min, -min]
+                    options.domain = domain
+                    colors.domain(domain)
+                }
+
+//				console.warn(PlottingData.calcClusters(data, 7))
 
 				// Os dados para PlottingData estão na variável data
 				plottingData = new PlottingData(colors, data)
@@ -744,13 +831,13 @@ export default {
 				plottingData = new PlottingData(colors, votingData)
 			}			
 			MapCharts.setPlottingData(plottingData)
-			        //MapCharts.setChartType('winner', 'variable')
+            return domain
 		},
 
 		changeChartType (chartType) {
-    		MapCharts.setChartType(chartType, this.radiusType)	
-    		MapCharts.redrawCharts()
-    		this.chartType = chartType
+			MapCharts.setChartType(chartType, this.radiusType)	
+			MapCharts.redrawCharts()
+			this.chartType = chartType
 		},
 
 		changeIndexChartType (chart) {
@@ -764,7 +851,7 @@ export default {
 			domain = domain || [0, 1]
 			var chromaColor = chroma.scale(palette).domain(domain)
 
-			this.setMapData({
+			domain = this.setMapData({
 				mapDataType: 'index',
 				candidate: candidate,
 				index: indexType,
@@ -774,6 +861,23 @@ export default {
 			MapCharts.setChartType('index', this.radiusType, this.showIndexes, indexType, chromaColor)
 			MapCharts.redrawCharts()
 			this.indexChartType = indexType
+            if (domain) {
+                let numSteps = chart.legendLabels.length
+                chart.legendLabels = SimpleStats.equalIntervalBreaks(domain, numSteps-1).map(value => {
+                    var numDigits
+                    value = Math.round(value * 1000) / 1000
+                    if (value > 10) 
+                        numDigits = 1
+                    else if (value > 1)
+                        numDigits = 2
+                    else if (value)
+                        numDigits = 3
+                    else
+                        numDigits = 0
+                    return value.toFixed(numDigits)
+                })
+                //debugger
+            }
 			this.setMapLegendFromIndex(chart)
 		},
 
@@ -811,14 +915,14 @@ export default {
 <style>
 
 	.map-controls {
-	    background-color: #424242;	
-	    background-color:#fff;
-	    border: 0px solid #424242;
-	    padding: 4px;
-	    cursor: pointer;
-	    z-index:10000;
-	    color: #ddd;
-	    color:#000;
+		background-color: #424242;	
+		background-color:#fff;
+		border: 0px solid #424242;
+		padding: 4px;
+		cursor: pointer;
+		z-index:10000;
+		color: #ddd;
+		color:#000;
 	}
 
 	.map-control-zoom {
@@ -828,9 +932,9 @@ export default {
 	}
 
 	.map-control-chart-type {
-	    position: absolute;		
-	    right: 12px;
-	    top: 12px;
+		position: absolute;		
+		right: 12px;
+		top: 12px;
 	}
 
 	.map-control-radius-type {

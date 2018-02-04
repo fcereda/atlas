@@ -127,6 +127,25 @@ class PlottingData {
         return this.data.reduce(callback, initialValue)
     }
 
+    static getValuesArray (data) {
+    	var values = Object.keys(data).map(districtId => {
+            let item = data[districtId],    
+                values = item.values ? item.values : item
+            return Array.isArray(values) ? values[0] : values
+		})                 	
+    	return values
+    }
+
+    static max (data) {
+    	let values = PlottingData.getValuesArray(data)
+    	return SimpleStats.max(values)
+    }
+
+    static min (data) {
+    	let values = PlottingData.getValuesArray(data)
+    	return SimpleStats.min(values)
+    }
+
     static calcClusters (data, numClusters) {
     	const breakFunction = SimpleStats.ckmeans
 
@@ -136,12 +155,7 @@ class PlottingData {
                 .concat(Array.isArray(chunks[chunks.length-1]) ? SimpleStats.max(chunks[chunks.length-1]) : parseFloat(chunks[chunks.length-1]))
             return clusters
         }
-
-    	let values = Object.keys(data).map(districtId => {
-            let item = data[districtId],    
-                values = item.values ? item.values : item
-            return Array.isArray(values) ? values[0] : values
-		})                 	
+        let values = PlottingData.getValuesArray(data)
 		let chunks = breakFunction(values, numClusters)
 		let clusters = calcDomain(chunks)
 		return clusters
