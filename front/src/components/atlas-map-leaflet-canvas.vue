@@ -4,60 +4,38 @@
 
 		<div id="map" ref="map" v-bind:style="mapStyle">
 		</div>
-
+<!--
 		<div class="map-controls" v-show="displayChartTypes" v-if="0">
 			<div v-for="chart in chartTypes" @click="changeChartType(chart.name)" v-bind:class="chartType==chart.name?'selected-chart':''"><i class="material-icons">{{ chart.icon }}</i></div>
 		</div>	
-
+-->
 		<div class="map-controls map-control-chart-type" v-show="displayChartTypes">
-			<div 
-				v-for="chart in chartTypes" 
-				v-show="!mostrarIndicesIndividuais" 
-				@click="changeChartType(chart.name)" 
-				v-bind:class="chartType==chart.name?'selected-chart':''"
-			>
-				<v-icon 
-					v-if="chart.icon" 
-					class="pa-1" 
-					:color="chartType==chart.name?'blue darken-2':'grey darken-2'"
-					:style="chart.transform? 'transform:' + chart.transform + ';' : '' "
-				>
-				{{ chart.icon }}
-				</v-icon>
-			</div>
-			<div 
-				v-for="chart in indexChartTypes"
-				v-show="mostrarIndicesIndividuais"
-				@click="changeIndexChartType(chart)"
-				v-bind:class="indexChartType==chart.name?'selected-chart':''"
-			><div class="char-icon">{{ chart.label }}</div>
-			</div>	
+
+            <atlas-map-control
+                v-show="!mostrarIndicesIndividuais"
+                :buttons="chartTypes"
+                :value="chartType"
+                @input="changeChartType"
+            ></atlas-map-control>    
+
+            <atlas-map-control
+                v-show="mostrarIndicesIndividuais"
+                :buttons="indexChartTypes"
+                :value="indexChartType"
+                @input="changeIndexChartType"
+            ></atlas-map-control>
 
 		</div>	
 
 		<div class="map-controls map-control-radius-type" v-show="displayChartTypes">
-			<div 
-				v-for="radius in radiusTypes"
-				@click="changeRadiusType(radius.name)"
-				v-bind:class="radiusType == radius.name?'selected-chart':''"
-			>
-				<v-icon class="pa-1" :color="radiusType==radius.name?'blue darken-2':'grey darken-2'">{{ radius.icon }}</v-icon>
-			</div>	
+
+            <atlas-map-control
+                :buttons="radiusTypes"
+                :value="radiusType"
+                @input="changeRadiusType"
+            ></atlas-map-control>    
 
 		</div>
-
-<!--
-			<div class="map-control-radius-type" style="position:absolute; right:100px; top:20px; z-index:1000;">
-				<v-btn-toggle v-model="radiusType" mandatory>
-					<v-tooltip bottom v-for="rtype in radiusTypes">
-						<v-btn flat slot="activator" @click="display(radiusType)" :value="rtype.nome" :depressed="true">
-							<v-icon>{{ rtype.icon }}</v-icon>
-						</v-btn>	
-						<span>{{ rtype.tooltip }}</span>
-					</v-tooltip>    
-				</v-btn-toggle>
-			</div>    
--->
 
 		<!-- Para habilitar as camadas de dados, remova a diretiva  v-if="false" abaixo -->
 		<div class="map-controls map-control-data-layers" v-if="false" v-show="displayChartTypes" slot="activator">
@@ -76,7 +54,6 @@
 				</v-icon>
 			</div>
 		</div>	
-
 
 		<v-menu 
 			offset-y 
@@ -141,6 +118,7 @@ import chroma from 'chroma-js'
 var SimpleStats = require('simple-statistics')
 
 import atlasSearchMunicipalities from './atlas-search-municipalities.vue'
+import atlasMapControl from './atlas-map-control.vue'
 import atlasMapLegend from './atlas-map-legend.vue'
 
 // statesBordersLayer data is not included in the component's data object
@@ -152,6 +130,7 @@ export default {
 
 	components: {
 		atlasSearchMunicipalities,
+        atlasMapControl,
 		atlasMapLegend
 	},
 
@@ -245,7 +224,8 @@ export default {
                 palette: 'RdYlBu', //['#d73027','#f46d43','#fdae61','#fee090','#ffffbf','#abd9e9','#74add1','#4575b4','#313695'].reverse(),
                 domain: [-0.10, 0.10],
                 legendTitle: 'Diferença de locação',
-                legendLabels: ['-10%', '-8%', '-5%', '-2.5%', '0', '+2,5%', '+5%', '+8%', '+10%']
+                legendLabels: ['-10%', '-8%', '-5%', '-2.5%', '0', '+2,5%', '+5%', '+8%', '+10%'],
+                numLegendLabels: 9
             }, {
                 name: 'indiceZ',
                 label: 'Z',
@@ -368,25 +348,21 @@ export default {
 		},	
 
 		showIndexes () {
+            // this.showIndexes points to the Candidato object
+            // whose individual index we want to display
 			if (this.showIndexes) {
-				// Se entrar aqui, this.showIndexes contém o objeto Candidato
-				// do candidato selecionado pelo usuário
-				var indexObj = this.indexChartTypes[0]
-				for (var i=1; i<this.indexChartTypes.length; i++) {
-					if (this.indexChartTypes[i].name == this.indexChartType)
-						indexObj = this.indexChartTypes[i]
-				}
-
-				this.changeIndexChartType(indexObj)
+                this.changeIndexChartType(this.indexChartType)
 				this.mostrarIndicesIndividuais = true
 			}
 			else {
+                // if this.showIndexes is null, user requested to 
+                // display comparison charts
 				this.setMapData({
 					mapDataType: 'votes',
 					showDisabled: false
 				})
 				MapCharts.setChartType(this.chartType, this.radiusType)
-				this.setMapLegendFromIndex(null)
+				this.setMapLegend(null)
 				this.mostrarIndicesIndividuais = false
 			}
 			MapCharts.redrawCharts()			
@@ -840,7 +816,11 @@ export default {
 			this.chartType = chartType
 		},
 
-		changeIndexChartType (chart) {
+		changeIndexChartType (chartType) {
+            var chart = this.indexChartTypes.find(indexChartType => indexChartType.name == chartType)
+            if (!chart) {
+                return console.error('Error in changeIndexChartType: invalid chart type ' + chartType)
+            }
 			var indexType = chart.name,
 				palette = chart.palette, 
 				domain = chart.domain,
@@ -862,7 +842,7 @@ export default {
 			MapCharts.redrawCharts()
 			this.indexChartType = indexType
             if (domain) {
-                let numSteps = chart.legendLabels.length
+                let numSteps = chart.numLegendLabels || chart.legendLabels.length
                 chart.legendLabels = SimpleStats.equalIntervalBreaks(domain, numSteps-1).map(value => {
                     var numDigits
                     value = Math.round(value * 1000) / 1000
@@ -876,9 +856,8 @@ export default {
                         numDigits = 0
                     return value.toFixed(numDigits)
                 })
-                //debugger
             }
-			this.setMapLegendFromIndex(chart)
+			this.setMapLegend(chart)
 		},
 
 		changeRadiusType (radiusType) {
@@ -888,7 +867,7 @@ export default {
 			this.radiusType = radiusType
 		},
 
-		setMapLegendFromIndex (indexObj) {
+		setMapLegend (indexObj) {
 			if (!indexObj) {
 				this.mapLegend = {
 					show:false
