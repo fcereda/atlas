@@ -51,11 +51,11 @@ Note que não há restrições quanto a quem você pode incluir nas comparaçõe
 
 O outro tipo de análise é individual. Adicione um candidato e clique no seu nome; você verá um botão `VER ÍNDICES INDIVIDUAIS`. Clicando nele, você verá, no canto superior direito do mapa, quatro índices que ajudam a  identificar onde o candidato tem mais eleitores: o quociente de locação (QL), o I de Moran Local (IL), a diferença de locação (DL) e o valor-Z (Z). 
 
-O *quociente de locação* mostra, em azul, os distritos onde o candidato teve votação melhor que sua média global e, em laranja, os distritos onde ele teve votação inferior à sua média. Quanto mais forte a cor, mais longe da média está a votação do candidato no município ou zona em questão. Os municípios em azul são aqueles em que o candidato provavelmente destinou mais recursos.
+O *quociente de locação* mostra a proporção entre a votação de um candidato em um distrito (medida em porcentagem do total) e a votação do mesmo candidato na eleição toda. LQs maiores que 1 indicam que o candidato teve desempenho melhor que a média naquele distrito; LQs menores que 1 indicam *performance* inferior à média.
 
-O *I de Moran Local* é um indicador local de associação espacial. Um I de Moran Local em um distrito indica que sua votação apresenta associação com a votação dos distritos vizinhos.   
+O *I de Moran Local* é um indicador local de associação espacial. Um I de Moran Local elevado em um distrito indica que sua votação apresenta associação com a votação dos distritos vizinhos.   
 
-A *diferença de locação*, mais útil para candidatos majoritários, serve para identificar os distritos onde candidatos majoritários apresentaram melhor e pior desempenho, em comparação com sua votação média. Por exemplo, se um candidato teve 25% dos votos totais e obteve 30% dos votos em um distrito, seu DL naquele distrito será 0,05 (+5 pontos percentuais com relação à média).
+A *diferença de locação*, mais útil para candidatos majoritários, serve para identificar os distritos onde um candidato apresentou melhor e pior desempenho, em comparação com sua votação média. Por exemplo, se um candidato teve 25% dos votos totais e obteve 30% dos votos em um distrito, seu DL naquele distrito será 0,05 (+5 pontos percentuais com relação à média).
 
 O *valor Z* é a medida tradicional de padronização, que indica quantos desvios padrões a votação em um distrito está afastada da média das votações dos distritos. O valor Z é usado para calcular o I de Moran Local.
 
