@@ -87,8 +87,8 @@ function normalizarNome (str) {
 		replace('À', 'A').
 		replace('È', 'E').
 		replace('Ã', 'A').
-		replace('À', 'A').
 		replace('Õ', 'O').
+		replace('Ê', 'E').
 		replace('Ô', 'O').
 		replace('Ç', 'C').
 		replace('Ñ', 'N')
