@@ -367,10 +367,9 @@ function loadCandidates (next) {
 
 
 function loadParties (next) {
-
 	print('Carregando partidos políticos...')
 	try {
-		var partidos = JSON.parse(fs.readFileSync(arqPartidos, 'utf8'));
+		partidos = JSON.parse(fs.readFileSync(arqPartidos, 'utf8'));
 		if (next) {
 			next()
 		}
@@ -380,7 +379,6 @@ function loadParties (next) {
 		console.error(error)
 		process.exit()
 	}
-
 }
 
 
