@@ -22,8 +22,11 @@ var arqCandidatos = './data/candidatos.csv',
 	distFolder = __dirname + '/dist/',
 	publicFolder = __dirname + '/public/',
  	candidatos = [],
- 	candidatosPorUf = {},
  	candidatosPorId = {},
+ 	candidatosPorUf = {},
+ 	candidatosPorUfAno = {},
+ 	candidatosPorUfAnoCargo = {},
+ 	candidatosPorUfCargo = {},
 	coordsArray = [],
 	coordenadas = {},
 	coordenadasPorUf = {},
@@ -96,6 +99,8 @@ function normalizarNome (str) {
 
 function filterCandidates (arrayCandidatos, uf, ano, cargo, nome, nomeCompleto, cpf, partido, resultado) {
 	return arrayCandidatos.filter((candidato) => {
+		if (Array.isArray(candidato))
+			return false
 		if (uf && candidato.uf != uf)
 			return false
 		if (ano && candidato.ano != ano)
@@ -154,11 +159,11 @@ router.route('/api/candidatos')
 				}
 			}
 			else if (uf && ano && cargo)
-				arrayAFiltrar = candidatosPorUf[uf][ano][cargo]
+				arrayAFiltrar = candidatosPorUfAnoCargo[uf][ano][cargo]
 			else if (uf && ano)
-				arrayAFiltrar = candidatosPorUf[uf][ano]
+				arrayAFiltrar = candidatosPorUfAno[uf][ano]
 			else if (uf && cargo)
-				arrayAFiltrar = candidatosPorUf[uf][cargo]
+				arrayAFiltrar = candidatosPorUfCargo[uf][cargo]
 			else if (uf)
 				arrayAFiltrar = candidatosPorUf[uf]
 			else
@@ -328,16 +333,28 @@ function loadCandidates (next) {
 	    		var {id, uf, ano, cargo} = candidato
 	    		if (!candidatosPorUf[uf])
 	    			candidatosPorUf[uf] = []
-	    		if (!candidatosPorUf[uf][cargo])
-	    			candidatosPorUf[uf][cargo] = []
-	    		if (!candidatosPorUf[uf][ano])
-	    			candidatosPorUf[uf][ano] = {}		// Note que a propriedade ano é uma string
-	    		if (!candidatosPorUf[uf][ano][cargo])
-	    			candidatosPorUf[uf][ano][cargo] = []
-	    		candidatosPorUf[uf][ano][cargo].push(candidato)
-	    		candidatosPorUf[uf][cargo].push(candidato) 
-	    		candidatosPorUf[uf].push(candidato)
+
+	    		if (!candidatosPorUfCargo[uf])
+	    			candidatosPorUfCargo[uf] = {}
+	    		if (!candidatosPorUfCargo[uf][cargo])
+	    			candidatosPorUfCargo[uf][cargo] = []
+
+	    		if (!candidatosPorUfAno[uf])
+	    			candidatosPorUfAno[uf] = {}
+	    		if (!candidatosPorUfAno[uf][ano])
+	    			candidatosPorUfAno[uf][ano] = []		// Note que a propriedade ano é uma string
+
+	    		if (!candidatosPorUfAnoCargo[uf])
+	    			candidatosPorUfAnoCargo[uf] = {}
+	    		if (!candidatosPorUfAnoCargo[uf][ano])
+	    			candidatosPorUfAnoCargo[uf][ano] = {}
+	    		if (!candidatosPorUfAnoCargo[uf][ano][cargo])
+	    			candidatosPorUfAnoCargo[uf][ano][cargo] = []
+
 	    		candidatosPorId[id] = candidato
+	    		candidatosPorUf[uf].push(candidato)
+	    		candidatosPorUfCargo[uf][cargo].push(candidato) 
+	    		candidatosPorUfAnoCargo[uf][ano][cargo].push(candidato)
 	    	})	
 
 	    	var sumarioCandidato = ({ numero,nome,votacao }) => numero + ' ' + nome + ', ' + votacao + ' votos'
