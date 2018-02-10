@@ -134,7 +134,7 @@ export default {
 		atlasMapLegend
 	},
 
-	props: [ 'uf', 'showIndexes', 'colorScale', 'showSidebarOpen', 'sidebarOpen' ],
+	props: [ 'uf', 'showIndexes', 'colorScale', 'showSidebarOpen', 'sidebarOpen'],
 
 	data () {
 
@@ -492,6 +492,18 @@ export default {
 			return document.documentElement.offsetHeight
 		},
 
+        getMapState () {
+            var bounds = this.map.getBounds()
+            return {
+                bounds: [
+                    [bounds._northEast.lat, bounds._northEast.lng],
+                    [bounds._southWest.lat, bounds._southWest.lng]
+                ],
+                chartType: this.chartType,
+                indexType: this.indexChartType,
+                radiusType: this.radiusType,                
+            }
+        },
 
 		addControls (map) {
             var that = this
@@ -540,21 +552,15 @@ export default {
         },
 
 
-
-
-
 		calcBrazilBoundaries () {
 			var bounds = [ [ 1000, 1000], [-1000, -1000] ]
-
 			for (var state in this.stateBoundaries) {
 				bounds[0][0] = Math.min(bounds[0][0], this.stateBoundaries[state][0][0])
 				bounds[0][1] = Math.min(bounds[0][1], this.stateBoundaries[state][0][1])
 				bounds[1][0] = Math.max(bounds[1][0], this.stateBoundaries[state][1][0])
 				bounds[1][1] = Math.max(bounds[1][1], this.stateBoundaries[state][1][1])
 			}
-
 			return bounds;
-
 		},
 
 		fitBoundsToBrazil () {
@@ -609,10 +615,6 @@ export default {
 			}
 
 			function handleStateLayer (layer) {
-				var fillColor = '#ff0000' 
-				if (layer.feature.properties.cod != 3550308)
-					fillColor = 'rgba(255,255,255,0.4)'   
-			  
 				layer.setStyle({
 					fillColor: '#444',
 					fillOpacity: 0,
@@ -621,12 +623,16 @@ export default {
 					opacity: 0.2
 				});
 
+                if (that.uf) {
+                    that.highlightStateBorder(that.uf)
+                    return
+                }
+
 				layer.on({
 					mouseover: enterLayer,
 					mouseout: leaveLayer,
 					click: clickLayer
 				});
-
 			}
 
 			function enterLayer () {
