@@ -31,6 +31,7 @@
 			<atlas-candidates-list
 			    :uf="uf"
 			    :colorScale="colorScale"
+			    :originalCandidates="originalCandidates"
 			    @add-candidate="addCandidate"
 			    @remove-candidate="removeCandidate"
 			    @show-indexes="showIndividualIndexes"
@@ -96,7 +97,7 @@ export default {
 		atlasPainelMaisvotados
 	},
 
-	props: ['uf', 'colorScale', 'mostrarPainelZonas', 'zonasToDisplay'],
+	props: ['uf', 'colorScale', 'originalCandidates', 'mostrarPainelZonas', 'zonasToDisplay'],
 
 	data () {
 
@@ -115,6 +116,14 @@ export default {
 			candidatoSelecionado: null
 		}
 
+	},
+
+	watch: {
+
+		candidates () {
+			console.log('Alterou candidates')
+			console.log(this.candidates)
+		}
 	},
 
 	methods: {

@@ -464,7 +464,7 @@ export default {
 		this.map.addEventListener('mousemove', onHover.bind(this))
 		this.map.addEventListener('click', onClick.bind(this))
 
-		MapCharts.setUpCanvasLayer(this.map)
+		MapCharts.setUpCanvasLayer(this.map, this.chartType, this.radiusType)
 
 		// Code below by Ryan Clark (https://blog.webkid.io/maps-with-leaflet-and-topojson/)
 		L.TopoJSON = L.GeoJSON.extend({  
@@ -492,6 +492,9 @@ export default {
 			return document.documentElement.offsetHeight
 		},
 
+        // The following function is never called from within this component.
+        // It is only called from App.vue
+
         getMapState () {
             var bounds = this.map.getBounds()
             return {
@@ -502,6 +505,28 @@ export default {
                 chartType: this.chartType,
                 indexType: this.indexChartType,
                 radiusType: this.radiusType,                
+            }
+        },
+
+        // The following function is never called from within this component.
+        // It is only called from App.vue
+
+        setMapState (mapState) {
+            if (mapState.bounds) {
+                setTimeout(() => {
+                    this.map.fitBounds(mapState.bounds)
+                    this.map.invalidateSize()
+                }, 1000)
+            }
+            if (mapState.chartType) {
+                this.changeChartType(mapState.chartType)
+                //this.chartType = mapState.chartType
+            }
+            if (mapState.indexType) {
+                this.indexChartType = mapState.indexType
+            }
+            if (mapState.radiusType) {
+                this.radiusType = mapState.radiusType
             }
         },
 
@@ -830,9 +855,9 @@ export default {
 		},
 
 		changeChartType (chartType) {
-			MapCharts.setChartType(chartType, this.radiusType)	
+            this.chartType = chartType
+			MapCharts.setChartType(this.chartType, this.radiusType)	
 			MapCharts.redrawCharts()
-			this.chartType = chartType
 		},
 
 		changeIndexChartType (chartType) {

@@ -36,9 +36,9 @@ var MapCharts = {
         }
     },
 
-    setUpCanvasLayer (map) {
+    setUpCanvasLayer (map, chartType='winner', radiusType='variable') {
         leafletMap = map
-        this.setChartType('winner', 'variable')
+        this.setChartType(chartType, radiusType)
         chartCanvas = L.canvasLayer()
             .delegate(this) 
             .addTo(leafletMap);

@@ -80,9 +80,10 @@ import atlasCandidateChip from './atlas-candidate-panel.vue'
 import atlasDialogCarreira from './atlas-dialog-carreira.vue'
 
 import api from '../lib/api.js'
-import Store from '../lib/store.js'
 import Colors from '../lib/colors.js'
 import MapCharts from '../lib/mapcharts.js'
+import Store from '../lib/store.js'
+import Utils from '../lib/utils.js'
 import Candidato from '../classes/candidato.js'
 
 export default {
@@ -94,7 +95,7 @@ export default {
         atlasDialogCarreira,
 	},
 
-	props: [ 'uf', 'colorScale' ],
+	props: [ 'uf', 'colorScale', 'originalCandidates' ],
 
     data: () => ({
 
@@ -116,6 +117,13 @@ export default {
         colorScale: function () {
             this.setColorScale(this.colorScale)
         },
+
+        originalCandidates: function () {
+            if (this.originalCandidates) {
+                this.addMultipleCandidates(this.originalCandidates)
+            }    
+            console.log('Alterou originalCandidates candidates em atlas-candidates-list')
+        }
 
     },
 
@@ -145,8 +153,18 @@ export default {
 
     	addCandidate: function (candidate) {
 
-    		var color = 'black',  
-    			candidateObj = {...candidate, uf: this.uf.sigla, color, loading: true, disabled: false, showDetails: false}
+    		var that = this,
+                color = 'black',  
+    			candidateObj = {
+                    ...candidate, 
+                    nome: Utils.capitalizeName(candidate.nome),
+                    nomeCompleto: Utils.capitalizeName(candidate.nomeCompleto),
+                    uf: this.uf.sigla, 
+                    color, 
+                    loading: true, 
+                    disabled: false, 
+                    showDetails: false
+                }
 
             this.candidatosSelecionados.push(candidateObj)
             var newCandidate = new Candidato (candidateObj)            
@@ -167,6 +185,16 @@ export default {
                 // Se a escala de cores for linear, refazemos o esquema de cores para refletir a mudança no número de candidastos
                 if (this.colorScale.type == 'linear')
                     this.setColorScale()  
+                console.log('newCandidate.showIndex: ', newCandidate.showIndex)
+                console.log('candidate.showIndex: ', candidate.showIndex)
+                if (candidate.disabled) {
+                    this.disableCandidate(candidateObj)
+                    //candidateObj.disabled = true
+                }
+                if (candidate.showIndex) {
+                    this.$emit('show-indexes', newCandidate)
+                    candidateObj.showDetails = true
+                }
                 // Retorna uma Promise para permitir que this.addMultipleCandidates comece 
                 // a carregar o próximo candidato somente depois que o candidato atual
                 // tenha sido carregado
@@ -228,13 +256,11 @@ export default {
     	},
 
     	disableCandidate (candidato) {
-    		//Store.desabilitarCandidato(candidato)
             Store.candidatos.desabilitarCandidato(candidato)
     		candidato.disabled = true
     	},
 
     	enableCandidate (candidato) {
-    		//Store.habilitarCandidato(candidato)
             Store.candidatos.habilitarCandidato(candidato)
     		candidato.disabled = false
     	},

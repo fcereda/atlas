@@ -53,6 +53,7 @@
         :colorScale="colorScale"
         :mostrarPainelZonas="mostrarPainelZonas"
         :zonasToDisplay="zonasHover"
+        :originalCandidates="originalCandidates"
         @add-candidate="addCandidate"
         @remove-candidate="removeCandidate"
         @show-indexes="showIndividualIndexes"
@@ -148,6 +149,7 @@
       drawer: true,
       modoInicial: true,
       uf: '',
+      originalCandidates: null,
       colorScale: {
         type: 'categorical',
         baseColor: 'usable'
@@ -177,33 +179,7 @@
     },
 
     mounted () {
-
-      function loadAppState () {
-        var appStateId = window.location.hash
-        if (appStateId) {
-          appStateId = appStateId.substr(1, 100)
-          appStateId = appStateId.replace('/', '')
-        }
-        console.error(appStateId)
-        api.getAppState(appStateId)
-        .then(response => {
-          var appState = response.data
-          console.log(appState)        
-          if (appState.uf) {
-            debugger
-            let uf = utils.obterUfPorSigla(appState.uf)
-            if (!uf) {
-              throw Error('Error loading appState: invalid uf')
-            }
-            this.changeUf(uf)
-          }
-        })
-        .catch(err => {
-          console.error(err)
-        })
-      }
-      
-      setTimeout(loadAppState.bind(this), 100)  
+      setTimeout(this.loadAppState.bind(this), 500)  
     },
 
 
@@ -272,6 +248,51 @@
         this.snackbar.text = text
         this.snackbar.color = color
         this.snackbar.visible = true
+      },
+
+      loadAppState () {
+        var that = this
+        var appStateId = window.location.hash
+        if (appStateId) {
+          appStateId = appStateId.substr(1, 100)
+          appStateId = appStateId.replace('/', '')
+        }
+        console.error(appStateId)
+        api.getAppState(appStateId)
+        .then(response => {
+          var appState = response.data
+          console.log(appState)        
+          if (appState.uf) {
+            let uf = utils.obterUfPorSigla(appState.uf)
+            if (!uf) {
+              throw Error('Error loading appState: invalid uf')
+            }
+            this.changeUf(uf)
+            this.$refs.map.setMapState(appState)
+            let candidateIds = appState.candidatos.map(candidato => candidato.id)
+            api.getCandidatesFromIds(candidateIds)
+            .then(response => {
+              let originalCandidates = response.data
+              originalCandidates.forEach(candidate => {
+                let appStateCandidate = appState.candidatos.find(({id}) => id == candidate.id)
+                candidate.color = appStateCandidate.color
+                //candidate.showDetails = appStateCandidate.open   // TEM QUE CONFERIR O NOME DESTA PROPRIEDADE
+                candidate.disabled = appStateCandidate.disabled
+                if (appStateCandidate.showIndex || candidate.id == appState.showIndex) {
+                  candidate.showIndex = true
+                }
+                that.originalCandidates = originalCandidates
+              })
+            })
+            .catch(err => {
+              console.error(err)
+              that.showSnackbar('Erro tentando carregar a lista de candidatos')
+            })     
+          }
+        })
+        .catch(err => {
+          console.error(err)
+        })
       },
 
       saveState () {

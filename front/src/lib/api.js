@@ -476,6 +476,13 @@ export default {
 		})
 	},
 
+	getCandidatesFromIds (ids) {
+		if (!Array.isArray(ids)) {
+			ids = [ids]
+		}
+		let query = '/api/candidatos?id=' + ids.join(',')
+		return axios.get(query)
+	},
 
 	getStateBordersMap (uf) {
 		var topoFileAddress = `/public/maps/state/${uf.toLowerCase()}-state.json`
