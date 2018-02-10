@@ -160,8 +160,12 @@ async function mkdirSingle (path) {
 }
 
 function generateId (numChars = 6) {
-    var alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
-        sizeAlphabet = alphabet.length,
+    var upperCaseAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+        sizeUpperCaseAlphabet = upperCaseAlphabet.length,
+        completeAlphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
+        sizeCompleteAlphabet = completeAlphabet.length,
+        alphabet = upperCaseAlphabet,
+        sizeAlphabet = sizeUpperCaseAlphabet,
         id = ''
     
     for (var i=0; i<numChars; i++) {
@@ -170,6 +174,8 @@ function generateId (numChars = 6) {
             console.error('index = ' + index)
         }
         id += alphabet.charAt(index)
+        sizeAlphabet = sizeCompleteAlphabet
+        alphabet = completeAlphabet
     }       
     return id
 }
