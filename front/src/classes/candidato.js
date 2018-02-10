@@ -128,7 +128,10 @@ class Candidato {
             // O LI de um distrito é definido como:
             // zScore do distrito * média do zScore dos distritos vizinhos
             var indices = {},
-                somaIndiceLQ = 0        
+                indiceGGlobal = 0,
+                somaIndiceLQ = 0,
+                somaMoran = 0,
+                numDistritos = 0        
             for (var id in votes) {
                 let votosCandidatoDistrito = votes[id].numero
                 if (votosCandidatoDistrito) {
@@ -137,6 +140,7 @@ class Candidato {
                         indiceZ = votes[id].valorZ,     
                         indiceLQ = (votosCandidatoDistrito / totalCandidato) / (totalVotosDistrito / totalGeral),
                         indiceLD = (votosCandidatoDistrito / totalVotosDistrito) - (totalCandidato / totalGeral),
+                        indiceLG = (votosCandidatoDistrito / totalCandidato) - (totalVotosDistrito / totalGeral),
                         vizinhos = coordenadas[id] ? coordenadas[id].vizinhos || [] : []
                     if (!vizinhos.length) {
                         // Se entrar aqui, temos um problema com o banco de dados de coordenadas
@@ -155,11 +159,15 @@ class Candidato {
                         tamanhoDistrito: totalVotosDistrito,    // tamanhoDistrio será necessário para plotar o gráfico do índice com o tamanho certo
                         indiceLQ,
                         indiceLD,
+                        indiceLG,
                         indiceZ,                                // Incluímos o valor-z como indiceZ
                         indiceRI: 1.0,                          // já inicializamos o índice de relevância com o valor menos significativo (1.0)
                         indiceLI: localMoran
                     }
+                    somaMoran += localMoran
+                    indiceGGlobal += Math.pow(indiceLG, 2)
                     somaIndiceLQ += indiceLQ        // ISSO ESTÁ ERRADO MAS AINDA NÃO SEI COMO É O CERTO
+                    numDistritos += 1
                 }    
             }
             // Vamos agora calcular o "Índice de Relevância" (RI)
@@ -186,13 +194,14 @@ class Candidato {
 
             this.total = totalCandidato             // totalCandidato deve ser igual a this.votacao
             this.totalEleicao = totalGeral  
-            this.indiceLQGlobal = somaIndiceLQ      // NOTE QUE O CÁLCULO DE somaIndiceLQ AINDA ESTÁ ERRADO
+            this.indiceLQGlobal = somaIndiceLQ / numDistritos    // NOTE QUE O CÁLCULO DE somaIndiceLQ AINDA ESTÁ ERRADO
+            this.indiceMoranGlobal = somaMoran / numDistritos
+            this.indiceGGlobal = indiceGGlobal    
             this.votosArray = votesArray
             this.votosDict = votes
             this.votos = votes                      // Should be deprecated once we adjust Charts.js
           
             this.indices = indices
-
             return new Promise((resolve, reject) => resolve(this))
         })
         .catch((error) => {
