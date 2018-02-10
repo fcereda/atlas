@@ -160,7 +160,7 @@ router.route('/api/candidatos')
 			if (id) {
 				let ids = id.split(',')
 				ids.forEach(id => {
-					if (candidatosPorId[id]) {
+					if (candidatosPorId[id] && !arrayAFiltrar.includes(candidatosPorId[id])) {
 						arrayAFiltrar.push(candidatosPorId[id])
 					}
 				})
