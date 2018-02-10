@@ -212,16 +212,6 @@ export default {
 
 	}, 
 
-	watch: {
-
-		showDetails () {
-			if (!this.showDetails) {
-				this.esconderIndicesIndividuais()
-			}				
-		}
-
-	},
-
 	methods: {
 		openDetails () {
 			this.$emit('open')

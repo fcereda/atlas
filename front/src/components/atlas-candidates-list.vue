@@ -247,7 +247,12 @@ export default {
     	},
 
     	showDetailsCandidate (candidato) {
-  			this.candidatosSelecionados.forEach ((esteCandidato) => esteCandidato.showDetails = (esteCandidato == candidato))
+  			this.candidatosSelecionados.forEach (esteCandidato => {
+                esteCandidato.showDetails = (esteCandidato == candidato) 
+                if (esteCandidato.showDetails) {
+                    this.$emit('show-indexes', esteCandidato)
+                }
+            })    
     	},
 
     	hideDetailsCandidate (candidato) {
