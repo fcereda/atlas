@@ -172,6 +172,10 @@ export default {
 				label: 'I de Moran Local',
 				id: 'indiceLI'
 			}, {
+				label: 'G Local',
+				id: 'indiceLG',
+				numDigits: 6
+			}, {
 				label: 'Diferença de locação',
 				id: 'indiceLD',
 				numDigits: 4

@@ -491,6 +491,23 @@ export default {
 		return axios.get('/api/partidos')
 	},
 
+	getAppState (id) {
+		return axios.get('/api/state/' + id)
+	},
+
+	saveAppState (appState) {
+		return new Promise((resolve, reject) => {
+			axios.post('/api/state', appState)
+			.then(response => {
+				var id = response.data
+				resolve(id)
+			})	
+			.catch(error => {
+				reject(error)
+			})
+		})
+	},
+
 	// This function should never be called by a client of the api object
 	runRequest (requestFunc, argsArray, index=0, results=[]) {
 		return requestFunc(argsArray[index])

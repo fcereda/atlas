@@ -51,6 +51,10 @@
 			>
 				<div>Votação{{ cargo == 'pr1' || cargo == 'pr2' ? ' neste estado' : ''}}: {{ totalStr }} </div>
 				<div>{{ (total / totalEleicao * 100).toFixed(2) }}% do total&nbsp; &mdash;  &nbsp;{{ classificacao }}º lugar</div>
+<!--
+				<div>I de moran: {{ indiceMoran }}</div>
+				<div>Índice G: {{ indiceG }}</div>
+-->				
 			</div>
 			<div class="pb-1" style="display:flex;flex-direction:row;">
 				<span style="flex:1"></span>
@@ -150,10 +154,9 @@ import Utils from '../lib/utils.js'
 
 export default {
 
-	props: ['nome', 'partido', 'ano', 'numero', 'cargo', 'color', 'classificacao', 'total', 'totalEleicao', 'indiceLQ', 'indiceG', 'loading', 'disabled', 'showDetails'],
+	props: ['nome', 'partido', 'ano', 'numero', 'cargo', 'color', 'classificacao', 'total', 'totalEleicao', 'indiceLQ', 'indiceG', 'indiceMoran', 'loading', 'disabled', 'showDetails'],
 
 	data () {
-
 		return {
 			indicesIndividuais: false,
 			hovering: false,
@@ -166,7 +169,6 @@ export default {
 			}
 
 		}	
-
 	},
 
 	computed: {

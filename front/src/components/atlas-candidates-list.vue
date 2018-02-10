@@ -18,8 +18,9 @@
 			:classificacao="candidato.classificacao"
 			:total="candidato.total"
             :totalEleicao="candidato.totalEleicao"
-			:indiceLQ="candidato.somaIndiceLQ"
-			:indiceG="candidato.somaIndiceG"
+			:indiceLQ="candidato.indiceLQGlobal"
+			:indiceG="candidato.indiceGGlobal"
+            :indiceMoran="candidato.indiceMoranGlobal"
 			:loading="candidato.loading"
 			:disabled="candidato.disabled"
 			:showDetails="candidato.showDetails"
@@ -146,7 +147,7 @@ export default {
 
     		var color = 'black',  
     			candidateObj = {...candidate, uf: this.uf.sigla, color, loading: true, disabled: false, showDetails: false}
-  		
+
             this.candidatosSelecionados.push(candidateObj)
             var newCandidate = new Candidato (candidateObj)            
     		return newCandidate.carregarVotacao()
@@ -155,6 +156,9 @@ export default {
                 candidateObj.color = this.colorSequence.getNextColor()
                 candidateObj.total = newCandidate.total
                 candidateObj.totalEleicao = newCandidate.totalEleicao
+                candidateObj.indiceGGlobal = newCandidate.indiceGGlobal
+                candidateObj.indiceLQGlobal = newCandidate.indiceLQGlobal
+                candidateObj.indiceMoranGlobal = newCandidate.indiceMoranGlobal
 
                 newCandidate.habilitado = true
                 //newCandidate.showDetails = false
