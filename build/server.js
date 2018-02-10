@@ -158,9 +158,12 @@ router.route('/api/candidatos')
 		}
 		try {
 			if (id) {
-				if (candidatosPorId[id]) {
-					arrayAFiltrar.push(candidatosPorId[id])
-				}
+				let ids = id.split(',')
+				ids.forEach(id => {
+					if (candidatosPorId[id]) {
+						arrayAFiltrar.push(candidatosPorId[id])
+					}
+				})
 			}
 			else if (uf && ano && cargo)
 				arrayAFiltrar = candidatosPorUfAnoCargo[uf][ano][cargo]
