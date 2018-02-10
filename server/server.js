@@ -9,6 +9,7 @@ var parse = require('csv-parse')
 var proxy = require('express-http-proxy')
 var path = require('path');
 var apicache = require('apicache')
+var AppState = require('./appstate.js')
 let cache = apicache.middleware
 
 var arqCandidatos = './data/candidatos.csv',
@@ -37,6 +38,9 @@ var arqCandidatos = './data/candidatos.csv',
 
 
 const onlyStatus200 = (req, res) => res.statusCode === 200
+
+app.use(bodyParser.urlencoded({ extended: true }))
+app.use(bodyParser.json())
 
 router.use(function (req, res, next) {
 	if (debugMode) {
@@ -223,8 +227,38 @@ router.route('/api/municipios')
 		return res.status(400).json({ error: 'Please specify ID or UF' })
 	})
 
+app.get('/api/state/:id', async (req, res) => {
+	var id = req.params.id
+	console.log('id = ' + id)
+
+	try {
+		var appState = await AppState.getAppState(id)
+		if (!appState) {
+			return res.status(400).json({ error: 'Not found' })
+		}
+		return res.status(200).json(appState)
+	} 
+	catch (err) {
+		return res.status(500).json({ error: 'Error loading appState' })
+	}	
+})
+
+app.post('/api/state', async (req, res) => {
+	console.log(req.body)
+	var appState = req.body
+	//var appState = req.body.appState
+	if (!appState || !appState.uf || !appState.candidatos) {
+		return res.status(400).json({ error: 'Invalid data'})
+	}
+	var id = await AppState.saveAppState(appState)
+	if (!id) {
+		return res.status(500).json({ error: 'Internal error' })
+	} 
+	return res.status(200).json({ id })
+})
+
 app.get('/api/cache/index', (req, res) => {
-  res.json(apicache.getIndex())
+	res.json(apicache.getIndex())
 })
 
 app.get('/api/status', (req, res) => {
