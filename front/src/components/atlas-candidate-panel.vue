@@ -8,11 +8,8 @@
 			<v-icon :style="iconStyle" large>fiber_manual_record</v-icon>
 		</div>
 		<div class="candidate-title" style="width:100%; display:flex; flex-direction:row">
-			<div class="candidate-name pointer" style="width:100%;flex:1" @click="toggleDetails">
-				<v-tooltip bottom class="z-index-top">
-					<span slot="activator" v-html="titulo"></span>
-					<span v-html="nome + '&nbsp;(' + partido + ')'"></span>
-				</v-tooltip>	
+			<div class="candidate-name pointer" style="width:100%;flex:1" @click="openDetails">
+				<span v-html="titulo"></span>
 			</div>
 			<v-tooltip bottom class="z-index-top">
 				<span v-if="hovering" class="pl-2 pointer" slot="activator">
@@ -37,7 +34,8 @@
 					<v-icon v-if="!showDetails" color="grey darken-1" @click="openDetails">keyboard_arrow_down</v-icon>
 					<v-icon v-if="showDetails" color="grey darken-1" @click="closeDetails">keyboard_arrow_up</v-icon>
 					</div>
-				<span>Ver mais opções</span>
+				<span v-if="!showDetails">Ver índices individuais</span>
+				<span v-if="showDetails">Comparar com os outros candidatos</span>
 			</v-tooltip>	
 			<span v-if="loading">&nbsp;&nbsp;<v-progress-circular size="20" indeterminate></v-progress-circular></span>
 		</div>
@@ -49,19 +47,98 @@
 				class="pr-2 pb-1" 
 				style="width:100%;text-align:right;"
 			>
-				<div>Votação{{ cargo == 'pr1' || cargo == 'pr2' ? ' neste estado' : ''}}: {{ totalStr }} </div>
-				<div>{{ (total / totalEleicao * 100).toFixed(2) }}% do total&nbsp; &mdash;  &nbsp;{{ classificacao }}º lugar</div>
-<!--
-				<div>I de moran: {{ indiceMoran }}</div>
-				<div>Índice G: {{ indiceG }}</div>
--->				
+				<div>Votação{{ eCandidatoPresidente ? ' no estado' : ''}}: {{ totalStr }} 
+					 ({{ (total / totalEleicao * 100).toFixed(2) }}% do total)</div>
+				<div>Resultado: {{ resultado }} &mdash; {{ classificacao }}º lugar 
+				     {{ eCandidatoPresidente ? ' neste estado' : ''}}</div>
+
+				<div>I de Moran: {{ formatFloat(indiceMoran, 4) }}</div>
+				<div>Índice G: {{ formatFloat(indiceG*100, 2) }}%</div>
+				
 			</div>
-			<div class="pb-1" style="display:flex;flex-direction:row;">
+			<div v-show="false" class="pb-1" style="display:flex;flex-direction:row;">
 				<span style="flex:1"></span>
 				<v-btn color="blue-grey lighten-1" class="white--text" @click="verCarreira">Carreira</v-btn>
 				<v-btn v-show="!indicesIndividuais" color="primary" :disabled="disabled" @click="verIndicesIndividuais">Ver índices individuais</v-btn>
 				<v-btn v-show="indicesIndividuais" color="primary" :disabled="disabled" @click="esconderIndicesIndividuais">Comparar no mapa</v-btn>				
 			</div>
+
+        <v-layout row wrap class="pt-3">
+          <v-spacer></v-spacer>
+
+          <v-flex xs12 sm2>
+            <v-tooltip bottom>
+              <v-btn flat icon slot="activator">
+                <v-icon>format_color_fill</v-icon>
+              </v-btn>
+              <span>Mudar cor</span>
+            </v-tooltip>
+          </v-flex>
+
+          <v-flex xs12 sm2>
+            <v-tooltip bottom z-index="1000">
+              <v-btn flat icon slot="activator" @click="closeDetails">
+                <v-icon>group</v-icon>
+              </v-btn>
+              <span>Comparar os candidatos da lista</span>
+            </v-tooltip>  
+          </v-flex>
+
+          <v-flex xs12 sm2>
+            <v-tooltip bottom z-index="1000">
+              <v-btn flat icon color="red darken-4" slot="activator">
+                <v-icon>close</v-icon>
+              </v-btn>
+              <span>Remover este candidato da lista</span>
+            </v-tooltip>  
+          </v-flex>
+
+          <v-flex xs12 sm2>
+            <v-tooltip bottom z-index="1000" v-if="!disabled">
+              <v-btn flat icon slot="activator" @click="disableCandidato">
+                <v-icon>visibility</v-icon>
+              </v-btn>
+              <span>Excluir temporariamente das comparações</span>
+            </v-tooltip>  
+
+            <v-tooltip bottom z-index="1000" v-if="disabled">
+              <v-btn flat icon slot="activator" @click="enableCandidato">
+                <v-icon>visibility_off</v-icon>
+              </v-btn>
+              <span>Incluir novamente nas comparações</span>
+            </v-tooltip>  
+          </v-flex>
+
+
+<!--
+          <v-flex xs12 sm2>
+            <v-btn flat icon>
+              <v-icon>insert_chart</v-icon>
+            </v-btn>
+          </v-flex>
+-->          
+          <v-flex xs12 sm2>
+            <v-tooltip bottom z-index="1000">
+              <v-btn flat icon slot="activator">
+                <v-icon>file_download</v-icon>
+              </v-btn>
+              <span>Baixar dados da votação em formato CSV</span>
+            </v-tooltip>  
+          </v-flex>
+
+          <v-flex xs12 sm2>
+            <v-tooltip bottom z-index="1000">
+              <v-btn flat icon slot="activator" @click="verCarreira">
+                <v-icon style="transform:rotate(180deg);">toc</v-icon>
+              </v-btn>
+              <span>Ver trajetória eleitoral</span>
+              </v-tooltip>
+          </v-flex>
+          
+        </v-layout>
+
+
+
 		</div>	
 	</div>
 
@@ -154,7 +231,7 @@ import Utils from '../lib/utils.js'
 
 export default {
 
-	props: ['nome', 'partido', 'ano', 'numero', 'cargo', 'color', 'classificacao', 'total', 'totalEleicao', 'indiceLQ', 'indiceG', 'indiceMoran', 'loading', 'disabled', 'showDetails'],
+	props: ['nome', 'partido', 'ano', 'numero', 'cargo', 'color', 'classificacao', 'resultado', 'total', 'totalEleicao', 'indiceLQ', 'indiceG', 'indiceMoran', 'loading', 'disabled', 'showDetails'],
 
 	data () {
 		return {
@@ -180,6 +257,10 @@ export default {
 			return false
 		},
 
+		eCandidatoPresidente () {
+			return ['pr1', 'pr2'].includes(this.cargo)
+		},
+
 		iconStyle () {
 			var style = 'color: rgb('
 			if (this.disabled) {
@@ -203,7 +284,7 @@ export default {
 		},
 
 		titulo () {
-			return `${this.nome} (${this.partido}) <br> ${this.labelCargo} ${this.ano}`
+			return `${this.nome} (${this.partido}) <br> <span style="color:#555;">${this.labelCargo} ${this.ano}</span>`
 		},
 
 		totalStr () {
@@ -213,6 +294,12 @@ export default {
 	}, 
 
 	methods: {
+		formatFloat (num, digits) {
+			if (!num)
+				return ''
+			return Utils.formatFloat(num, digits)
+		},
+
 		openDetails () {
 			this.$emit('open')
 		},
@@ -257,7 +344,7 @@ export default {
 
 		verCarreira () {
 			this.$emit('ver-carreira')
-		}
+		},
 
 	}
 }		

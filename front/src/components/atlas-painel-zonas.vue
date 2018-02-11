@@ -33,15 +33,19 @@
 					Votação do candidato:
 				</td>	
 				<td>&nbsp;&nbsp;
+					<span v-if="zona.indices">		    
 					{{ formatInt(zona.indices.votos) }} votos
 					({{ formatFloat(zona.indices.votos / zona.indices.total * 100, 2) }}%) 
+					</span>
 				</td>	
 			</tr>		
 			<tr class="zona-indices-tr" v-for="indice in indicesIndividuais">
 				<td>{{ indice.label }}:</td>
 				<td>
 					<div style="width:45px;text-align:right;">
+					    <span v-if="zona.indices">
 						{{ indice.prefix}} {{ formatFloat(zona.indices[indice.id], indice.numDigits || 3) }} {{ indice.suffix }}
+						</span>
 					</div>	
 				</td>
 			</tr>

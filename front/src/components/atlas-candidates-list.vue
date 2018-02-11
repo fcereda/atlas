@@ -16,6 +16,7 @@
             :numero="candidato.numero"
 			:color="candidato.color"
 			:classificacao="candidato.classificacao"
+            :resultado="candidato.resultado"
 			:total="candidato.total"
             :totalEleicao="candidato.totalEleicao"
 			:indiceLQ="candidato.indiceLQGlobal"
