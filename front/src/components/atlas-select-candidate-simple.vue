@@ -2,7 +2,7 @@
 
 	<v-layout row wrap class="select-candidato pa-0 pt-2">
 
-	    <v-flex sm12 pa-0>
+	    <v-flex sm12 pa-0 pl-2 pr-1>
 
 
 	        <v-select 
