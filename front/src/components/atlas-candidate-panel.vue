@@ -49,7 +49,7 @@
 			>
 				<div>Votação{{ eCandidatoPresidente ? ' no estado' : ''}}: {{ totalStr }} 
 					 ({{ (total / totalEleicao * 100).toFixed(2) }}% do total)</div>
-				<div>Resultado: {{ resultado }} &mdash; {{ classificacao }}º lugar 
+				<div>Resultado: {{ identificacaoResultado }} &mdash; {{ classificacao }}º lugar 
 				     {{ eCandidatoPresidente ? ' neste estado' : ''}}</div>
 
 				<div>I de Moran: {{ formatFloat(indiceMoran, 4) }}</div>
@@ -260,6 +260,24 @@ export default {
 		eCandidatoPresidente () {
 			return ['pr1', 'pr2'].includes(this.cargo)
 		},
+
+        identificacaoResultado () {
+        	var resultado = this.resultado,
+        		cargo = this.cargo
+        	if (!resultado || resultado == '')
+        		return ''
+            if (resultado.indexOf('ELEITO') == 0)
+                return 'Eleito'
+            if (resultado.charAt(0) == '2')
+                return 'Passou para o 2o. turno'
+            if (resultado.indexOf('SUPLENTE') == 0)
+                return 'Obteve uma suplência'
+            // Se chegar aqui, é porque não foi eleito.
+            // Vamos escolher a mensagem certa de acordo com cargo
+            if (cargo == 'pr1' || cargo == 'g1')
+                return 'Não passou para o 2o. turno'
+            return 'Não foi eleito'
+        },		
 
 		iconStyle () {
 			var style = 'color: rgb('
