@@ -131,7 +131,6 @@ export default {
         },
 
         verNoMapa (eleicao) {
-            debugger
             this.$emit('add-candidate', eleicao)
         }
 
