@@ -11,29 +11,31 @@
 			<div class="candidate-name pointer" style="width:100%;flex:1" @click="openDetails">
 				<span v-html="titulo"></span>
 			</div>
+			<!--
 			<v-tooltip bottom class="z-index-top">
 				<span v-if="hovering" class="pl-2 pointer" slot="activator">
 					<v-icon color="primary" @click="removerCandidato">close</v-icon>
 				</span>
 				<span>Remover este candidato</span>
 			</v-tooltip>	
-			<v-tooltip bottom class="z-index-top" v-if="!disabled">
+			-->
+			<v-tooltip bottom class="z-index-top pt-2" v-if="!disabled">
 				<span v-if="hovering" class="pl-2 pr-2 pointer" slot="activator" @click="disableCandidato">
 					<v-icon color="primary">visibility</v-icon>
 				</span>
 				<span>Ignorar este candidato temporariamente</span>
 			</v-tooltip>	
-			<v-tooltip bottom class="z-index-top" v-if="disabled">
+			<v-tooltip bottom class="z-index-top pt-2" v-if="disabled">
 				<span v-if="hovering" class="pl-2 pr-2 pointer" slot="activator" @click="enableCandidato">
 					<v-icon color="primary">visibility_off</v-icon>
 				</span>
 				<span>Voltar a ver os dados deste candidato</span>
 			</v-tooltip>	
 			<v-tooltip bottom class="z-index-top">
-				<div class="pointer" v-if="!loading" slot="activator">
+				<div class="pointer pt-2 pr-2" v-if="!loading" slot="activator">
 					<v-icon v-if="!showDetails" color="grey darken-1" @click="openDetails">keyboard_arrow_down</v-icon>
 					<v-icon v-if="showDetails" color="grey darken-1" @click="closeDetails">keyboard_arrow_up</v-icon>
-					</div>
+				</div>
 				<span v-if="!showDetails">Ver índices individuais</span>
 				<span v-if="showDetails">Comparar com os outros candidatos</span>
 			</v-tooltip>	
@@ -85,13 +87,36 @@
           </v-flex>
 
           <v-flex xs12 sm2>
-            <v-tooltip bottom z-index="1000">
-              <v-btn flat icon color="red darken-4" slot="activator">
-                <v-icon>close</v-icon>
-              </v-btn>
-              <span>Remover este candidato da lista</span>
-            </v-tooltip>  
-          </v-flex>
+		    <v-tooltip bottom z-index="1000">
+			<v-menu
+		      offset-x
+		      :close-on-content-click="false"
+		      :nudge-width="200"
+		      v-model="popupConfirm"
+		      slot="activator"
+		    >
+		      <v-btn flat icon slot="activator">
+		      	<v-icon>close</v-icon>
+		      </v-btn>
+
+		      <v-card>
+		        <v-list>
+		          <v-list-tile>
+		          	Deseja realmente remover este candidato da lista?
+		          	</v-list-tile>
+		        </v-list>
+		        <v-card-actions>
+		          <v-spacer></v-spacer>
+		          <v-btn flat color="primary" @click="popupConfirm=false">Cancelar</v-btn>
+		          <v-btn flat color="error" @click="popupConfirm=false || removerCandidato()">Sim, remover</v-btn>
+		        </v-card-actions>
+		      </v-card>
+		    </v-menu>
+		    <span>Remover este candidato da lista</span>
+		    </v-tooltip>    
+		  </v-flex>	   
+
+
 
           <v-flex xs12 sm2>
             <v-tooltip bottom z-index="1000" v-if="!disabled">
@@ -237,6 +262,7 @@ export default {
 		return {
 			indicesIndividuais: false,
 			hovering: false,
+			popupConfirm: false,
 			snackbar: {
 				x: 'left',
 				y: 'top',
