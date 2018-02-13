@@ -30,6 +30,7 @@
 			@enable="enableCandidate(candidato)"
 			@open="showDetailsCandidate(candidato)"
 			@close="hideDetailsCandidate(candidato)"
+            @change-color="changeCandidateColor(candidato, $event)"
 			@ver-indices="verIndicesIndividuais(candidato)"
 			@esconder-indices="verIndicesIndividuais(null)"
             @ver-carreira="verCarreira(candidato)"
@@ -153,7 +154,7 @@ export default {
             }
         },
 
-    	addCandidate: function (candidate) {
+    	addCandidate: function (candidate, addingMultiple=false) {
 
     		var that = this,
                 color = 'black',  
@@ -193,6 +194,11 @@ export default {
                     this.disableCandidate(candidateObj)
                     //candidateObj.disabled = true
                 }
+                else {
+                    if (!addingMultiple) {
+                        this.showDetailsCandidate(candidateObj)
+                    }    
+                }
                 if (candidate.showIndex) {
                     this.$emit('show-indexes', newCandidate)
                     candidateObj.showDetails = true
@@ -217,7 +223,7 @@ export default {
             function addNextCandidate(index) {
                 if (index >= candidates.length)
                     return
-                return that.addCandidate(candidates[index])
+                return that.addCandidate(candidates[index], true)
                 .then(() => {
                     addNextCandidate(index+1)
                 })
@@ -289,6 +295,12 @@ export default {
             var data = candidato.obterVotacaoCompleta()
             var filename = `${candidato.nomeEAno} ${candidato.uf}.csv`
             Utils.saveCSVFile(filename, data)
+        },
+
+        changeCandidateColor (candidato, color) {
+            console.log(color)
+            candidato.color = color
+            Store.candidatos.obterCandidato(candidato).color = color
         }
 
     },

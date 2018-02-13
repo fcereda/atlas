@@ -69,21 +69,34 @@
           <v-spacer></v-spacer>
 
           <v-flex xs12 sm2>
-            <v-tooltip bottom>
-              <v-btn flat icon slot="activator">
-                <v-icon>format_color_fill</v-icon>
-              </v-btn>
-              <span>Mudar cor</span>
-            </v-tooltip>
-          </v-flex>
-
-          <v-flex xs12 sm2>
             <v-tooltip bottom z-index="1000">
               <v-btn flat icon slot="activator" @click="closeDetails">
                 <v-icon>group</v-icon>
               </v-btn>
               <span>Comparar os candidatos da lista</span>
             </v-tooltip>  
+          </v-flex>
+
+          <v-flex xs12 sm2>
+            <v-tooltip bottom z-index="1000">
+              <v-menu
+            	offset-x
+            	:close-on-content-click="false"
+            	:nudge-width="200"
+            	v-model="popupColor"
+            	slot="activator"
+              > 
+                <v-btn flat icon slot="activator">
+                  <v-icon>format_color_fill</v-icon>
+                </v-btn>
+
+                <color-picker
+                	@input="changeColor"
+                ></color-picker>
+
+			  </v-menu>
+              <span>Mudar cor</span>
+            </v-tooltip>
           </v-flex>
 
           <v-flex xs12 sm2>
@@ -168,7 +181,8 @@
 	</div>
 
 	<v-snackbar
-		color="orange darken-4"      :timeout="snackbar.timeout"
+	  color="orange darken-4"      
+	  :timeout="snackbar.timeout"
       :top="snackbar.y === 'top'"
       :bottom="snackbar.y === 'bottom'"
       :right="snackbar.x === 'right'"
@@ -253,15 +267,23 @@
 <script>
 
 import Utils from '../lib/utils.js'
+import colorPicker from './color-picker.vue'
+import chroma from 'chroma-js'
 
 export default {
+
+	components: {
+		colorPicker
+	},
 
 	props: ['nome', 'partido', 'ano', 'numero', 'cargo', 'color', 'classificacao', 'resultado', 'total', 'totalEleicao', 'indiceLQ', 'indiceG', 'indiceMoran', 'loading', 'disabled', 'showDetails'],
 
 	data () {
+
 		return {
 			indicesIndividuais: false,
 			hovering: false,
+			popupColor: false,
 			popupConfirm: false,
 			snackbar: {
 				x: 'left',
@@ -392,6 +414,12 @@ export default {
 
 		salvarArquivoCSV () {
 			this.$emit('salvar-arquivo')
+		},
+
+		changeColor (color) {
+			this.popupColor = false
+			var rgbs = chroma(color).rgb()
+			this.$emit('change-color', rgbs.join(','))
 		}
 
 	}
