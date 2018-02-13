@@ -7,7 +7,7 @@
 			<v-menu offset-y z-index="10000">
 	            <v-tooltip bottom open-delay="200" slot="activator" z-index="10000">
 	              <v-btn flat icon _color="blue-grey lighten-4" class="button-logo-pequeno" slot="activator">
-	                <v-icon>format_color_fill</v-icon>
+	                <v-icon>palette</v-icon>
 	              </v-btn>
 	              <span>Escalas de cor</span>
 	            </v-tooltip>  
