@@ -33,6 +33,7 @@
 			@ver-indices="verIndicesIndividuais(candidato)"
 			@esconder-indices="verIndicesIndividuais(null)"
             @ver-carreira="verCarreira(candidato)"
+            @salvar-arquivo="salvarArquivo(candidato)"
 		></atlas-candidate-chip>	
 
 	    <p></p>
@@ -281,6 +282,13 @@ export default {
                 this.$refs.dialogCarreira.carregarCarreira()
                 this.showDialogCarreira = true
             }.bind(this))
+        },
+
+        salvarArquivo (candidato) {
+            candidato = Store.candidatos.obterCandidato(candidato)
+            var data = candidato.obterVotacaoCompleta()
+            var filename = `${candidato.nomeEAno} ${candidato.uf}.csv`
+            Utils.saveCSVFile(filename, data)
         }
 
     },

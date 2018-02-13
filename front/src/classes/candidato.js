@@ -227,6 +227,19 @@ class Candidato {
         //return `${ obj.uf.toUpperCase() }-${obj.ano}-${obj.cargo}-${obj.numero}`      
     }
 
+    static getNomeEAno (obj) {
+        var str = `${obj.nome} ${obj.ano}`
+        if (obj.cargo) {
+            if (['pr1', 'g1', 'pm1'].includes(obj.cargo)) {
+                str += ' T1'
+            }
+            else if (['pr2', 'g2', 'pm2'].includes(obj.cargo)) {
+                str += ' T2'
+            }
+        }
+        return str
+    }
+
     // Candidato.ePartido() retorna true se a combinação cargo,numero corresponde à
     // candidatura de um partido político em eleições legislativas ("votos de legenda")
     static ePartido (cargo, numero) {
@@ -235,6 +248,10 @@ class Candidato {
   
     get id () {
         return Candidato.calcularId(this)
+    }
+
+    get nomeEAno () {
+        return Candidato.getNomeEAno(this)
     }
     
     obterVotacaoNoDistrito (distritoId) {
@@ -277,6 +294,47 @@ class Candidato {
                 indice: indicePorDistrito[idDistrito]
             }
         })
+    }
+
+    obterVotacaoCompleta () {
+        var coordenadas = Store.coordenadas,
+            indices = ['indiceLQ', 'indiceLD', 'indiceLI'],
+            votacaoDict = this.obterVotacaoPorDistrito()
+
+        indices.forEach(nomeIndice => {
+            let indiceArr = this.obterIndice(nomeIndice)
+            indiceArr.forEach(({id, indice}) => {
+                votacaoDict[id][nomeIndice] = indice
+            })
+        })
+        return Object.keys(votacaoDict).map(districtId => {
+            var { id, numero, total, porcentagem, valorZ, indiceLQ, indiceLD, indiceLI } = votacaoDict[districtId],
+                coordenada = coordenadas[districtId],
+                codMunTse = 0,
+                numeroZona = 0,
+                nomeMunicipio = ''
+            if (coordenada) {
+                codMunTse = coordenada.codTse
+                numeroZona = coordenada.zona
+                nomeMunicipio = coordenada.municipio
+            }
+            else {
+                console.error('Coordenada ' + districtId + ' não encontrada!')
+            }
+            return {
+                id,
+                codMunTse,
+                numeroZona,
+                nomeMunicipio,
+                votos: numero,
+                totalvotos: total,
+                porcentagem,
+                valorZ, 
+                indiceLQ, 
+                indiceLD,
+                indiceLI
+            }
+        })        
     }
 
 }

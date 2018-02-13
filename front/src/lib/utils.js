@@ -222,6 +222,33 @@ export default {
     	return left + newsubstr + right
 	},
 
+	saveFile (filename, data, type='text/csv') {
+	    var blob = new Blob([data], {type});
+	    if(window.navigator.msSaveOrOpenBlob) {
+	        window.navigator.msSaveBlob(blob, filename);
+	    }
+	    else{
+	        var elem = window.document.createElement('a');
+	        elem.href = window.URL.createObjectURL(blob);
+	        elem.download = filename;        
+	        document.body.appendChild(elem);
+	        elem.click();        
+	        document.body.removeChild(elem);
+	    }
+	},
+
+	saveCSVFile (filename, data) {
+		if (!Array.isArray(data)) 
+			throw Error('Error in saveCSVFile: argument data must be an Array')
+		
+		// We assume every object in the array has the same properties, in the same order
+		var headerArr = Object.keys(data[0])
+		var contentArr = data.map(row => Object.keys(row).map(key => row[key]).join(','))
+		var data = headerArr + '\n' + contentArr.join('\n')
+		this.saveFile(filename, data)
+	},
+
+
 	obterNomeCargo (codigoCargo, curto) {
 
 		return curto ? CARGOS_CURTO[codigoCargo] : CARGOS[codigoCargo]

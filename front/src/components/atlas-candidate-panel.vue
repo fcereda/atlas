@@ -119,7 +119,7 @@
 -->          
           <v-flex xs12 sm2>
             <v-tooltip bottom z-index="1000">
-              <v-btn flat icon slot="activator">
+              <v-btn flat icon slot="activator" @click="salvarArquivoCSV">
                 <v-icon>file_download</v-icon>
               </v-btn>
               <span>Baixar dados da votação em formato CSV</span>
@@ -363,6 +363,10 @@ export default {
 		verCarreira () {
 			this.$emit('ver-carreira')
 		},
+
+		salvarArquivoCSV () {
+			this.$emit('salvar-arquivo')
+		}
 
 	}
 }		
