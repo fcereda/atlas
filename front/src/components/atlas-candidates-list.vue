@@ -162,6 +162,7 @@ export default {
                     nome: Utils.capitalizeName(candidate.nome),
                     nomeCompleto: Utils.capitalizeName(candidate.nomeCompleto),
                     uf: this.uf.sigla, 
+                    color: candidate.color || '192,192,192',
                     loading: true, 
                     disabled: false, 
                     showDetails: false
@@ -277,9 +278,8 @@ export default {
     	},
 
         changeCandidateColor (candidato, color) {
-            console.log(color)
+            this.$set(candidato, 'color', color)
             Store.candidatos.mudarCorCandidato(candidato, color)
-            candidato.color = color
         },
 
     	verIndicesIndividuais (candidato) {
