@@ -4,11 +4,7 @@
 
 		<div id="map" ref="map" v-bind:style="mapStyle">
 		</div>
-<!--
-		<div class="map-controls" v-show="displayChartTypes" v-if="0">
-			<div v-for="chart in chartTypes" @click="changeChartType(chart.name)" v-bind:class="chartType==chart.name?'selected-chart':''"><i class="material-icons">{{ chart.icon }}</i></div>
-		</div>	
--->
+
 		<div class="map-controls map-control-chart-type" v-show="displayChartTypes">
 
             <atlas-map-control
@@ -398,7 +394,7 @@ export default {
 		var that = this
 		var onHover = function (e) {
 			// This function is called by the Leaflet element,
-			// thus the event object is particular to Leaflet
+			// thus the event object is specific to Leaflet
 			var posicoesCharts = MapCharts.posicoesCharts,
 				chartsEncontrados = []
 			for (let i = posicoesCharts.length - 1; i >= 0; i--) {
@@ -457,7 +453,6 @@ export default {
         this.addControls(this.map)
         this.map.zoomControl.setPosition('topleft')       
 
-
 		this.fitBoundsToBrazil()
 
 		this.map.addEventListener('mouseover', onHover.bind(this))		
@@ -466,7 +461,7 @@ export default {
 
 		MapCharts.setUpCanvasLayer(this.map, this.chartType, this.radiusType)
 
-		// Code below by Ryan Clark (https://blog.webkid.io/maps-with-leaflet-and-topojson/)
+		// Code for L.TopoJSON by Ryan Clark (https://blog.webkid.io/maps-with-leaflet-and-topojson/)
 		L.TopoJSON = L.GeoJSON.extend({  
 			addData: function (jsonData) {    
 				if (jsonData.type === 'Topology') {
@@ -837,8 +832,6 @@ export default {
                     options.domain = domain
                     colors.domain(domain)
                 }
-
-//				console.warn(PlottingData.calcClusters(data, 7))
 
 				// Os dados para PlottingData estão na variável data
 				plottingData = new PlottingData(colors, data)
