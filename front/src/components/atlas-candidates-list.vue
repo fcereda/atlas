@@ -4,7 +4,7 @@
 	<v-container fluid class="pa-2">
 
 	    <div v-if="!candidatosSelecionados.length" class="pa-2">
-	    	Agora, escolha um ou mais candidatos ou partidos que tenham disputado eleições {{ uf.sigla == 'DF' ? 'no Distrito Federal': 'neste estado' }}. Basta digitar parte do nome no campo abaixo. Para mais opções, clique em <code>BUSCA AVANÇADA</code>:
+	    	Agora, escolha um ou mais candidatos ou partidos que tenham disputado eleições {{ uf.sigla == 'DF' ? 'no Distrito Federal': 'neste estado' }}. Basta digitar parte do nome no campo abaixo. Para fazer uma busca mais detalhada, clique em <code>BUSCA AVANÇADA</code>:
 	    </div>	
 
 		<atlas-candidate-chip
@@ -278,6 +278,12 @@ export default {
     		candidato.disabled = false
     	},
 
+        changeCandidateColor (candidato, color) {
+            console.log(color)
+            Store.candidatos.mudarCorCandidato(candidato, color)
+            candidato.color = color
+        },
+
     	verIndicesIndividuais (candidato) {
     		this.$emit('show-indexes', candidato)
     	},
@@ -296,12 +302,6 @@ export default {
             var filename = `${candidato.nomeEAno} ${candidato.uf}.csv`
             Utils.saveCSVFile(filename, data)
         },
-
-        changeCandidateColor (candidato, color) {
-            console.log(color)
-            candidato.color = color
-            Store.candidatos.obterCandidato(candidato).color = color
-        }
 
     },
 

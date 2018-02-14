@@ -113,6 +113,14 @@ class Candidatos {
         this.callCallbacksCandidato('habilitar', candidato)
     }
 
+    mudarCorCandidato (candidato, newColor) {
+        candidato = this.obterCandidato(candidato)
+        if (!candidato)
+            throw Error('Error in Candidatsos.mudarCorCandidato: argument candidato not found')
+        candidato.color = newColor
+        this.callCallbacksCandidato('cor', candidato)
+    }
+
     obterVotacoes (args) {
         var mapFunction = (candidato) => candidato.votos    
 

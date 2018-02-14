@@ -3,9 +3,23 @@
 <div class="candidate-record pt-2 pb-2 pl-1 pr-1" style="width:100%;display:flex;flex-direction:column">
 
 	<div style="width:100%; display:flex; flex-direction:row;" @mouseover="hovering=true" @mouseout="hovering=false">
+
 		<div class="icon-class pt-2" :xstyle="iconStyle" style="vertical-align: center;font-size:20px">
-			<v-icon v-if="false" class="pt-1 pl-1 pr-1" color="grey darken-3" @click="toggleEnableCandidato">{{ icone }}</v-icon>
-			<v-icon :style="iconStyle" large>fiber_manual_record</v-icon>
+            <v-tooltip bottom z-index="1000">
+              <v-menu
+            	offset-x
+            	:close-on-content-click="false"
+            	:nudge-width="200"
+            	v-model="popupColor"
+            	slot="activator"
+              > 
+				<v-icon :style="iconStyle" large slot="activator">fiber_manual_record</v-icon>
+                <color-picker
+                	@input="changeColor"
+                ></color-picker>
+			  </v-menu>
+              <span>Mudar cor</span>
+            </v-tooltip>
 		</div>
 		<div class="candidate-title" style="width:100%; display:flex; flex-direction:row">
 			<div class="candidate-name pointer" style="width:100%;flex:1" @click="openDetails">
@@ -20,14 +34,14 @@
 			</v-tooltip>	
 			-->
 			<v-tooltip bottom class="z-index-top pt-2" v-if="!disabled">
-				<span v-if="hovering" class="pl-2 pr-2 pointer" slot="activator" @click="disableCandidato">
-					<v-icon color="primary">visibility</v-icon>
+				<span v-if="!loading" class="pl-2 pr-2 pointer" slot="activator" @click="disableCandidato">
+					<v-icon>visibility</v-icon>
 				</span>
 				<span>Ignorar este candidato temporariamente</span>
 			</v-tooltip>	
 			<v-tooltip bottom class="z-index-top pt-2" v-if="disabled">
-				<span v-if="hovering" class="pl-2 pr-2 pointer" slot="activator" @click="enableCandidato">
-					<v-icon color="primary">visibility_off</v-icon>
+				<span v-if="!loading" class="pl-2 pr-2 pointer" slot="activator" @click="enableCandidato">
+					<v-icon>visibility_off</v-icon>
 				</span>
 				<span>Voltar a ver os dados deste candidato</span>
 			</v-tooltip>	
@@ -39,7 +53,7 @@
 				<span v-if="!showDetails">Ver índices individuais</span>
 				<span v-if="showDetails">Comparar com os outros candidatos</span>
 			</v-tooltip>	
-			<span v-if="loading">&nbsp;&nbsp;<v-progress-circular size="20" indeterminate></v-progress-circular></span>
+			<span class="pr-3 pt-2" v-if="loading"><v-progress-circular size="20" indeterminate></v-progress-circular></span>
 		</div>
 	</div>		
 	<div class="candidate-details-pane" ref="detailsPane" :style="detailsPaneStyle">
@@ -77,6 +91,7 @@
             </v-tooltip>  
           </v-flex>
 
+<!--
           <v-flex xs12 sm2>
             <v-tooltip bottom z-index="1000">
               <v-menu
@@ -98,7 +113,7 @@
               <span>Mudar cor</span>
             </v-tooltip>
           </v-flex>
-
+-->
           <v-flex xs12 sm2>
 		    <v-tooltip bottom z-index="1000">
 			<v-menu
@@ -420,6 +435,9 @@ export default {
 			this.popupColor = false
 			var rgbs = chroma(color).rgb()
 			this.$emit('change-color', rgbs.join(','))
+			if (this.disabled) {
+				this.enableCandidato()
+			}
 		}
 
 	}
