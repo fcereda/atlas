@@ -139,12 +139,25 @@ export default {
 		this.type = type
 		this.baseColor = baseColor
 
-		this.getNextColor = function () {
+		this.getNextColor = function (color) {
+			// If the argument color is provided, getNextColor() will
+			// simply mark that color as used in the this.colors array,
+			// and return it back to the caller
+			if (color) {
+				for (let i=0; i<this.colors.length; i++) {
+					if (this.colors[i].rgbColor == color) {
+						this.colors[i].inUse += 1
+						break
+					}
+				}
+				return color
+			}
+
 			var numUsers = 0
 			// this while clause is just to make sure the look will 
 			// eventually end -- we don't want numUsers to get this big!
 			while (numUsers < 100) {
-				for (var i=0; i<this.colors.length; i++) {
+				for (let i=0; i<this.colors.length; i++) {
 					if (this.colors[i].inUse <= numUsers) {
 						this.colors[i].inUse = numUsers + 1
 						return this.colors[i].rgbColor

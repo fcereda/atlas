@@ -91,29 +91,6 @@
             </v-tooltip>  
           </v-flex>
 
-<!--
-          <v-flex xs12 sm2>
-            <v-tooltip bottom z-index="1000">
-              <v-menu
-            	offset-x
-            	:close-on-content-click="false"
-            	:nudge-width="200"
-            	v-model="popupColor"
-            	slot="activator"
-              > 
-                <v-btn flat icon slot="activator">
-                  <v-icon>format_color_fill</v-icon>
-                </v-btn>
-
-                <color-picker
-                	@input="changeColor"
-                ></color-picker>
-
-			  </v-menu>
-              <span>Mudar cor</span>
-            </v-tooltip>
-          </v-flex>
--->
           <v-flex xs12 sm2>
 		    <v-tooltip bottom z-index="1000">
 			<v-menu
@@ -175,7 +152,7 @@
               <v-btn flat icon slot="activator" @click="salvarArquivoCSV">
                 <v-icon>file_download</v-icon>
               </v-btn>
-              <span>Baixar dados da votação em formato CSV</span>
+              <span>Baixar dados de votação em formato CSV</span>
             </v-tooltip>  
           </v-flex>
 
@@ -361,7 +338,6 @@ export default {
 			// o segundo argumento indica que queremos a versão curta do cargo
 			// p.ex, "Presidente T1" em lugar de "Presidente 1o. turno"
 			return Utils.obterNomeCargo(this.cargo)  
-
 		},
 
 		titulo () {
@@ -433,8 +409,8 @@ export default {
 
 		changeColor (color) {
 			this.popupColor = false
-			var rgbs = chroma(color).rgb()
-			this.$emit('change-color', rgbs.join(','))
+			var rgb = chroma(color).rgb()
+			this.$emit('change-color', rgb.join(','))
 			if (this.disabled) {
 				this.enableCandidato()
 			}

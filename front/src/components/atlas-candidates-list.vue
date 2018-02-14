@@ -157,13 +157,11 @@ export default {
     	addCandidate: function (candidate, addingMultiple=false) {
 
     		var that = this,
-                color = 'black',  
     			candidateObj = {
                     ...candidate, 
                     nome: Utils.capitalizeName(candidate.nome),
                     nomeCompleto: Utils.capitalizeName(candidate.nomeCompleto),
                     uf: this.uf.sigla, 
-                    color, 
                     loading: true, 
                     disabled: false, 
                     showDetails: false
@@ -174,7 +172,7 @@ export default {
     		return newCandidate.carregarVotacao()
             .then(() => {
                 candidateObj.loading = false
-                candidateObj.color = this.colorSequence.getNextColor()
+                candidateObj.color = this.colorSequence.getNextColor(candidate.color)
                 candidateObj.total = newCandidate.total
                 candidateObj.totalEleicao = newCandidate.totalEleicao
                 candidateObj.indiceGGlobal = newCandidate.indiceGGlobal
