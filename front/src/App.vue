@@ -123,240 +123,244 @@
 
 <script>
 
-  import Store from './lib/store.js'
-  import api from './lib/api.js'
-  import utils from './lib/utils.js'
-  import Candidato from './classes/candidato.js'
-  import atlasCandidatesList from './components/atlas-candidates-list.vue'
-  import atlasMap from './components/atlas-map-leaflet-canvas.vue'
-  import atlasSelectUf from './components/atlas-select-uf.vue'
-  import atlasDisplayUf from './components/atlas-display-uf.vue'
-  import atlasPainelZonas from './components/atlas-painel-zonas.vue'
-  import atlasSidebarTabs from './components/atlas-sidebar-tabs.vue'
+import Store from './lib/store.js'
+import api from './lib/api.js'
+import utils from './lib/utils.js'
+import Candidato from './classes/candidato.js'
+import atlasCandidatesList from './components/atlas-candidates-list.vue'
+import atlasMap from './components/atlas-map-leaflet-canvas.vue'
+import atlasSelectUf from './components/atlas-select-uf.vue'
+import atlasDisplayUf from './components/atlas-display-uf.vue'
+import atlasPainelZonas from './components/atlas-painel-zonas.vue'
+import atlasSidebarTabs from './components/atlas-sidebar-tabs.vue'
 
-  export default {
+export default {
 
     components: {
-      'atlas-candidates-list': atlasCandidatesList,
-      'atlas-map': atlasMap,
-      'atlas-select-uf': atlasSelectUf,
-      'atlas-display-uf': atlasDisplayUf,
-      'atlas-painel-zonas': atlasPainelZonas,
-      'atlas-sidebar-tabs': atlasSidebarTabs,
+        'atlas-candidates-list': atlasCandidatesList,
+        'atlas-map': atlasMap,
+        'atlas-select-uf': atlasSelectUf,
+        'atlas-display-uf': atlasDisplayUf,
+        'atlas-painel-zonas': atlasPainelZonas,
+        'atlas-sidebar-tabs': atlasSidebarTabs,
     },
 
     data: () => ({
-      drawer: true,
-      modoInicial: true,
-      uf: '',
-      originalCandidates: null,
-      colorScale: {
-        type: 'categorical',
-        baseColor: 'usable'
-      },
-      candidates: [],
-      showIndexes: false,
-      highlightedCandidate: null,
-      zonasHover: [],
-      mostrarPainelZonas: false,
-      dialogSave: false,
-      snackbar: {
-        text: 'Erro tentando carregar coordenadas geográficas',
-        color: 'error',
-        visible: false
-      },
-      currentLocation: window.location.href
+        drawer: true,
+        modoInicial: true,
+        uf: '',
+        originalCandidates: null,
+        colorScale: {
+            type: 'categorical',
+            baseColor: 'usable'
+        },
+        candidates: [],
+        showIndexes: false,
+        highlightedCandidate: null,
+        zonasHover: [],
+        mostrarPainelZonas: false,
+        dialogSave: false,
+        snackbar: {
+            text: 'Erro tentando carregar coordenadas geográficas',
+            color: 'error',
+            visible: false
+        },
+        currentLocation: window.location.href
     }),
 
     props: {
-      source: String
+        source: String
     },
 
     computed: {
-      classLogo () {
-        return this.modoInicial ? 'cepesp-logo-grande' : 'cepesp-logo-pequeno'
-      }
+        classLogo () {
+          return this.modoInicial ? 'cepesp-logo-grande' : 'cepesp-logo-pequeno'
+        }
     },
 
     mounted () {
-      setTimeout(this.loadAppState.bind(this), 500)  
+        setTimeout(this.loadAppState.bind(this), 500)  
     },
 
-
     methods: {
-      goHome () {
-        Store.removerTodosCandidatos()
-        this.showIndividualIndexes(null)
-        this.modoInicial = true
-        this.uf = ''
-        this.mostrarPainelZonas = false
-      },
+        
+        goHome () {
+            Store.removerTodosCandidatos()
+            this.showIndividualIndexes(null)
+            this.modoInicial = true
+            this.uf = ''
+            this.mostrarPainelZonas = false
+        },
 
-      changeUf (uf) {
-        api.getCitiesAndLocations(uf.sigla.toLowerCase())
-        .then((data) => {
-          Store.coordenadas = data.coords
-          Store.municipios = data.municipios
-        })
-        .catch((error) => {
-          this.snackbar.visible = true
-        })
-        this.uf = uf
-        this.modoInicial = false
-      },
+        changeUf (uf) {
+            api.getCitiesAndLocations(uf.sigla.toLowerCase())
+            .then((data) => {
+                Store.coordenadas = data.coords
+                Store.municipios = data.municipios
+            })
+            .catch((error) => {
+                this.snackbar.visible = true
+            })
+            this.uf = uf
+            this.modoInicial = false
+        },
 
-      openCloseDrawer (drawerOpen) {
-        this.drawer = drawerOpen
-      },
+        openCloseDrawer (drawerOpen) {
+            this.drawer = drawerOpen
+        },
 
-      addCandidate (candidate) {
-        Store.adicionarCandidato(candidate)
-      },
+        addCandidate (candidate) {
+            Store.adicionarCandidato(candidate)
+        },
 
-      removeCandidate (candidate) {
-        if (this.individualIndexes == candidate)
-          this.individualIndexes = null
-        Store.removerCandidato(candidate)  
-      },
-
-      showIndividualIndexes (candidate) {
-        this.showIndexes = candidate
-      },
-
-      setColorScale (colorScale) {
-        this.colorScale = colorScale
-      },
-
-      onMapClick (zonas) {
-        if (this.modoInicial)
-          return
-
-        if (!zonas || !zonas.length) {
-          zonas = []
-          this.mostrarPainelZonas = false
-        }
-        else {
-          if (this.$refs.sidebarTabs.activeTab == 'candidatos') {
-            this.$refs.sidebarTabs.showTabDetalhes()
-            this.mostrarPainelZonas = true
-          }  
-        }
-        this.zonasHover = zonas
-      },
-
-      showSnackbar (text, color) {
-        this.snackbar.text = text
-        this.snackbar.color = color
-        this.snackbar.visible = true
-      },
-
-      loadAppState () {
-        var that = this
-        var appStateId = window.location.hash
-        if (appStateId) {
-          appStateId = appStateId.substr(1, 100)
-          appStateId = appStateId.replace('/', '')
-        }
-        console.error(appStateId)
-        api.getAppState(appStateId)
-        .then(response => {
-          var appState = response.data
-          console.log(appState)        
-          if (appState.uf) {
-            let uf = utils.obterUfPorSigla(appState.uf)
-            if (!uf) {
-              throw Error('Error loading appState: invalid uf')
+        removeCandidate (candidate) {
+            if (this.individualIndexes == candidate) {
+                this.individualIndexes = null
             }
-            this.changeUf(uf)
-            this.$refs.map.setMapState(appState)
-            let candidateIds = appState.candidatos.map(candidato => candidato.id)
-            api.getCandidatesFromIds(candidateIds)
+            Store.removerCandidato(candidate)  
+        },
+
+        showIndividualIndexes (candidate) {
+            this.showIndexes = candidate
+        },
+
+        setColorScale (colorScale) {
+            this.colorScale = colorScale
+        },
+
+        onMapClick (zonas) {
+            if (this.modoInicial) {
+                return
+            }
+            if (!zonas || !zonas.length) {
+                zonas = []
+                this.mostrarPainelZonas = false
+            }
+            else {
+                if (this.$refs.sidebarTabs.activeTab == 'candidatos') {
+                    this.$refs.sidebarTabs.showTabDetalhes()
+                    this.mostrarPainelZonas = true
+                }  
+            }
+            this.zonasHover = zonas
+        },
+
+        showSnackbar (text, color) {
+            this.snackbar.text = text
+            this.snackbar.color = color
+            this.snackbar.visible = true
+        },
+
+        loadAppState () {
+            var that = this
+            var appStateId = window.location.pathname
+            if (appStateId == '/') {
+                appStateId = window.location.hash
+            }
+            if (!appStateId) {
+                return
+            }
+            appStateId = appStateId.substr(1, 100)
+
+            api.getAppState(appStateId)
             .then(response => {
-              let originalCandidates = response.data
-              originalCandidates.forEach(candidate => {
-                let appStateCandidate = appState.candidatos.find(({id}) => id == candidate.id)
-                candidate.color = appStateCandidate.color
-                //candidate.showDetails = appStateCandidate.open   // TEM QUE CONFERIR O NOME DESTA PROPRIEDADE
-                candidate.disabled = appStateCandidate.disabled
-                if (appStateCandidate.showIndex || candidate.id == appState.showIndex) {
-                  candidate.showIndex = true
+                var appState = response.data
+                if (appState.uf) {
+                    let uf = utils.obterUfPorSigla(appState.uf)
+                    if (!uf) {
+                      throw Error('Error loading appState: invalid uf')
+                    }
+                    this.changeUf(uf)
+                    this.$refs.map.setMapState(appState)
+                    let candidateIds = appState.candidatos.map(candidato => candidato.id)
+                    api.getCandidatesFromIds(candidateIds)
+                    .then(response => {
+                        let originalCandidates = response.data
+                        originalCandidates.forEach(candidate => {
+                            let appStateCandidate = appState.candidatos.find(({id}) => id == candidate.id)
+                            candidate.color = appStateCandidate.color
+                            candidate.disabled = appStateCandidate.disabled
+                            if (appStateCandidate.showIndex || candidate.id == appState.showIndex) {
+                                candidate.showIndex = true
+                            }
+                        })
+                        that.originalCandidates = originalCandidates
+                    })
+                    .catch(err => {
+                        console.error(err)
+                        that.showSnackbar('Erro tentando carregar a lista de candidatos')
+                    })     
                 }
-                that.originalCandidates = originalCandidates
-              })
             })
             .catch(err => {
-              console.error(err)
-              that.showSnackbar('Erro tentando carregar a lista de candidatos')
-            })     
-          }
-        })
-        .catch(err => {
-          console.error(err)
-        })
-      },
+                console.error(err)
+            })
+        },
 
-      saveState () {
+        saveState () {
+            var getCandidateId = (candidate) => {
+                var id = Candidato.calcularId(candidate)
+                if (id.charAt(2) != '-') {
+                  id = this.uf.sigla + '-' + id
+                }
+                return id
+            }
+            var mapState = this.$refs.map.getMapState()
+            var showIndexCandidateId = this.showIndexes ? getCandidateId(this.showIndexes) : 0
+            var appState = {
+                uf: this.uf.sigla,
+                candidatos: Store.candidatos.map(candidato => {
+                    var id = getCandidateId(candidato)
+                    return {
+                        id,
+                        color: candidato.color,
+                        disabled: candidato.disabled ? 1 : 0,
+                        showIndex: showIndexCandidateId == id ? 1 : 0,
+                    }  
+                }),
+                showIndex: showIndexCandidateId,
+                ...mapState
+            }
 
-        var getCandidateId = (candidate) => {
-          var id = Candidato.calcularId(candidate)
-          if (id.charAt(2) != '-') {
-            id = this.uf.sigla + '-' + id
-          }
-          return id
+            api.saveAppState(appState)
+            .then(data => {
+                var id = data.id
+                //window.location.hash = id   // DEPRECATED
+                // Changes the url without reloading the page
+                history.pushState(appState, "CEPESP Atlas Eleitoral", id);  
+
+                this.currentLocation = window.location.href
+                // Show the dialog that contains info for user to retrieve the saved map
+                this.dialogSave = true
+            })
+            .catch(err => {
+                console.error(err)
+                this.showSnackbar ('Erro tentando salvar a visualização atual', 'danger') 
+            })
+        },
+
+        copyLocation: function () {
+
+            function copyToClipboard(str) {
+
+                function listener(e) { 
+                    e.clipboardData.setData("text/plain", str)
+                    e.preventDefault() 
+                }
+
+                document.addEventListener("copy", listener);
+                document.execCommand("copy");
+                document.removeEventListener("copy", listener);
+            }
+
+            var location = window.location.href
+            copyToClipboard(location)  
         }
-        var mapState = this.$refs.map.getMapState()
-        var showIndexCandidateId = this.showIndexes ? getCandidateId(this.showIndexes) : 0
-        var appState = {
-          uf: this.uf.sigla,
-          candidatos: Store.candidatos.map(candidato => {
-            var id = getCandidateId(candidato)
-            return {
-              id,
-              color: candidato.color,
-              disabled: candidato.disabled ? 1 : 0,
-              showIndex: showIndexCandidateId == id ? 1 : 0,
-            }  
-          }),
-          showIndex: showIndexCandidateId,
-          ...mapState
-        }
-        console.log('appState')
-        console.log(appState)
-
-        api.saveAppState(appState)
-        .then(data => {
-          var id = data.id
-          this.showSnackbar('Visualização salva com o id ' + id, 'primary')
-          window.location.hash = id
-          this.currentLocation = window.location.href
-          this.dialogSave = true
-          new Clipboard('#btnCopy')
-        })
-        .catch(err => {
-          console.error(err)
-          this.showSnackbar ('Erro tentando salvar a visualização atual', 'danger') 
-        })
-        
-      },
-
-      copyLocation: function () {
-
-        function copyToClipboard(str) {
-          function listener(e) { e.clipboardData.setData("text/plain", str);
-                                 e.preventDefault(); }
-          document.addEventListener("copy", listener);
-          document.execCommand("copy");
-          document.removeEventListener("copy", listener);
-        };
-
-        var location = window.location.href
-        copyToClipboard(location)  
-
-      }
 
     }  
 
-  }
+}
+
 </script>
 
 <style>
