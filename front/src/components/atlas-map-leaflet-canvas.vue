@@ -343,7 +343,7 @@ export default {
 			}
 			else {
 				MapCharts.removeCharts()
-				this.fitBoundsToBrazil()
+				this.fitBoundsToBrazil(false)
 				this.loadStatesBorders()
 			}
 		},
@@ -450,10 +450,11 @@ export default {
 		});
 
 		mapnikTileLayer.addTo(this.map)
-        this.addControls(this.map)
         this.map.zoomControl.setPosition('topleft')       
+		this.addControls(this.map)
 
-		this.fitBoundsToBrazil()
+
+		this.fitBoundsToBrazil(true)
 
 		this.map.addEventListener('mouseover', onHover.bind(this))		
 		this.map.addEventListener('mousemove', onHover.bind(this))
@@ -564,10 +565,36 @@ export default {
 				}
 			}) 	
 
+			L.Control.FitBoundariesButton = L.Control.extend({
+				onAdd: function (map) {
+					var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom')
+
+					container.innerHTML = `
+						<div _style="padding:4px;padding-top:6px;background-color:white;">
+						<i class="material-icons" style="padding-top:3px;padding-left:3px;">center_focus_strong</i>
+						</div>`
+
+					container.style.backgroundColor = 'white'
+					container.style.width = '30px'
+					container.style.height = '30px'
+					container.style.cursor = 'pointer'
+
+					container.addEventListener('click', () => {
+						var uf = that.uf.sigla
+						that.fitBoundsToUf(uf)
+					})
+
+					return container
+				}
+			})
+
             if (this.showSidebarOpen) {
                 var openSidebarControl = new L.Control.OpenSidebarMenu({ position: 'topleft' })
                 openSidebarControl.addTo(map)
             }    
+
+            var fitBoundaries = new L.Control.FitBoundariesButton({ position: 'topleft' })
+            fitBoundaries.addTo(map)
 
         },
 
@@ -583,10 +610,20 @@ export default {
 			return bounds;
 		},
 
-		fitBoundsToBrazil () {
-			this.map.fitBounds(this.calcBrazilBoundaries(), {
-				paddingTopLeft: [-400, 0]
-			});
+		fitBoundsToBrazil (usePadding) {
+			var options = {}
+			if (usePadding) {
+				options.paddingTopLeft = [-400, 0]
+			}
+			this.map.fitBounds(this.calcBrazilBoundaries(), options);
+		},
+
+		fitBoundsToUf (uf) {
+			if (!uf) {
+				return this.fitBoundsToBrazil()
+			}
+			uf = uf.toUpperCase()
+			this.map.fitBounds(this.stateBoundaries[uf]) 
 		},
 
 		flyToState (state) {
