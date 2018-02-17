@@ -8,7 +8,7 @@
 		@input="tabInput"
 	>
       <v-tabs-bar class="white" style="overflow-x:hidden;">
-        <v-tabs-slider color="primary" style="overflow-x:hidden;"></v-tabs-slider>
+        <v-tabs-slider color="primary" style="overflow-x:hidden;overflow-y:scroll;"></v-tabs-slider>
 
         <v-tabs-item
           v-for="tab in tabs"
@@ -22,7 +22,10 @@
 
       </v-tabs-bar>
 
-      <v-tabs-items>
+      <v-tabs-items
+     	ref="tabsItems"
+        style="overflow-y:auto;"
+      >
 
         <v-tabs-content
             key="candidatos"
@@ -118,6 +121,48 @@ export default {
 
 	},
 
+	mounted () {
+
+		var self = this
+
+		function onResize () {
+			console.log('entrou em onResize')
+			var tabsItems = self.$refs.tabsItems
+			if (!tabsItems) {
+				console.error('tabsItems not found')
+				console.log(self)
+			}
+			var tabsItemsEl = tabsItems.$el
+			var tabsItemsRect = tabsItemsEl.getBoundingClientRect()
+			var windowHeight = window.innerHeight
+			var tabsItemsTop = tabsItemsRect.top - tabsItemsRect.bottom,
+				newHeight
+
+			if (tabsItemsTop < 50) {
+				tabsItemsTop = 155  // Hard-coded hack for the first time this function is called
+			}	
+			newHeight = windowHeight - tabsItemsTop
+			tabsItemsEl.style.height = newHeight + 'px'
+			console.log('windowHeight =', windowHeight)
+			console.log(tabsItemsRect)
+			console.log('newHeight =', newHeight)
+		}
+
+		window.addEventListener('resize', onResize)
+		this.$nextTick(onResize)
+	},
+
+	computed: {
+
+		tabsStyle () {
+			if (this.tabsHeight) {
+				return `height:${this.tabsHeight}px;overflow-0y:auto`
+			}
+		}
+
+
+	},
+
 	watch: {
 
 		candidates () {
@@ -152,7 +197,7 @@ export default {
 		tabInput (idTabSelecionado) {
 			this.$refs.painelMaisVotados.setVisible(idTabSelecionado == 'maisvotados')
 					   
-		}
+		},
 
 	}
 

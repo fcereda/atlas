@@ -11,6 +11,7 @@
       app
       width="400"
       class="pb-0"
+      style="height:100%;overflow:hidden;"
     >
       <div class="cepesp-logo" v-bind:class="classLogo">
         <span>CEPESP&nbsp;</span>
@@ -411,6 +412,11 @@ html {
   z-index:2000;
   background-color: white;
   border: 1px solid #888;
+}
+
+.atlas-sidebar {
+    height:100%;
+    overflow-y:hidden;
 }
 
 </style>
