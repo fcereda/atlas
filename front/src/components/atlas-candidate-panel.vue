@@ -9,7 +9,6 @@
               <v-menu
             	offset-x
             	:close-on-content-click="false"
-            	:nudge-width="200"
             	v-model="popupColor"
             	slot="activator"
               > 
