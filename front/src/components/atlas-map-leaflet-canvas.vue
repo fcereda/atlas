@@ -211,7 +211,7 @@ export default {
 				name: 'indiceLQ',
 				label: 'QL',
                 tooltip: 'Ver coeficientes de locação',
-				palette: ['#d73027','#f46d43','#fdae61','#fee090','#ffffbf','#abd9e9','#74add1','#4575b4','#313695'],
+				palette: ['#f46d43','#fdae61','#fee090','#ffffbf','#e0f3f8','#abd9e9','#74add1','#4575b4','#313695'],
 				domain: [0, 0.1, 0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0],
 				legendTitle: 'Quociente de locação',
 				legendLabels: ['Até 0,1', '0,1 \u2014 0,25', '0,25 \u2014 0,5', '0,5 \u2014 1,0', '1,0 \u2014 2.0', '2.0 \u2014 4.0', '4.0 \u2014 8.0', '8,0 \u2014 16,0', '16.0 ou mais']
