@@ -135,6 +135,10 @@ if (!developmentMode) {
 		res.sendFile(path.join(distFolder + 'build.js'))
 	})
 
+	app.get('/dist/build.js.map', function (req, res) {
+		res.sendFile(path.join(distFolder + 'build.js.map'))	
+	})
+
 	app.use('/public', express.static(publicFolder));
 
 	const onlyStatus200 = (req, res) => res.statusCode === 200
@@ -270,6 +274,28 @@ app.get('/api/status', (req, res) => {
 		cacheIndex: apicache.getIndex()
 	})
 })
+
+
+// Identifica se a chamada corresponde ao formato
+// /appstateId
+// Caso corresponda, devolve /index.html para o cliente
+// appStateId é sempre uma string de seis letras, e o
+// primeiro caractere é sempre uma letra maiúscula 
+
+app.use(function (req, res, next) {
+	if (isAppstateId(req.url)) {
+    	return res.sendFile(path.join(distFolder + 'index.html'))
+	}
+	next()
+})
+
+function isAppstateId (url) {
+	var appstateIdRegexp = /^\/[A-Z][a-zA-z]{5}$/
+	if (!url)
+		return false
+	return appstateIdRegexp.test(url)
+}
+
 
 function parseCandidateRow (row) {
 
