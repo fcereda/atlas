@@ -10,6 +10,7 @@ var proxy = require('express-http-proxy')
 var path = require('path');
 var apicache = require('apicache')
 var AppState = require('./appstate.js')
+var logger = require('./logger.js')
 let cache = apicache.middleware
 
 var arqCandidatos = './data/candidatos.csv',
@@ -44,7 +45,7 @@ app.use(bodyParser.json())
 
 router.use(function (req, res, next) {
 	if (debugMode) {
-		console.log(req.path)
+		logger.info(req.path)
 	}	
 	next()
 })	
@@ -128,6 +129,7 @@ function filterCandidates (arrayCandidatos, uf, ano, cargo, nome, nomeCompleto, 
 
 if (!developmentMode) {
 	app.get('/', function (req, res) {
+		logger.info(req.ip + ' requested /')
 	    res.sendFile(path.join(distFolder + 'index.html'))
 	});
 
@@ -236,7 +238,7 @@ router.route('/api/municipios')
 
 app.get('/api/state/:id', async (req, res) => {
 	var id = req.params.id
-	console.log('id = ' + id)
+	logger.info(req.ip + ' requested path /' + id)
 
 	try {
 		var appState = await AppState.getAppState(id)
@@ -246,6 +248,7 @@ app.get('/api/state/:id', async (req, res) => {
 		return res.status(200).json(appState)
 	} 
 	catch (err) {
+		logger.error(err)
 		return res.status(500).json({ error: 'Error loading appState' })
 	}	
 })
@@ -378,16 +381,16 @@ developmentMode = options.dev || developmentMode
 
 function loadCandidates (next) {
 
-	print('Carregando candidatos...')
+	logger.info('Carregando candidatos...')
 	try {
 		var fileData = fs.readFileSync(arqCandidatos)
 	    parse(fileData, {delimiter: ',', trim: true, columns: true}, function (err, rows) {
 	    	if (err) {
-				console.error(`Error trying to parse file ${arqCandidatos}`)
-	    		console.error(err)
+				logger.error(`Error trying to parse file ${arqCandidatos}`)
+	    		logger.error(err)
 	    		process.exit()
 	    	}
-	 		print(rows.length + ' candidatos carregados')
+	 		logger.info(rows.length + ' candidatos carregados')
 	    	candidatos = rows
 	    		.filter((row) => parseInt(row['CODIGO_CARGO']) <= 8)	// Elimina todos os prefeitos e vereadores
 	    		.map((row) => parseCandidateRow(row))
@@ -438,8 +441,8 @@ function loadCandidates (next) {
 	  	})
 	}  	
 	catch (error) {
-		console.error('Erro tentando abrir o arquivo ' + arqCandidatos)
-		console.error(error)
+		logger.error('Erro tentando abrir o arquivo ' + arqCandidatos)
+		logger.error(error)
 		process.exit()
 	}
 
@@ -447,7 +450,7 @@ function loadCandidates (next) {
 
 
 function loadParties (next) {
-	print('Carregando partidos políticos...')
+	logger.info('Carregando partidos políticos...')
 	try {
 		partidos = JSON.parse(fs.readFileSync(arqPartidos, 'utf8'));
 		if (next) {
@@ -455,23 +458,24 @@ function loadParties (next) {
 		}
 	}
 	catch (error) {
-		console.error('Erro tentando abrir o arquivo ' + arqPartidos)
-		console.error(error)
+		logger.error('Erro tentando abrir o arquivo ' + arqPartidos)
+		logger.error(error)
 		process.exit()
 	}
 }
 
 
 function loadCoordinates (next) {
-	print('Carregando coordenadas...')
+	logger.info('Carregando coordenadas...')
 	try {
 		var fileData = fs.readFileSync(arqCoords)
 		parse(fileData, {delimiter: ',', trim: true, from: 2}, function (err, rows) {
 			if (err) {
-	    		console.error(`Error trying to parse file ${arqCoords}`)
+	    		logger.error(`Error trying to parse file ${arqCoords}`)
+	    		logger.error(err)
 	    		process.exit()
 	    	}
-	    	print(rows.length + ' coordenadas carregadas')
+	    	logger.info(rows.length + ' coordenadas carregadas')
 	    	coordsArray = rows.map((row) => parseCoordinateRow(row))
 	    	coordenadas = coordsArray.reduce((coordenadas, coord) => {
 				var id = coord.id
@@ -495,8 +499,8 @@ function loadCoordinates (next) {
 		})
 	}
 	catch (error) {
-		console.error('Erro tentando abrir o arquivo ' + fileName)
-		console.error(error)
+		logger.error('Erro tentando abrir o arquivo ' + fileName)
+		logger.error(error)
 		process.exit()
 	}
 }
@@ -541,8 +545,8 @@ function loadIbgeData (next) {
 		}
 	}
 	catch (error) {
-		console.error('Erro tentando abrir o arquivo ' + arqMunicipios)
-		console.error(error)
+		logger.error('Erro tentando abrir o arquivo ' + arqMunicipios)
+		logger.error(error)
 		process.exit()
 	}
 }
@@ -553,7 +557,8 @@ function startServer () {
 	app.listen(port)
 
 	timeStarted = Date().toString() 
-	print(timeStarted + ': Servidor do CEPESP Atlas Eleitoral operando na porta ' + port)
+	//print(timeStarted + ': Servidor do CEPESP Atlas Eleitoral operando na porta ' + port)
+	logger.info('Servidor do CEPESP Atlas Eleitoral operando na porta ' + port)
 }
 
 
