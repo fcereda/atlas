@@ -254,7 +254,6 @@ app.get('/api/state/:id', async (req, res) => {
 })
 
 app.post('/api/state', async (req, res) => {
-	console.log(req.body)
 	var appState = req.body
 	//var appState = req.body.appState
 	if (!appState || !appState.uf || !appState.candidatos) {
@@ -264,6 +263,7 @@ app.post('/api/state', async (req, res) => {
 	if (!id) {
 		return res.status(500).json({ error: 'Internal error' })
 	} 
+	logger.info(req.ip + ' saved map with id ' + id)
 	return res.status(200).json({ id })
 })
 
