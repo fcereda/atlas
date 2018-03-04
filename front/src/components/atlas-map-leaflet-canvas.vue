@@ -113,6 +113,9 @@ import PlottingData from '../classes/plottingdata.js'
 import chroma from 'chroma-js'
 var SimpleStats = require('simple-statistics')
 
+import whiteboard from '../lib/whiteboard.js'
+import '../lib/whiteboard.styl'
+
 import atlasSearchMunicipalities from './atlas-search-municipalities.vue'
 import atlasMapControl from './atlas-map-control.vue'
 import atlasMapLegend from './atlas-map-legend.vue'
@@ -340,11 +343,17 @@ export default {
 				this.highlightStateBorder(this.uf)
 				this.flyToState(this.uf.sigla)
 				//this.loadIbgeData(this.uf)
+				// if this.uf is truthy, we must display the whiteboard control
+				whiteboard.displayControl(true)
 			}
 			else {
 				MapCharts.removeCharts()
 				this.fitBoundsToBrazil(false)
 				this.loadStatesBorders()
+				// if this.uf is set to null, we must erase the whiteboard contents
+				// and hide the whiteboard control
+				whiteboard.eraseContent()		
+				whiteboard.displayControl(false)		
 			}
 		},
 
@@ -452,7 +461,8 @@ export default {
 		mapnikTileLayer.addTo(this.map)
         this.map.zoomControl.setPosition('topleft')       
 		this.addControls(this.map)
-
+	    whiteboard.addTo(this.map)
+	    whiteboard.displayControl(false)
 
 		this.fitBoundsToBrazil(true)
 
@@ -500,7 +510,8 @@ export default {
                 ],
                 chartType: this.chartType,
                 indexType: this.indexChartType,
-                radiusType: this.radiusType,                
+                radiusType: this.radiusType,
+                whiteboardContent: whiteboard.getContent()
             }
         },
 
@@ -523,6 +534,9 @@ export default {
             }
             if (mapState.radiusType) {
                 this.radiusType = mapState.radiusType
+            }
+            if (mapState.whiteboardContent) {
+            	whiteboard.setContent(mapState.whiteboardContent)
             }
         },
 
