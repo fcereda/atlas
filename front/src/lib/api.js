@@ -337,8 +337,12 @@ export default {
 		}
 
 		return new Promise ((resolve, reject) => {
+			console.log(query.url())
 			axios.get(cepespURL + query.url())
 			.then((response) => {
+				if (!response.data || !response.data.length) {
+					throw Error('Empty response from the CEPESP API')
+				}
 				var data = getArrayFromCSV(response.data, {
 					'ano': 'ANO_ELEICAO',
 					'turno': 'NUM_TURNO',
