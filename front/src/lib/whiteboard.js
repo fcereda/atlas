@@ -37,7 +37,8 @@ export default {
     setContent (content) {
         polylines = []
         content.forEach(({ latlngs, options }) => {
-            let polyline = L.polyline(latlngs, options)
+            //let polyline = L.polyline(latlngs, options)
+            let polyline = createNewPolyline(latlngs, options)
             polylines.push(polyline)
             addSavedPolylineToMap(polyline)
         })
@@ -134,10 +135,11 @@ function removePolyline (polyline) {
 }
 
 // addSavedPolylineToMap (polyline)
-// Similar to addPolyline, with two differences:
+// Unlike addPolyline, adds a polyline to the map using addTo(map). Besides:
 // 1) adjust for changes in the map's zoom (not necessary on addPolyline, because the
 // polyline being added is assumed to be on the map's current zoom);
-// 2) does not touch the state (it is assumed that the callee will handle that)
+// 2) does not touch the polylines array (it is assume callee will handle that)
+// 3) does not touch the state (again, it assumeds callee will handle that)
 
 function addSavedPolylineToMap (polyline) {
     var style = calcPolylineStyle(polyline)
@@ -172,7 +174,7 @@ function onMouseDown (e) {
 
 function onMouseUp (e) {
     if (mouseIsDown && isLeftButton(e)) {
-	addPolyline(currentPolyline)
+	    addPolyline(currentPolyline)
         currentPolyline = null
         mouseIsDown = false
     }
@@ -245,8 +247,9 @@ function onMouseMove (e) {
 }
 
 function onMouseOut (e) {
-    addPolyline(currentPolyline)	
-    oldPosition = null
+    // moving out of the map is equivalent to releasing the mouse button, as in
+    // both cases we must save a new polyline in case the user was drawing one
+    onMouseUp(e)    
 }
 
 

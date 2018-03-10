@@ -2,7 +2,7 @@
 
 	<v-container fluid fill-height pa-0>
 
-		<div id="map" ref="map" v-bind:style="mapStyle">
+		<div id="map" ref="map" class="atlas-map" v-bind:style="mapStyle">
 		</div>
 
 		<div class="map-controls map-control-chart-type" v-show="displayChartTypes">
@@ -102,6 +102,14 @@
 	</v-container>
 
 </template>
+
+<style>
+
+.atlas-map {
+	user-select:none;
+}
+
+</style>
 
 <script>
 
