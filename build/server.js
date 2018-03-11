@@ -520,16 +520,16 @@ function parseIbgeData (row) {
 
 
 function loadIbgeData (next) {
-	print('Carregando dados IBGE dos municípios...')
+	logger.info('Carregando dados IBGE dos municípios...')
 	try {
 		var fileData = fs.readFileSync(arqMunicipios)
 		parse(fileData, {delimiter: ';', trim: true, columns: true}, function (err, rows) {
 	    	if (err) {
-	    		console.error(`Error trying to parse file ${arqMunicipios}`)
-	    		console.error(err)
+	    		logger.error(`Error trying to parse file ${arqMunicipios}`)
+	    		logger.error(err)
 	    		process.exit()
 	    	}
-	 		print(rows.length + ' municípios carregados')
+	 		logger.info(`Dados IBGE de ${ rows.length } municípios carregados`)
 	    	municipios = rows.map(parseIbgeData)
 
 	    	municipiosPorUf = {}
@@ -538,11 +538,11 @@ function loadIbgeData (next) {
 	    		if (!municipiosPorUf[uf])
 	    			municipiosPorUf[uf] = []
 	    		municipiosPorUf[uf].push(municipio)
-			})    		
+			})   
+			if (next) {
+				next()
+			}
 		})
-		if (next) {
-			next()
-		}
 	}
 	catch (error) {
 		logger.error('Erro tentando abrir o arquivo ' + arqMunicipios)
@@ -556,8 +556,6 @@ function startServer () {
 	app.use('', router)
 	app.listen(port)
 
-	timeStarted = Date().toString() 
-	//print(timeStarted + ': Servidor do CEPESP Atlas Eleitoral operando na porta ' + port)
 	logger.info('Servidor do CEPESP Atlas Eleitoral operando na porta ' + port)
 }
 
@@ -567,6 +565,7 @@ function executeFunctions () {
 		loadCandidates,
 		loadParties,
 		loadCoordinates,
+		loadIbgeData,
 		startServer
 	]
 	var	functionsIndex = -1
