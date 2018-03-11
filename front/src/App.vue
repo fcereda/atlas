@@ -129,7 +129,7 @@ import api from './lib/api.js'
 import utils from './lib/utils.js'
 import Candidato from './classes/candidato.js'
 import atlasCandidatesList from './components/atlas-candidates-list.vue'
-import atlasMap from './components/atlas-map-leaflet-canvas.vue'
+import atlasMap from './components/atlas-map.vue'
 import atlasSelectUf from './components/atlas-select-uf.vue'
 import atlasDisplayUf from './components/atlas-display-uf.vue'
 import atlasPainelZonas from './components/atlas-painel-zonas.vue'
@@ -273,6 +273,9 @@ export default {
                     }
                     this.changeUf(uf)
                     this.$refs.map.setMapState(appState)
+                    if (!appState.candidatos || !appState.candidatos.length) {
+                        return
+                    }
                     let candidateIds = appState.candidatos.map(candidato => candidato.id)
                     api.getCandidatesFromIds(candidateIds)
                     .then(response => {
