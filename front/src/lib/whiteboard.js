@@ -314,6 +314,7 @@ function addButtonsTo (map) {
             var controlElementClass = 'whiteboard-control'
             var controlElement = L.DomUtil.create(controlElementTag, controlElementClass)
 
+            var rootButtonsIds = ['whiteboard-btn-open', 'whiteboard-btn-draw', 'whiteboard-btn-erase', 'whiteboard-btn-undo', 'whiteboard-btn-redo']
             var drawEraseIds = ['whiteboard-btn-draw', 'whiteboard-btn-erase']
             var weightButtons = this.weights.map(weight => {
                 return {
@@ -365,7 +366,7 @@ function addButtonsTo (map) {
 
                 var getEl = (id) => document.getElementById(id)
 
-                var setActive = function (ids, activeId) {
+                var setActive = (ids, activeId) => {
                     ids.forEach(id => {
                         let el = getEl(id)
                         el.className = el.className.replace('active', '')
@@ -379,7 +380,16 @@ function addButtonsTo (map) {
                     setActive(group, id)
                 }    
 
-                getEl('whiteboard-btn-open').addEventListener('click', () => {
+                var stopEventPropagation = (event) => {
+                    event.preventDefault()
+                    event.stopPropagation()                    
+                }
+
+                var whiteboardControl = getEl('whiteboard-control')
+                whiteboardControl.addEventListener('click', stopEventPropagation)
+                whiteboardControl.addEventListener('dblclick', stopEventPropagation)
+
+                getEl('whiteboard-btn-open').addEventListener('click', (e) => {
                     var ctrlPopup = getEl('whiteboard-controls-popup')
                     var btnPopup = getEl('whiteboard-btn-open')
                     if (ctrlPopup.style.display == 'none') {
@@ -392,10 +402,10 @@ function addButtonsTo (map) {
                         ctrlPopup.style.display = 'none'
                         btnPopup.className = btnPopup.className.replace('open', '')
                         setMode(null)
-                    }        
+                    }    
                 })    
 
-                drawEraseIds.forEach(id => getEl(id).addEventListener('click', () => {
+                drawEraseIds.forEach(id => getEl(id).addEventListener('click', (e) => {
                     setActive(drawEraseIds, id)
                     if (id.indexOf('draw') >= 0)
                         setMode('draw')
@@ -419,16 +429,14 @@ function addButtonsTo (map) {
                     })
                 })   
 
-                getEl('whiteboard-btn-undo').addEventListener('click', () => {
+                getEl('whiteboard-btn-undo').addEventListener('click', (e) => {
                     changeStateUsing(retrieveLastState)
                 })
-                getEl('whiteboard-btn-redo').addEventListener('click', () => {
+                getEl('whiteboard-btn-redo').addEventListener('click', (e) => {
                     changeStateUsing(retrieveNextState)
                 })
-
-
             }
-
+                    
             setTimeout(setHooks.bind(this), 10)
             return controlElement
         }
