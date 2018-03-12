@@ -155,7 +155,6 @@ function addSavedPolylineToMap (polyline) {
  
 function onZoomEnd (e) {
     polylines.forEach((polyline, index) => {
-        console.log(index + ': ' + polyline) 
         polyline.setStyle(calcPolylineStyle(polyline))
         polyline.redraw()
     })
@@ -286,11 +285,16 @@ function retrieveNextState () {
 
 
 function changeStateUsing (retrieveStateFunction) {
+    //console.log('changeState')
+    //console.log('current polylines')
+    //console.log(polylines)
     let newPolylines = retrieveStateFunction()
+    //console.log('new polylines')
+    //console.log(newPolylines)
     if (!newPolylines) 
         return
     polylines.forEach(polyline => polyline.remove())
-    newPolylines.forEach(polyline => addSavedPolylineToMap(polyline)  /*polyline.addTo(thisMap) */)
+    newPolylines.forEach(polyline => addSavedPolylineToMap(polyline))
     polylines = newPolylines    
 }
 
@@ -305,7 +309,6 @@ function addButtonsTo (map) {
         initialize (options) {
             this.weights = options.weights || [ 2, 3, 5 ]
             this.colors = options.colors || ['#000F55', 'blue', '#006400', 'green', '#b22222', 'red', '#333333' ]
-            console.log(this)
             L.Util.setOptions(this, options)
         },
 
@@ -386,8 +389,10 @@ function addButtonsTo (map) {
                 }
 
                 var whiteboardControl = getEl('whiteboard-control')
+                whiteboardControl.addEventListener('mousedown', stopEventPropagation)
                 whiteboardControl.addEventListener('click', stopEventPropagation)
                 whiteboardControl.addEventListener('dblclick', stopEventPropagation)
+
 
                 getEl('whiteboard-btn-open').addEventListener('click', (e) => {
                     var ctrlPopup = getEl('whiteboard-controls-popup')
@@ -430,6 +435,7 @@ function addButtonsTo (map) {
                 })   
 
                 getEl('whiteboard-btn-undo').addEventListener('click', (e) => {
+                    console.log('whiteboard undo')
                     changeStateUsing(retrieveLastState)
                 })
                 getEl('whiteboard-btn-redo').addEventListener('click', (e) => {
