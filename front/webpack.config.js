@@ -61,6 +61,16 @@ module.exports = {
         changeOrigin: true,
       },
 
+      '/public': {
+        target: {
+          'host': 'localhost',
+          'protocol': 'http:',
+          'port': 8008
+        }, 
+        secure: false,
+        changeOrigin: true,
+      },
+
       '/cepesp': {
         target: {
           'host': 'cepesp.io',
