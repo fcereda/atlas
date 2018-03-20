@@ -5,12 +5,14 @@ import Colors from './colors.js'
 import './L.CanvasLayer.js'
 
 const FIXED_RADIUS = 0,
-    VARIABLE_RADIUS = 1   
+    VARIABLE_RADIUS = 1,
+    CHOROPLETH = -1   
 var radianos = (new Array(101)).fill(1).map((ignore, index) => Math.PI * 2 / 100 * index),
     noventaGraus = Math.PI / 2,
     doisPI = Math.PI * 2,
     leafletMap,
     chartCanvas,
+    chartBorders,
     plottingData = [],
     plottingColors = [],
     posicoesCharts = []
@@ -44,6 +46,13 @@ var MapCharts = {
             .addTo(leafletMap);
     },
 
+    setUpBordersLayer (map, borders) {
+        if (!leafletMap)
+            leafletMap = map
+        chartBorders = borders
+        //chartBorders.addTo(leafletMap)
+    },
+
     redrawCharts () {
         chartCanvas.needRedraw()
     },
@@ -52,11 +61,37 @@ var MapCharts = {
         plottingData = []
         chartCanvas.needRedraw()
     },
-  
+
+    removeBorders () {
+        chartBorders.removeFromMap()
+        chartBorders = null
+    },  
   
     setChartType (chartType, radiusType, legendOptions) {
+        const radiusTypes = {
+            'v': VARIABLE_RADIUS,
+            'f': FIXED_RADIUS,
+            'c': CHOROPLETH
+        }
+
         var options = {
-            radiusType: radiusType == 'variable' ? VARIABLE_RADIUS : FIXED_RADIUS
+            radiusType: radiusTypes[radiusType.charAt(0).toLowerCase()]
+        }
+        if (options.radiusType == CHOROPLETH) {
+            this.onDrawLayer = this.drawChartFactory('empty', options)
+            if (chartBorders) {
+                chartBorders.addTo(leafletMap)
+                this.setChartBordersStyle()
+            }
+        }
+        else {
+            this.onDrawLayer = this.drawChartFactory(chartType, options)
+            if (chartBorders) {
+                chartBorders.setStyle({
+                    fillOpacity: 0
+                })
+                chartBorders.removeFromMap()
+            }
         }
         this.chartType = chartType
         if (radiusType) {
@@ -68,7 +103,7 @@ var MapCharts = {
         //this.candidato = candidato
         //this.indice = indice
         //this.chromaColor = chromaColor
-        this.onDrawLayer = this.drawChartFactory(chartType, options) //, candidato, indice, chromaColor)
+        
     },
 
     setRadiusType (radiusType) {
@@ -79,6 +114,41 @@ var MapCharts = {
     setLegend (legendOptions) {
         this.legendOptions = legendOptions
         this.setChartType(this.chartType, this.radiusType, this.legendOptions)
+    },
+
+    setChartBordersStyle (chartType) {
+
+        var plottingDataById = {}
+        for (var i=0; i<plottingData.data.length; i++) {
+            var data = plottingData.data[i]
+            plottingDataById[data.id] = data
+        }
+
+        chartBorders.setStyle(feature => {
+            var id = feature.properties.id
+            var d = plottingDataById[feature.properties.id]
+            if (!d) {
+                return {
+                    fillOpacity: 0
+                }
+            }    
+            var valor = d.orderedPoints[0].value
+            var color = d.orderedPoints[0].color
+
+            if (chartType != 'index' && !valor) 
+                return {
+                    fillOpacity: 0,
+                    fillColor: 'white'
+                }
+
+            var fillOpacity = 0.8
+            var fillColor = Colors.calcColor(color, valor, fillOpacity)
+            return {
+                fillColor,
+                fillOpacity
+            }
+        })
+
     },
 
     drawChartFactory (chartType, options, candidato, indice, chromaColor) {
@@ -217,7 +287,8 @@ var MapCharts = {
             'pill'   : drawPillChart,
             'hbar'   : drawHorizontalBarChart,
             'index'  : drawIndexChart,
-            'empty'  : drawEmptyChart
+            'empty'  : drawEmptyChart,
+            'choropleth': null
         }       
 
         function drawChart (params) {
@@ -273,14 +344,6 @@ var MapCharts = {
             } 
         }
 
-/*
-        if (candidato) {
-            candidatoSelecionado = Store.obterCandidato(candidato)
-            indice = indice || 'indiceLQ'
-        }
-        else
-            candidatoSelecionado = null
-*/
         drawFunction = functionsByChartType[chartType]
         if (drawFunction) {
             return drawChart

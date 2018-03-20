@@ -170,6 +170,30 @@ export default {
 		})
 	},
 
+	getDistrictsBordersMap (uf) {
+		uf = uf.toUpperCase()
+		var query = `/public/maps/topo/topojson-${ uf }.json`
+		return new Promise((resolve, reject) => {
+			axios.get(query)
+			.then(response => {
+				resolve(response.data)
+			})
+			.catch(err => {
+				reject(err)
+			})
+		})			
+	},
+
+	getStateBordersMap (uf) {
+		var topoFileAddress = `/public/maps/state/${uf.toLowerCase()}-state.json`
+		return axios.get(topoFileAddress)
+	},
+
+	getStatesBordersMap () {
+		var topoFileAddress = '/public/maps/topo/br-states.min.json'
+		return axios.get(topoFileAddress)
+	},
+
 	getVotesByZoneAndCity ({ ano, cargo, uf, numero }) {
 		var cargoETurno = getCargoETurno(cargo, uf)
 		cargo = cargoETurno.cargo
@@ -486,16 +510,6 @@ export default {
 		}
 		let query = '/api/candidatos?id=' + ids.join(',')
 		return axios.get(query)
-	},
-
-	getStateBordersMap (uf) {
-		var topoFileAddress = `/public/maps/state/${uf.toLowerCase()}-state.json`
-		return axios.get(topoFileAddress)
-	},
-
-	getStatesBordersMap () {
-		var topoFileAddress = '/public/maps/topo/br-states.min.json'
-		return axios.get(topoFileAddress)
 	},
 
 	getParties () {

@@ -117,6 +117,7 @@ import api from '../lib/api.js'
 import utils from '../lib/utils.js'
 import Store from '../lib/store.js'
 import MapCharts from '../lib/mapcharts.js'
+import Borders from '../classes/borders.js'
 import PlottingData from '../classes/plottingdata.js'
 import chroma from 'chroma-js'
 var SimpleStats = require('simple-statistics')
@@ -128,9 +129,10 @@ import atlasSearchMunicipalities from './atlas-search-municipalities.vue'
 import atlasMapControl from './atlas-map-control.vue'
 import atlasMapLegend from './atlas-map-legend.vue'
 
-// statesBordersLayer data is not included in the component's data object
+// the following variables are not included in the component's data object
 //  because we don't want it to be reactive 
 var statesBordersLayer = null	
+var borders = null
 
 
 export default {
@@ -273,6 +275,10 @@ export default {
 				name: 'fixed',
 				icon: 'fiber_smart_record',
 				tooltip: 'Mostra gráficos de tamanho uniforme'
+			}, {
+				name: 'choropleth',
+				icon: 'filter_b_and_w',
+				tooltip: 'Mostra um mapa choropleth'
 			}],
 			radiusType: 'variable',
 
@@ -348,6 +354,15 @@ export default {
 
 		uf () {
 			if (this.uf) {
+				api.getDistrictsBordersMap(this.uf.sigla)
+				.then(topology => {
+					if (borders) {
+						this.removeBorders()
+					}
+					borders = new Borders(topology)
+					MapCharts.setUpBordersLayer(this.map, borders)
+					//borders.addTo(this.map)
+				})
 				this.highlightStateBorder(this.uf)
 				this.flyToState(this.uf.sigla)
 				//this.loadIbgeData(this.uf)
@@ -355,6 +370,7 @@ export default {
 				whiteboard.displayControl(true)
 			}
 			else {
+				MapCharts.removeBorders()
 				MapCharts.removeCharts()
 				this.fitBoundsToBrazil(false)
 				this.loadStatesBorders()
@@ -504,6 +520,13 @@ export default {
 
 		calcMapHeight () {
 			return document.documentElement.offsetHeight
+		},
+
+		removeBorders () {
+			if (!borders)
+				return
+			borders.removeFromMap()
+			borders = null
 		},
 
         // The following function is never called from within this component.
