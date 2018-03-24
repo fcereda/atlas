@@ -771,12 +771,7 @@ export default {
 
 			api.getStatesBordersMap()
 			.then((response) => {
-				// This is a hack to make sure the whiteboard contents
-				// will stay on top of the topoJSON map
-				let whiteboardContents = whiteboard.getContent()
-				whiteboard.eraseContent()
 				addTopoData(response.data)
-				whiteboard.setContent(whiteboardContents)
 			})
 			.catch((error) => {
 				console.error('Error trying to load shapes of the Brazilian states')

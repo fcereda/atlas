@@ -1,4 +1,6 @@
+const paneId = 'whiteboard'
 var thisMap 
+
 
 export default {
 
@@ -6,10 +8,10 @@ export default {
 
         if (!map) {
             throw Error('Whiteboard error: no map specified on addTo()')
-            return
         }
         thisMap = map
 
+        map.createPane(paneId).style.zIndex = 1000;
         initialize()
         addButtonsTo(map)
 
@@ -149,6 +151,7 @@ function addSavedPolylineToMap (polyline) {
     if (style && style.opacity) {
         polyline.options.opacity = style.opacity
     }
+    polyline.options.pane = paneId
 
     polyline.addTo(thisMap)
 }
@@ -180,7 +183,7 @@ function onMouseUp (e) {
 }
 
 function createNewPolyline (latlng, options) {
-    let thisPolyline = L.polyline(latlng, options).addTo(thisMap)
+    let thisPolyline = L.polyline(latlng, {...options, pane: paneId }).addTo(thisMap)
     
     function setStyleToDefault (polyline) {
         var style = calcPolylineStyle(polyline)
@@ -202,12 +205,14 @@ function createNewPolyline (latlng, options) {
         let dashItem = thisWeight < 5 ? 5 : thisWeight
         thisPolyline.setStyle({ weight: newWeight, dashArray: [dashItem,dashItem], mode: 'erase' })
     })
+
     thisPolyline.on('mouseout', (e) => {
         if (mode != 'erase') {
             return
         }
         setStyleToDefault (thisPolyline)
     })
+
     thisPolyline.on('click', (e) => {
         if (mode != 'erase') {
             return
