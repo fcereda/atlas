@@ -74,20 +74,6 @@
 			</v-list>
 		</v-menu>		
 
-<!--
-		<div class="map-controls" style="position:relative;left:12px;top:12px;width:1px">
-			<div @click="zoomIn">
-				<v-icon class="pa-1" color="grey lighten-2">zoom_in</v-icon>
-			</div>
-			<div @click="zoomOut">
-				<v-icon class="pa-1" color="grey lighten-2">zoom_out</v-icon>
-			</div>
-			<div @click="zoomFitBoundaries">
-				<v-icon class="pa-1 pt-4" color="grey lighten-2">zoom_out_map</v-icon>
-			</div>
-		</div>	
--->
-
 		<atlas-map-legend
 			v-show="mapLegend.show"
 			:title="mapLegend.title"
@@ -152,6 +138,7 @@ export default {
 			mapHeight: this.calcMapHeight(),
 			mouseOverChart: false,
 			zonasSobMouse: [],
+			choroplethLastClicked: null,
 			geolocations: {  
 				'AC': [ -9.128703100254375, -70.30709995790936 ],
 				'AL': [ -9.657146073170642, -36.69477007781069 ],
@@ -268,19 +255,19 @@ export default {
 			indexChartType: 'indiceLQ',	
 
 			radiusTypes: [{
-				name: 'variable',
-				icon: 'bubble_chart',
-				tooltip: 'Mostra gráficos proporcionais ao eleitorado de cada zona'
+				name: 'choropleth',
+				icon: 'filter_b_and_w',
+				tooltip: 'Mostra um mapa coroplético'
 			}, {
 				name: 'fixed',
 				icon: 'fiber_smart_record',
 				tooltip: 'Mostra gráficos de tamanho uniforme'
 			}, {
-				name: 'choropleth',
-				icon: 'filter_b_and_w',
-				tooltip: 'Mostra um mapa choropleth'
+				name: 'variable',
+				icon: 'bubble_chart',
+				tooltip: 'Mostra gráficos proporcionais ao eleitorado de cada zona'
 			}],
-			radiusType: 'variable',
+			radiusType: 'choropleth',
 
 			showDataLayers: [{
 				name: 'on',
@@ -362,6 +349,11 @@ export default {
 					borders = new Borders(topology)
 					MapCharts.setUpBordersLayer(this.map, borders)
 					//borders.addTo(this.map)
+
+					borders.on('click', (e) => {
+						// this.zonasSobMouse must be an Array
+						this.zonasSobMouse = [e.target.feature.properties.id]
+					})
 				})
 				this.highlightStateBorder(this.uf)
 				this.flyToState(this.uf.sigla)
@@ -428,6 +420,11 @@ export default {
 		var onHover = function (e) {
 			// This function is called by the Leaflet element,
 			// thus the event object is specific to Leaflet
+			if (this.radiusType == 'choropleth') {
+				// If we are in choropleth mode, this will be handled by
+				// event handlers attached to the Borders object
+				return
+			}	
 			var posicoesCharts = MapCharts.posicoesCharts,
 				chartsEncontrados = []
 			for (let i = posicoesCharts.length - 1; i >= 0; i--) {
@@ -451,9 +448,9 @@ export default {
 		}
 
 		var onClick = function (e) {
-			var posicoesCharts = MapCharts.posicoesCharts
-			if (this.zonasSobMouse && this.zonasSobMouse.length)
+			if (this.zonasSobMouse && this.zonasSobMouse.length) {
 				this.$emit('click', this.zonasSobMouse)
+			}
 		}
 
 		// this.onAlterouCandidatos() will be called every time a candidate 
