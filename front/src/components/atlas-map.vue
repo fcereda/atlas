@@ -850,6 +850,8 @@ export default {
 		},
 
 		onAlterouCandidatos (acao, candidato) {
+			// Mostra os botões à direita apenas se houver pelo menos um candidato selecionado
+			this.displayChartTypes = (Store.candidatos.length > 0)
 			// Redesenha os gráficos somente se o mapa estiver mostrando gráficos de comparações entre os candidatos.
 			// Caso o gráfico esteja mostrando os índices do candidato que foi removido, a prop showIndexes 
 			// será alterada, provocando a chamada correta a setMapData() 
@@ -860,9 +862,7 @@ export default {
 				dataType: 'votes',
 				showDisabled: false
 			})        
-
 			MapCharts.redrawCharts()
-			this.displayChartTypes = (Store.candidatos.length > 0)
 		},
 
 		setMapData (options) {

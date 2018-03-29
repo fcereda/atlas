@@ -94,6 +94,7 @@ class Candidatos {
         while (this.length) {
             var candidato = this[this.length-1]
             this.length -= 1
+            this.callCallbacksCandidato('remover', candidato)
         }
     }
 
