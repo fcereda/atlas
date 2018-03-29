@@ -208,6 +208,14 @@ export default {
 			chartType: 'winner',
 
 			indexChartTypes: [{
+				name: 'indicePorcentagem',
+				label: '%',
+				tooltip: 'Ver porcentagens dos votos',
+				palette: ['#fff7fb','#ece7f2','#d0d1e6','#a6bddb','#74a9cf','#3690c0','#0570b0','#045a8d','#023858'],
+				domain: [1, 5, 10, 20, 30, 40, 50, 60, 100],
+				legendTitle: 'Porcentagem dos votos',
+				legendLabels: ['Até 1%', '1% - 5%', '5% - 10%', '10% - 20%', '20% - 30%', '30% - 40%', '40% - 50%', '50% - 60%', 'Mais de 60%']
+			}, {
 				name: 'indiceLQ',
 				label: 'QL',
                 tooltip: 'Ver coeficientes de locação',
@@ -591,7 +599,7 @@ export default {
 					container.style.height = '60 px';
 					container.style.paddingRight = '0px';	
 					container.style.overflow = 'hidden'
-					container.style.marginLeft = '0'  //'-2px'
+					container.style.marginLeft = '0'  
 					container.style.border = "1px solid #aaa"
 					container.style.borderLeft = '0'
 					container.style.cursor = 'pointer' 
@@ -903,15 +911,33 @@ export default {
 					}
 				})
 
-                if (index == 'indiceLD') {
+                if (index == 'indiceLD' || index == 'indicePorcentagem') {
                     let max = PlottingData.max(data) * 0.9
                     let min = PlottingData.min(data) * 0.9
                     if (max + min > 0)
                         domain = [-max, max]
                     else
                         domain = [min, -min]
-                    options.domain = domain
-                    colors.domain(domain)
+                    //options.domain = domain
+                    //colors.domain(domain)
+                }
+
+                if (index == 'indicePorcentagem') {
+                	let max = PlottingData.max(data)
+                	if (max > 2) {
+                		max = Math.floor(max * 4) / 4
+                	}
+                	let min = PlottingData.min(data)
+                	min = Math.floor(min * 10) / 10
+
+                	domain = [min, max]
+                	//options.domain = domain
+                	//colors.domain(domain)
+                }
+
+                if (domain) {
+                	options.domain = domain
+                	colors.domain(domain)
                 }
 
 				// Os dados para PlottingData estão na variável data

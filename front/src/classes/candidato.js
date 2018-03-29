@@ -157,6 +157,7 @@ class Candidato {
                     indices[id] = {
                         id, 
                         tamanhoDistrito: totalVotosDistrito,    // tamanhoDistrio será necessário para plotar o gráfico do índice com o tamanho certo
+                        indicePorcentagem: votes[id].porcentagem * 100,
                         indiceLQ,
                         indiceLD,
                         indiceLG,
@@ -265,7 +266,7 @@ class Candidato {
             if (incluirDistritosSemVoto || this.votos[distritoId].numero) {
                 votacaoDict[distritoId] = this.votos[distritoId]            
             }    
-        }
+        } 
         return votacaoDict
       }
 
@@ -275,7 +276,10 @@ class Candidato {
         if (['LQ', 'LD', 'RI', 'Z', 'LI'].includes(nomeIndice)) {
             nomeIndice = 'indice' + nomeIndice
         }    
-        if (!['indiceLQ', 'indiceLD', 'indiceRI', 'indiceLI', 'indiceZ'].includes(nomeIndice)) {
+        else if (nomeIndice == 'porcentagem') {
+            nomeIndice = 'indicePorcentagem'
+        }
+        if (!['indiceLQ', 'indiceLD', 'indiceRI', 'indiceLI', 'indiceZ', 'indicePorcentagem'].includes(nomeIndice)) {
             throw Error('Error in Candidato.obterIndicePorDistrito: index ' + nomeIndice + ' does not exist')
         }    
 
