@@ -54,6 +54,10 @@ var MapCharts = {
     },
 
     redrawCharts () {
+        // if chartBorders is not null, we're displaying a choropleth map
+        if (chartBorders) {
+            this.setChartBordersStyle()
+        }
         chartCanvas.needRedraw()
     },
 
