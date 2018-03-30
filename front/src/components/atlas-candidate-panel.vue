@@ -24,14 +24,6 @@
 			<div class="candidate-name pointer" style="width:100%;flex:1" @click="openDetails">
 				<span v-html="titulo"></span>
 			</div>
-			<!--
-			<v-tooltip bottom class="z-index-top">
-				<span v-if="hovering" class="pl-2 pointer" slot="activator">
-					<v-icon color="primary" @click="removerCandidato">close</v-icon>
-				</span>
-				<span>Remover este candidato</span>
-			</v-tooltip>	
-			-->
 			<v-tooltip bottom class="z-index-top pt-2" v-if="!disabled">
 				<span v-if="!loading" class="pl-2 pr-2 pointer" slot="activator" @click="disableCandidato">
 					<v-icon>visibility</v-icon>
@@ -68,7 +60,8 @@
 				     {{ eCandidatoPresidente ? ' neste estado' : ''}}</div>
 
 				<div>I de Moran: {{ formatFloat(indiceMoran, 4) }}</div>
-				<div>Índice G: {{ formatFloat(indiceG*100, 2) }}%</div>
+				<!-- Set v-show="true" below to enable displaying the G index" -->
+				<div v-show="false">Índice G: {{ formatFloat(indiceG*100, 2) }}%</div>
 				
 			</div>
 			<div v-show="false" class="pb-1" style="display:flex;flex-direction:row;">
@@ -138,14 +131,6 @@
             </v-tooltip>  
           </v-flex>
 
-
-<!--
-          <v-flex xs12 sm2>
-            <v-btn flat icon>
-              <v-icon>insert_chart</v-icon>
-            </v-btn>
-          </v-flex>
--->          
           <v-flex xs12 sm2>
             <v-tooltip bottom z-index="1000">
               <v-btn flat icon slot="activator" @click="salvarArquivoCSV">
@@ -158,12 +143,23 @@
           <v-flex xs12 sm2>
             <v-tooltip bottom z-index="1000">
               <v-btn flat icon slot="activator" @click="verCarreira">
-                <v-icon style="transform:rotate(180deg);">toc</v-icon>
+                <v-icon>folder_shared</v-icon>
               </v-btn>
               <span>Ver trajetória eleitoral</span>
               </v-tooltip>
           </v-flex>
-          
+
+<!-- Uncomment the following block to enable charting -->
+<!--
+          <v-flex xs12 sm2>
+          	<v-tooltip bottom z-index="1000">
+              <v-btn flat icon slot="activator" @click="showChartsDialog">
+                <v-icon>insert_chart</v-icon>
+              </v-btn>
+              <span>Mostrar mais gráficos</span>
+            </v-tooltip>  
+          </v-flex>
+-->          
         </v-layout>
 
 
@@ -406,6 +402,10 @@ export default {
 			this.$emit('salvar-arquivo')
 		},
 
+		showChartsDialog () {
+			this.$emit('show-dialog-charts')	
+		},
+
 		changeColor (color) {
 			this.popupColor = false
 			var rgb = chroma(color).rgb()
@@ -413,7 +413,7 @@ export default {
 			if (this.disabled) {
 				this.enableCandidato()
 			}
-		}
+		},
 
 	}
 }		
