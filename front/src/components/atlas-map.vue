@@ -621,7 +621,7 @@ export default {
 
 					container.innerHTML = `
 						<div _style="padding:4px;padding-top:6px;background-color:white;">
-						<i class="material-icons" style="padding-top:3px;padding-left:3px;">center_focus_strong</i>
+						<i class="material-icons" style="padding-top:3px;padding-left:3px;">center_focus_weak</i>
 						</div>`
 
 					container.style.backgroundColor = 'white'
@@ -883,6 +883,7 @@ export default {
 			// .index: string containing the index to be displayed
 			// .colors: chroma object containing the color scale to be used
             // Calling setMapData() without arguments recalculates and resets the plotting data 
+            // Returns a domain array if a custom domain was set based on the data provided, or null otherwise 
 
 			var plottingData,
                 domain = null
@@ -975,6 +976,7 @@ export default {
 			domain = domain || [0, 1]
 			var chromaColor = chroma.scale(palette).domain(domain)
 
+			// this.setMapData() returns a domain array if a custom domain was set, or null otherwise
 			domain = this.setMapData({
 				mapDataType: 'index',
 				candidate: candidate,
@@ -985,6 +987,7 @@ export default {
 			MapCharts.setChartType('index', this.radiusType, this.showIndexes, indexType, chromaColor)
 			MapCharts.redrawCharts()
 			this.indexChartType = indexType
+			// if we have a custom domain, we must also set the legend labels
             if (domain) {
                 let numSteps = chart.numLegendLabels || chart.legendLabels.length
                 chart.legendLabels = SimpleStats.equalIntervalBreaks(domain, numSteps-1).map(value => {

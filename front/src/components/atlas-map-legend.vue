@@ -14,7 +14,7 @@
 				
 		<div v-show="!collapsed">
 			<table>
-			<tr v-for="(label, index) in labels">
+			<tr v-for="(label, index) in labelsReversed">
 				<td class="map-legend-color-key" v-bind:style="'background-color:' + colors[index] + ';'">&nbsp;</td>
 			 	<td style="padding-left:4px">{{ label }}</td>
 			 </tr>
@@ -30,8 +30,6 @@
 	position: absolute;
 	right: 12px;
 	bottom: 30px;
-	//min-width:100px;
-	//min-height:100px;
 	background-color: rgba(255,255,255,0.8);
 	color: #333;
 	padding:8px;
@@ -74,10 +72,15 @@ export default {
 
 	computed: {
 
+		labelsReversed () {
+			return this.labels.reverse()
+		},
+
 		colors () {
 			return chroma
 				.scale(this.palette)
 				.colors(this.labels.length)
+				.reverse()
 		},
 
 	},
