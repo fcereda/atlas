@@ -18,7 +18,33 @@
         <span style="font-weight:100">Atlas&nbsp;Eleitoral</span>
         <span v-if="!modoInicial" style="flex:1"></span>
         <span v-if="!modoInicial">
-            <v-tooltip bottom open-delay="200" >
+            <v-tooltip v-if="true" bottom z-index="1000">
+                <v-menu
+                  offset-x
+                  :close-on-content-click="false"
+                  :nudge-width="200"
+                  v-model="popupConfirmHome"
+                  slot="activator"
+                >
+                  <v-btn flat icon class="button-logo-pequeno" slot="activator">
+                    <v-icon>home</v-icon>
+                  </v-btn>
+                  <v-card>
+                    <v-list>
+                      <v-list-tile>
+                        Deseja voltar à tela inicial?<br>Sua lista de candidatos e eventuais anotações serão apagadas.
+                        </v-list-tile>
+                    </v-list>
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn flat color="primary" @click="popupConfirmHome=false">Cancelar</v-btn>
+                      <v-btn flat color="error" @click="popupConfirmHome=false || goHome()">Sim, voltar à tela inicial</v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-menu>
+                <span>Voltar à tela inicial</span>
+            </v-tooltip>    
+            <v-tooltip v-if="false" bottom open-delay="200" >
               <v-btn flat icon _color="blue-grey lighten-4" class="button-logo-pequeno" slot="activator" @click="goHome">
                 <v-icon>home</v-icon>
               </v-btn>
@@ -161,6 +187,7 @@ export default {
         zonasHover: [],
         mostrarPainelZonas: false,
         dialogSave: false,
+        popupConfirmHome: false,
         snackbar: {
             text: 'Erro tentando carregar coordenadas geográficas',
             color: 'error',
@@ -393,6 +420,7 @@ html {
 .cepesp-logo-pequeno {
     font-size:22px;
     padding-top:12px;
+    padding-bottom:10px;
 }
 
 .button-logo-pequeno {
