@@ -88,7 +88,11 @@ export default {
                 return 'Candidato a cargo majoritário, já vamos ver essa entrada'
             }
             else {
-                return `${ this.desempenho[0].resultado } com ${ Utils.formatInt(this.desempenho[0].votacao) } votos (${ this.desempenho[0].classificacao }&ordm; lugar)`
+                var texto = `${ this.desempenho[0].resultado } com ${ Utils.formatInt(this.desempenho[0].votacao) } votos `
+                if (this.desempenho[0].classificacao) {
+                    texto += `(${ this.desempenho[0].classificacao }&ordm; lugar)`
+                }
+                return texto
             }
         },
 
@@ -124,7 +128,7 @@ export default {
 
         descricaoResultado (eleicao) {
             var descricao = `${ this.identificacaoResultado(eleicao.resultado, eleicao.cargo) } ${ Utils.formatInt(eleicao.votacao) } votos`
-            if (this.cargo != 'pr1') {
+            if (this.cargo != 'pr1' && eleicao.classificacao) {
                 descricao += ` (${ eleicao.classificacao }&ordm; lugar)`
             }
             return descricao
