@@ -235,7 +235,7 @@ export default {
                 name: 'indiceLD',
                 label: 'DL',
                 tooltip: 'Ver diferenças de locação',
-                palette: 'RdYlBu', //['#d73027','#f46d43','#fdae61','#fee090','#ffffbf','#abd9e9','#74add1','#4575b4','#313695'].reverse(),
+                palette: 'RdYlBu', 
                 domain: [-0.10, 0.10],
                 legendTitle: 'Diferença de locação',
                 legendLabels: ['-10%', '-8%', '-5%', '-2.5%', '0', '+2,5%', '+5%', '+8%', '+10%'],
@@ -267,13 +267,13 @@ export default {
 				icon: 'filter_b_and_w',
 				tooltip: 'Mostra um mapa coroplético'
 			}, {
-				name: 'fixed',
-				icon: 'fiber_smart_record',
-				tooltip: 'Mostra gráficos de tamanho uniforme'
-			}, {
 				name: 'variable',
 				icon: 'bubble_chart',
 				tooltip: 'Mostra gráficos proporcionais ao eleitorado de cada zona'
+			}, {
+				name: 'fixed',
+				icon: 'fiber_smart_record',
+				tooltip: 'Mostra gráficos de tamanho uniforme'
 			}],
 			radiusType: 'choropleth',
 
@@ -360,8 +360,6 @@ export default {
 					}
 					borders = new Borders(topology)
 					MapCharts.setUpBordersLayer(this.map, borders)
-					//borders.addTo(this.map)
-
 					borders.on('click', (e) => {
 						// this.zonasSobMouse must be an Array
 						this.zonasSobMouse = [e.target.feature.properties.id]
@@ -418,49 +416,8 @@ export default {
 
 
 	mounted () {
-
+		// this.onWindowResize() will be called every time the window is resized
 		window.addEventListener('resize', this.onWindowResize.bind(this))
-
-		// Events for viewing district data on the side panel
-		// Event listeneres will be added below
-
-		var that = this
-		var onHover = function (e) {
-			// This function is called by the Leaflet element,
-			// thus the event object is specific to Leaflet
-			if (this.radiusType == 'choropleth') {
-				// If we are in choropleth mode, this will be handled by
-				// event handlers attached to the Borders object
-				return
-			}	
-			var posicoesCharts = MapCharts.posicoesCharts,
-				chartsEncontrados = []
-			for (let i = posicoesCharts.length - 1; i >= 0; i--) {
-				let thisPosicao = posicoesCharts[i].bounds,
-					x = e.containerPoint.x, 
-					y = e.containerPoint.y  
-				if (thisPosicao[0][0] <= x &&
-					thisPosicao[0][1] <= y &&
-					thisPosicao[1][0] >= x &&
-					thisPosicao[1][1] >= y) {
-					chartsEncontrados.push(posicoesCharts[i].id)
-				}
-			}
-			that.zonasSobMouse = chartsEncontrados
-			if (chartsEncontrados.length) {
-				that.mouseOverChart = true
-			}
-			else {
-				that.mouseOverChart = false
-			}	
-		}
-
-		var onClick = function (e) {
-			if (this.zonasSobMouse && this.zonasSobMouse.length) {
-				this.$emit('click', this.zonasSobMouse)
-			}
-		}
-
 		// this.onAlterouCandidatos() will be called every time a candidate 
 		// is added to or removed from Store.the candidatos list
 		Store.adicionarCallbackCandidatos(this.onAlterouCandidatos, this)
@@ -469,32 +426,18 @@ export default {
 			zoomDelta: 0.25,
 			zoomSnap: 0.25
 		})
-
-		// Decision time: which tile design is better?
-
 		var mapnikTileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			maxZoom: 18,
 			attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 		});
-
-		var hotTileLayer = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-			maxZoom: 18,
-			attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, Tiles courtesy of <a href="http://hot.openstreetmap.org/" target="_blank">Humanitarian OpenStreetMap Team</a>'
-		});
-
-		var OpenStreetMap_Wikimedia = L.tileLayer('https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png', {
-			maxZoom: 18,
-			attribution: '<a href="https://wikimediafoundation.org/wiki/Maps_Terms_of_Use">Wikimedia maps</a> | Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-		});
-
 		mapnikTileLayer.addTo(this.map)
-		this.addControls(this.map)
-
+		this.addControlsToMap(this.map)
 		this.fitBoundsToBrazil()
 
-		this.map.addEventListener('mouseover', onHover.bind(this))		
-		this.map.addEventListener('mousemove', onHover.bind(this))
-		this.map.addEventListener('click', onClick.bind(this))
+		// These events allow for viewing district data on the side panel
+		this.map.addEventListener('mouseover', this.onHover.bind(this))		
+		this.map.addEventListener('mousemove', this.onHover.bind(this))
+		this.map.addEventListener('click', this.onClick.bind(this))
 
 		MapCharts.setUpCanvasLayer(this.map, this.chartType, this.radiusType)
 
@@ -531,6 +474,8 @@ export default {
 			borders = null
 		},
 
+		// ** mapState methods ** //
+
         // The following function is never called from within this component.
         // It is only called from App.vue
 
@@ -560,7 +505,6 @@ export default {
             }
             if (mapState.chartType) {
                 this.changeChartType(mapState.chartType)
-                //this.chartType = mapState.chartType
             }
             if (mapState.indexType) {
                 this.indexChartType = mapState.indexType
@@ -573,7 +517,17 @@ export default {
             }
         },
 
-		addControls (map) {
+
+        // addControlsToMap adds the following controls to the Leaflet map:
+        // - sidebar open/close
+        // - zoom in/out
+        // - fit boundaries to current UF or country
+        // - whiteboard 
+        //
+        // All controls are added to the top-left position, leaving
+        // the right-hand side to chart type/style controls
+
+		addControlsToMap (map) {
             var that = this
 			L.Control.OpenSidebarMenu = L.Control.extend({
 				onAdd: function (map) {
@@ -591,15 +545,16 @@ export default {
                     	setTimeout(() => container.innerHTML = containerInnerHTML(that.sidebarOpen), delay)
                     }
 					
-					container.style.backgroundColor = 'white';     
-					container.style.width = '30px';
-					container.style.height = '60 px';
-					container.style.paddingRight = '0px';	
-					container.style.overflow = 'hidden'
-					container.style.marginLeft = '0'  
-					container.style.border = "1px solid #aaa"
-					container.style.borderLeft = '0'
-					container.style.cursor = 'pointer' 
+					let style = container.style
+					style.backgroundColor = 'white';     
+					style.width = '30px';
+					style.height = '60 px';
+					style.paddingRight = '0px';	
+					style.overflow = 'hidden'
+					style.marginLeft = '0'  
+					style.border = "1px solid #aaa"
+					style.borderLeft = '0'
+					style.cursor = 'pointer' 
 
 					container.addEventListener('click', () => {
                         that.$emit('input', !that.sidebarOpen)
@@ -650,16 +605,15 @@ export default {
 	    	whiteboard.displayControl(false)
         },
 
-
 		calcBrazilBoundaries () {
-			var bounds = [ [ 1000, 1000], [-1000, -1000] ]
+			var bounds = [ [180, 180], [-180, -180] ]
 			for (var state in this.stateBoundaries) {
 				bounds[0][0] = Math.min(bounds[0][0], this.stateBoundaries[state][0][0])
 				bounds[0][1] = Math.min(bounds[0][1], this.stateBoundaries[state][0][1])
 				bounds[1][0] = Math.max(bounds[1][0], this.stateBoundaries[state][1][0])
 				bounds[1][1] = Math.max(bounds[1][1], this.stateBoundaries[state][1][1])
 			}
-			return bounds;
+			return bounds
 		},
 
 		fitBoundsToBrazil (paddingLeft) {
@@ -684,8 +638,8 @@ export default {
 				zoom
 			if (boundaries) {
 				center = [ 
-						(boundaries[0][0] + boundaries[1][0]) /2,
-						(boundaries[0][1] + boundaries[1][1]) /2 
+					(boundaries[0][0] + boundaries[1][0]) /2,
+					(boundaries[0][1] + boundaries[1][1]) /2 
 				]
 				zoom = this.map.getBoundsZoom(boundaries)
 			}
@@ -694,7 +648,7 @@ export default {
 				zoom = 7
 			}					
 
-			// Limitamos o zoom a no máximo 9 por causa do Distrito Federal
+			// Maximum zoom is 9 because of the Federal District
 			zoom = Math.min(zoom, 9)  
 			this.map.invalidateSize()
 			this.map.flyTo(center, zoom)
@@ -860,6 +814,8 @@ export default {
 		},
 
 		onWindowResize () {
+			if (!this.map) 
+				return
 			this.map.invalidateSize()
 			this.mapHeight = this.calcMapHeight()
 			MapCharts.redrawCharts()
@@ -868,6 +824,42 @@ export default {
 		onMapResize () {
 			this.map.invalidateSize({ pan: false })
 			MapCharts.redrawCharts()
+		},
+
+		onHover (e) {
+			// This function is called by the Leaflet element,
+			// thus the event object is specific to Leaflet
+			if (this.radiusType == 'choropleth') {
+				// If we are in choropleth mode, this will be handled by
+				// event handlers attached to the Borders object
+				return
+			}	
+			var posicoesCharts = MapCharts.posicoesCharts,
+				chartsEncontrados = []
+			for (let i = posicoesCharts.length - 1; i >= 0; i--) {
+				let thisPosicao = posicoesCharts[i].bounds,
+					x = e.containerPoint.x, 
+					y = e.containerPoint.y  
+				if (thisPosicao[0][0] <= x &&
+					thisPosicao[0][1] <= y &&
+					thisPosicao[1][0] >= x &&
+					thisPosicao[1][1] >= y) {
+					chartsEncontrados.push(posicoesCharts[i].id)
+				}
+			}
+			this.zonasSobMouse = chartsEncontrados
+			if (chartsEncontrados.length) {
+				this.mouseOverChart = true
+			}
+			else {
+				this.mouseOverChart = false
+			}	
+		},
+
+		onClick (e) {
+			if (this.zonasSobMouse && this.zonasSobMouse.length) {
+				this.$emit('click', this.zonasSobMouse)
+			}
 		},
 
 		onAlterouCandidatos (acao, candidato) {
