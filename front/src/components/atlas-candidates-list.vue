@@ -35,6 +35,7 @@
 			@esconder-indices="verIndicesIndividuais(null)"
             @ver-carreira="verCarreira(candidato)"
             @salvar-arquivo="salvarArquivo(candidato)"
+            @show-dialog-charts="verGraficosCandidato(candidato)"
 		></atlas-candidate-chip>	
 
 	    <p></p>
@@ -56,8 +57,16 @@
         :cpf="candidatoDestacado.cpf"
         @close="showDialogCarreira = false"
         @add-candidate="addCandidate"
-    ></atlas-dialog-carreira>    
-
+    ></atlas-dialog-carreira>   
+<!--
+    <atlas-dialog-candidate-charts
+        ref="dialigCandidateCharts"
+        :uf="uf"
+        :candidato="candidatoDestacado"
+        :show="showDialogCandidateCharts"
+        @close="showDialogCandidateCharts = false"
+    ></atlas-dialog-candidate-charts>
+-->
     <v-snackbar
       :timeout="5000"
       :top="true"
@@ -81,6 +90,7 @@ import atlasSelectCandidate from './atlas-select-candidate-simple.vue'
 import atlasSelectUf from './atlas-select-uf.vue'
 import atlasCandidateChip from './atlas-candidate-panel.vue'
 import atlasDialogCarreira from './atlas-dialog-carreira.vue'
+//import atlasDialogCandidateCharts from './atlas-dialog-candidate-charts.vue'
 
 import api from '../lib/api.js'
 import Colors from '../lib/colors.js'
@@ -96,6 +106,7 @@ export default {
         atlasSelectUf,
         atlasCandidateChip,
         atlasDialogCarreira,
+//        atlasDialogCandidateCharts
 	},
 
 	props: [ 'uf', 'colorScale', 'originalCandidates' ],
@@ -108,6 +119,7 @@ export default {
     	colorSequence: new Colors.ColorSequence('categorical', 'standard'),
     	showBuscaAvancada: false,
         showDialogCarreira: false,
+        showDialogCandidateCharts: false,
     	snackbar: {
     		text: 'Erro tentando carregar dados',
     		visible: false
@@ -184,7 +196,7 @@ export default {
                 //newCandidate.showDetails = false
                 newCandidate.color = candidateObj.color
                 this.$emit('add-candidate', newCandidate)
-                // Se a escala de cores for linear, refazemos o esquema de cores para refletir a mudança no número de candidastos
+                // Se a escala de cores for linear, refazemos o esquema de cores para refletir a mudança no número de candidatos
                 if (this.colorScale.type == 'linear')
                     this.setColorScale()  
                 console.log('newCandidate.showIndex: ', newCandidate.showIndex)
@@ -224,14 +236,26 @@ export default {
                     return
                 return that.addCandidate(candidates[index], true)
                 .then(() => {
-                    addNextCandidate(index+1)
+                    return addNextCandidate(index+1)
                 })
                 .catch((error) => {
-                    addNextCandidate(index+1)
+                    return addNextCandidate(index+1)
                 })
             }
 
             addNextCandidate(0)
+            .then(() => {
+                // Vai entrar aqui quando tiver adicionado todos os candidatos
+                // da lista candidates
+                var candidatoSelecionado = this.candidatosSelecionados.find(candidato => candidato.showDetails)
+                if (!candidatoSelecionado) {
+                    // Se carregamos múltiplos candidatos e, ao final, nenhum 
+                    // está selecionado, significa que temos que mostrar o 
+                    // gráfico comparativo
+                    this.$emit('show-indexes', null)
+                }
+            })
+            .catch(err => console.error('Error trying to load multiple candidates: ', err))
         },
 
     	removeCandidate (candidato) {
@@ -300,6 +324,13 @@ export default {
             var filename = `${candidato.nomeEAno} ${candidato.uf}.csv`
             Utils.saveCSVFile(filename, data)
         },
+
+        verGraficosCandidato (candidato) {
+            this.candidatoDestacado = candidato
+            this.$nextTick(() => {
+                this.showDialogCandidateCharts = true
+            })
+        }
 
     },
 
