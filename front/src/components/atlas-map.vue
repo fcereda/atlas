@@ -347,6 +347,10 @@ export default {
 
 	watch: {
 
+		sidebarOpen () {
+			setTimeout(() => this.onMapResize(), 250)
+		},
+
 		uf () {
 			if (this.uf) {
 				api.getDistrictsBordersMap(this.uf.sigla)
@@ -372,7 +376,7 @@ export default {
 			else {
 				MapCharts.removeBorders()
 				MapCharts.removeCharts()
-				this.fitBoundsToBrazil(false)
+				this.fitBoundsToBrazil()
 				this.loadStatesBorders()
 				// if this.uf is set to null, we must erase the whiteboard contents
 				// and hide the whiteboard control
@@ -415,11 +419,7 @@ export default {
 
 	mounted () {
 
-		window.addEventListener('resize', () => {
-			this.map.invalidateSize()
-			this.mapHeight = this.calcMapHeight()
-			MapCharts.redrawCharts()
-		})
+		window.addEventListener('resize', this.onWindowResize.bind(this))
 
 		// Events for viewing district data on the side panel
 		// Event listeneres will be added below
@@ -488,12 +488,9 @@ export default {
 		});
 
 		mapnikTileLayer.addTo(this.map)
-        this.map.zoomControl.setPosition('topleft')       
 		this.addControls(this.map)
-	    whiteboard.addTo(this.map)
-	    whiteboard.displayControl(false)
 
-		this.fitBoundsToBrazil(true)
+		this.fitBoundsToBrazil()
 
 		this.map.addEventListener('mouseover', onHover.bind(this))		
 		this.map.addEventListener('mousemove', onHover.bind(this))
@@ -590,8 +587,8 @@ export default {
 						`
 					}
 
-                    function setContainerInnerHTML () {
-                        that.$nextTick(() => container.innerHTML = containerInnerHTML(that.sidebarOpen))
+                    function setContainerInnerHTML (delay = 1) {
+                    	setTimeout(() => container.innerHTML = containerInnerHTML(that.sidebarOpen), delay)
                     }
 					
 					container.style.backgroundColor = 'white';     
@@ -606,7 +603,7 @@ export default {
 
 					container.addEventListener('click', () => {
                         that.$emit('input', !that.sidebarOpen)
-						setContainerInnerHTML()
+						setContainerInnerHTML(100)
 					})
 
 					setContainerInnerHTML()
@@ -638,14 +635,19 @@ export default {
 				}
 			})
 
+			// Sidebar open/close
             if (this.showSidebarOpen) {
                 var openSidebarControl = new L.Control.OpenSidebarMenu({ position: 'topleft' })
                 openSidebarControl.addTo(map)
             }    
-
+            // Zoom
+	        map.zoomControl.setPosition('topleft')       
+	        // Fit Boundaries
             var fitBoundaries = new L.Control.FitBoundariesButton({ position: 'topleft' })
             fitBoundaries.addTo(map)
-
+            // Whiteboard
+			whiteboard.addTo(this.map)
+	    	whiteboard.displayControl(false)
         },
 
 
@@ -660,10 +662,10 @@ export default {
 			return bounds;
 		},
 
-		fitBoundsToBrazil (usePadding) {
+		fitBoundsToBrazil (paddingLeft) {
 			var options = {}
-			if (usePadding) {
-				options.paddingTopLeft = [-400, 0]
+			if (paddingLeft) {
+				options.paddingTopLeft = [-paddingLeft, 0]
 			}
 			this.map.fitBounds(this.calcBrazilBoundaries(), options);
 		},
@@ -855,6 +857,17 @@ export default {
 		removeStateBorders () {
 			if (this.topoLayer)
 				this.map.removeLayer(this.topoLayer)
+		},
+
+		onWindowResize () {
+			this.map.invalidateSize()
+			this.mapHeight = this.calcMapHeight()
+			MapCharts.redrawCharts()
+		},
+
+		onMapResize () {
+			this.map.invalidateSize({ pan: false })
+			MapCharts.redrawCharts()
 		},
 
 		onAlterouCandidatos (acao, candidato) {

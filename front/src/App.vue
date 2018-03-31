@@ -1,18 +1,8 @@
 <template>
   <v-app id="atlas-eleitoral">
 
-    <v-navigation-drawer
-      fixed
-      permanent
-      stateless
-      disable-resize-watcher
-      floating
-      hide-overlay
-      app
-      width="400"
-      class="pb-0"
-      style="height:100%;overflow:hidden;"
-    >
+    <div id="sidebar" ref="sidebar" class="sidebar">
+
       <div class="cepesp-logo" v-bind:class="classLogo">
         <span>CEPESP&nbsp;</span>
         <span style="font-weight:100">Atlas&nbsp;Eleitoral</span>
@@ -87,32 +77,29 @@
         @close-painel-zonas="mostrarPainelZonas = false">
       </atlas-sidebar-tabs>
 
+    </div>
 
-    </v-navigation-drawer>
-
+    <div id="main" ref="main">
     <v-content>
 
-<!--
-          <div style="position:absolute;left:10px;top:200px;width:50px;height:50px;border:1px solid black;background-color:yellow;z-index:20000">{{ drawer }}</div>
--->
           <atlas-map
             ref="map" 
             :uf="uf"
             :show-indexes="showIndexes"
             :colorScale="colorScale"
-            :showSidebarOpen="false"
+            :showSidebarOpen="true"
             :sidebarOpen="drawer"
             style="z-index:0;"
             @click="onMapClick"
             @set-uf="changeUf"
-            @input="drawer = !drawer"
+            @input="toggleSidebar"
           ></atlas-map>
 
     </v-content>
+    </div>
 
     <v-layout row justify-center>
       <v-dialog v-model="dialogSave" persistent max-width="480">
-        <v-btn color="primary" dark slot="activator">Open Dialog</v-btn>
         <v-card>
           <v-card-title class="headline">Mapa atual salvo</v-card-title>
           <v-card-text>Para voltar a este mapa mais tarde, vá para o seguinte endereço:
@@ -273,6 +260,18 @@ export default {
             this.zonasHover = zonas
         },
 
+        toggleSidebar () {
+            this.drawer = !this.drawer
+            if (!this.drawer) {
+                this.$refs.sidebar.style.left = "-400px"
+                this.$refs.main.style.left = "0px"
+            }
+            else {
+                this.$refs.sidebar.style.left = ""
+                this.$refs.main.style.left = ""
+            }
+        },
+
         showSnackbar (text, color) {
             this.snackbar.text = text
             this.snackbar.color = color
@@ -400,6 +399,32 @@ html {
   overflow-y: hidden;
 }
 
+/* The sidebar */
+#sidebar {
+    width: 400px; 
+    position: absolute; 
+    z-index: 1; 
+    top: 0;
+    left: 0px;
+    bottom: 0px; 
+    background-color: #fff; 
+    overflow-x: hidden; 
+    transition: 0.2s; 
+}
+
+/* The map pane */
+#main {
+    transition: left .5s;
+    overflow:hidden;
+    position:absolute;
+    left:400px; 
+    top:0;
+    bottom:0;
+    right:0;
+    background-color:orange;
+}
+
+
 .cepesp-logo {
     transition: all 0.4s ease;  
     font-weight:700;
@@ -427,27 +452,6 @@ html {
     margin:0;
     margin-top:-4px;
     color:#222;
-}
-
-.atlas-toolbar {
-  border-bottom: 1px solid #ddd !important;
-}
-
-.ufselect {
-  position: fixed;
-  top: 80px;
-  right: 20px;
-  //height: 60px;
-  padding-bottom:-5px;
-  width: 380px;
-  z-index:2000;
-  background-color: white;
-  border: 1px solid #888;
-}
-
-.atlas-sidebar {
-    height:100%;
-    overflow-y:hidden;
 }
 
 </style>
