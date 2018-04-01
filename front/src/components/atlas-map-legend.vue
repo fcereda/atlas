@@ -75,7 +75,7 @@ export default {
 		labelsReversed () {
 			if (!this.labels)
 				return null
-			return this.labels.reverse()
+			return [...this.labels].reverse()
 		},
 
 		colors () {
