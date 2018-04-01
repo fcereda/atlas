@@ -73,6 +73,8 @@ export default {
 	computed: {
 
 		labelsReversed () {
+			if (!this.labels)
+				return null
 			return this.labels.reverse()
 		},
 
