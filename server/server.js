@@ -145,7 +145,9 @@ if (!developmentMode) {
 
 	const onlyStatus200 = (req, res) => res.statusCode === 200
 	const cacheSuccesses = cache('5 days', onlyStatus200)
-	app.use('/cepesp', cacheSuccesses, proxy('http://cepesp.io/'))
+	app.use('/cepesp', cacheSuccesses, proxy('http://cepesp.io/', {
+		limit: '10mb'
+	}))
 }
 else {
 	console.log('Operando em modo de desenvolvimento')
