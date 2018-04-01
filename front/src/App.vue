@@ -4,8 +4,8 @@
     <div id="sidebar" ref="sidebar" class="sidebar">
 
       <div class="cepesp-logo" v-bind:class="classLogo">
-        <span>CEPESP&nbsp;</span>
-        <span style="font-weight:100">Atlas&nbsp;Eleitoral</span>
+        <span ref="logo-cepesp">CEPESP&nbsp;</span>
+        <span ref="logo-atlas-eleitoral" style="font-weight:100">Atlas&nbsp;Eleitoral</span>
         <span v-if="!modoInicial" style="flex:1"></span>
         <span v-if="!modoInicial">
             <v-tooltip v-if="true" bottom z-index="1000">
@@ -194,7 +194,9 @@ export default {
     },
 
     mounted () {
-        setTimeout(this.loadAppState.bind(this), 500)  
+        this.$refs['logo-cepesp'].addEventListener('click', this.onClickLogo)
+        this.$refs['logo-atlas-eleitoral'].addEventListener('click', this.onClickLogo)
+        setTimeout(this.loadAppState.bind(this), 500)        
     },
 
     methods: {
@@ -385,6 +387,10 @@ export default {
 
             var location = window.location.href
             copyToClipboard(location)  
+        },
+
+        onClickLogo () {
+            window.open('http://www.github.com/fcereda/atlas')
         }
 
     }  
@@ -409,12 +415,12 @@ html {
     bottom: 0px; 
     background-color: #fff; 
     overflow-x: hidden; 
-    transition: 0.2s; 
+    transition: 0.4s; 
 }
 
 /* The map pane */
 #main {
-    transition: left .5s;
+    transition: left 0.4s;
     overflow:hidden;
     position:absolute;
     left:400px; 
@@ -433,6 +439,7 @@ html {
     color:#222;
     color:#1a237e;
     display:flex;
+    cursor:pointer;
 }
 
 .cepesp-logo-grande {
