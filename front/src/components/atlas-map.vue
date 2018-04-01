@@ -211,10 +211,11 @@ export default {
 				name: 'indicePorcentagem',
 				label: '%',
 				tooltip: 'Ver porcentagens dos votos',
-				palette: ['#fff7fb','#ece7f2','#d0d1e6','#a6bddb','#74a9cf','#3690c0','#0570b0','#045a8d','#023858'],
-				domain: [1, 5, 10, 20, 30, 40, 50, 60, 100],
+				palette: ['#ffffcc','#c7e9b4','#7fcdbb','#41b6c4','#1d91c0','#225ea8','#0c2c84'], 
+				//['#f7f4f9','#e7e1ef','#d4b9da','#c994c7','#df65b0','#e7298a','#ce1256','#980043','#67001f'],
+				domain: [0.5, 1, 5, 10, 25, 50, 100],   //[1, 5, 10, 20, 30, 40, 50, 60, 100],
 				legendTitle: 'Porcentagem dos votos',
-				legendLabels: ['Até 1%', '1% - 5%', '5% - 10%', '10% - 20%', '20% - 30%', '30% - 40%', '40% - 50%', '50% - 60%', 'Mais de 60%']
+				legendLabels: ['Até 0,5%', '0,5% - 1,0%', '1% - 5%', '5% - 10%', '10% - 25%', '25% - 50%', 'Mais de 50%']
 			}, {
 				name: 'indiceLQ',
 				label: 'QL',
@@ -559,7 +560,7 @@ export default {
 
 					container.addEventListener('click', () => {
                         that.$emit('input', !that.sidebarOpen)
-						setContainerInnerHTML(100)
+						setContainerInnerHTML(200)
 					})
 
 					setContainerInnerHTML()
