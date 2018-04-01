@@ -276,6 +276,7 @@ export default {
 				tooltip: 'Mostra gráficos de tamanho uniforme'
 			}],
 			radiusType: 'choropleth',
+			lastRadiusTypeSelectedByUser: null,
 
 			showDataLayers: [{
 				name: 'on',
@@ -405,7 +406,7 @@ export default {
 					mapDataType: 'votes',
 					showDisabled: false
 				})
-				MapCharts.setChartType(this.chartType, this.radiusType)
+				this.changeChartType(this.chartType)
 				this.setMapLegend(null)
 				this.mostrarIndicesIndividuais = false
 			}
@@ -962,6 +963,14 @@ export default {
 
 		changeChartType (chartType) {
             this.chartType = chartType
+            if (chartType != 'winner' && this.radiusType == 'choropleth') {
+            	this.lastRadiusTypeSelectedByUser = 'choropleth'
+            	this.radiusType = 'variable'
+            }
+            if (chartType == 'winner' && this.lastRadiusTypeSelectedByUser == 'choropleth') {
+            	this.radiusType = 'choropleth'
+            }
+            this.disableChoroplethButton(chartType != 'winner')
 			MapCharts.setChartType(this.chartType, this.radiusType)	
 			MapCharts.redrawCharts()
 		},
@@ -989,9 +998,14 @@ export default {
 				colors: chromaColor,
 			})
 
+			if (this.lastRadiusTypeSelectedByUser) {
+				this.radiusType = this.lastRadiusTypeSelectedByUser
+				this.lastRadiusTypeSelectedByUser = null
+			}
 			MapCharts.setChartType('index', this.radiusType, this.showIndexes, indexType, chromaColor)
 			MapCharts.redrawCharts()
 			this.indexChartType = indexType
+			this.disableChoroplethButton(false)
 			// if we have a custom domain, we must also set the legend labels
             if (domain) {
                 let numSteps = chart.numLegendLabels || chart.legendLabels.length
@@ -1013,10 +1027,24 @@ export default {
 		},
 
 		changeRadiusType (radiusType) {
+			// If user asked for choropleth radius and we're in comparison charts and  
+			// we're not displaying the winner chart, don't go any further
+			if (radiusType == 'choropleth' && !this.showIndexes && this.chartType != 'winner') {
+				return
+			}
 			MapCharts.setRadiusType(radiusType)
 			MapCharts.redrawCharts()
 
 			this.radiusType = radiusType
+			this.lastRadiusTypeSelectedByUser = radiusType
+
+		},
+
+		disableChoroplethButton (disabled) {
+			console.log('choropleth.disabled = ', disabled)
+			let choroplethButton = this.radiusTypes.find(btn => btn.name == 'choropleth')
+			this.$set(choroplethButton, 'disabled', disabled)
+            //choroplethButton.disabled = (disabled)
 		},
 
 		setMapLegend (indexObj) {

@@ -16,7 +16,7 @@
 				<v-icon 
 					v-if="button.icon" 
 					class="pa-1" 
-					:color="value==button.name?'blue darken-2':'grey darken-2'"
+					:color="button.disabled ? 'grey lighten-3' : (value==button.name?'blue darken-2':'grey darken-2')"
 					:style="button.transform? 'transform:' + button.transform + ';' : '' "
 				>
 				{{ button.icon }}

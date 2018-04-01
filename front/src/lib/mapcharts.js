@@ -58,7 +58,9 @@ var MapCharts = {
         if (chartBorders) {
             this.setChartBordersStyle()
         }
-        chartCanvas.needRedraw()
+        if (chartCanvas) {
+            chartCanvas.needRedraw()
+        }    
     },
 
     removeCharts () {
@@ -77,7 +79,6 @@ var MapCharts = {
             'f': FIXED_RADIUS,
             'c': CHOROPLETH
         }
-
         var options = {
             radiusType: radiusTypes[radiusType.charAt(0).toLowerCase()]
         }
@@ -104,10 +105,6 @@ var MapCharts = {
         if (legendOptions) {
             this.legendOptions = legendOptions
         }    
-        //this.candidato = candidato
-        //this.indice = indice
-        //this.chromaColor = chromaColor
-        
     },
 
     setRadiusType (radiusType) {
@@ -123,10 +120,12 @@ var MapCharts = {
     setChartBordersStyle (chartType) {
 
         var plottingDataById = {}
-        for (var i=0; i<plottingData.data.length; i++) {
-            var data = plottingData.data[i]
-            plottingDataById[data.id] = data
-        }
+        if (plottingData && plottingData.data) {
+            for (var i=0; i<plottingData.data.length; i++) {
+                var data = plottingData.data[i]
+                plottingDataById[data.id] = data
+            }
+        }    
 
         chartBorders.setStyle(feature => {
             var id = feature.properties.id
