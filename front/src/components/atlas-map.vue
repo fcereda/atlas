@@ -100,7 +100,7 @@
 <script>
 
 import api from '../lib/api.js'
-import utils from '../lib/utils.js'
+import Utils from '../lib/utils.js'
 import Store from '../lib/store.js'
 import MapCharts from '../lib/mapcharts.js'
 import Borders from '../classes/borders.js'
@@ -537,7 +537,7 @@ export default {
 
 					function containerInnerHTML (menuOpen) {
 						return `
-						<div style="padding:4px;padding-top:9px;background-color:white;">
+						<div style="padding:4px;padding-top:9px;background-color:white;box-shadow:none;">
 							<i class="material-icons">${ menuOpen ? 'keyboard_arrow_left' : 'keyboard_arrow_right' }</i>
 						</div>
 						`
@@ -722,7 +722,7 @@ export default {
 
 			function clickLayer (e) {
 				var codIbge = e.target.feature.id,
-					uf = utils.obterUfPorCodIbge(codIbge)
+					uf = Utils.obterUfPorCodIbge(codIbge)
 
 				that.$emit('set-uf', uf)
 			}
@@ -1021,7 +1021,7 @@ export default {
                         numDigits = 3
                     else
                         numDigits = 0
-                    return value.toFixed(numDigits)
+                    return Utils.formatFloat(value, numDigits)
                 })
             }
 			this.setMapLegend(chart)
@@ -1125,10 +1125,11 @@ export default {
 
 	.leaflet-bar {
 		border-radius: 0 !important;
+		box-shadow: none !important;
 	}
 
 	.leaflet-bar a {
-		border:0;
+		border:none;
 		border-radius: 0 !important;
 		color:rgb(61,61,61) !important;	 	
 	}

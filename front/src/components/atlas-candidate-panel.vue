@@ -55,7 +55,7 @@
 				style="width:100%;text-align:right;"
 			>
 				<div>Votação{{ eCandidatoPresidente ? ' no estado' : ''}}: {{ totalStr }} 
-					 ({{ (total / totalEleicao * 100).toFixed(2) }}% do total)</div>
+					 ({{ formatFloat(total / totalEleicao * 100, 2) }}% do total)</div>
 				<div>Resultado: {{ identificacaoResultado }} &mdash; {{ classificacao }}º lugar 
 				     {{ eCandidatoPresidente ? ' neste estado' : ''}}</div>
 
