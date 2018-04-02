@@ -362,7 +362,7 @@ export default {
 
 		return new Promise ((resolve, reject) => {
 			console.log(query.url())
-			axios.get(cepespURL + query.url())
+			axios.get(cepespURL + query.url(), { timeout:120000 })
 			.then((response) => {
 				if (!response.data || !response.data.length) {
 					throw Error('Empty response from the CEPESP API')
