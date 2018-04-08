@@ -115,8 +115,8 @@ import atlasSearchMunicipalities from './atlas-search-municipalities.vue'
 import atlasMapControl from './atlas-map-control.vue'
 import atlasMapLegend from './atlas-map-legend.vue'
 
-// the following variables are not included in the component's data object
-//  because we don't want it to be reactive 
+// The following variables are not included in the component's data object
+// because we don't want them to be reactive 
 var statesBordersLayer = null	
 var borders = null
 
@@ -188,18 +188,22 @@ export default {
 				name: 'donut',
 				icon: 'donut_large',
                 tooltip: 'Mostra a votação de cada candidato usando gráfico de rosca'
+/*
 			}, {	
 				name: 'bar',
 				icon: 'equalizer',
                 tooltip: 'Mostra a votação de cada candidato usando gráfico de barras'
+*/
 			}, {
 				name: 'pill',
 				icon: 'chrome_reader_mode',
                 tooltip: 'Mostra o primeiro e o segundo candidatos mais votados'
+/*
 			},{		
 				name: 'hbar',
 				icon: 'format_align_left',
                 tooltip: 'Mostra o ranking de votação dos candidatos'
+*/
 			}, {
 				name: 'empty',
 				icon: 'not_interested',
