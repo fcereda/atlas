@@ -7,12 +7,13 @@
 				<div v-if="text">{{ text }}</div>
 			</div>	
 			<div>
-				<v-icon v-show="!collapsed" color="primary" class="pl-1 pointer" style="transform: translateY(-2px);" @click="collapsed = true">close</v-icon>
+				<v-icon v-show="!collapsed" color="primary" class="pl-1 pointer" style="transform: translateY(-2px);" @click="collapsed = true">close</v-icon>			
 				<v-icon v-show="collapsed" color="primary" class="pointer" @click="collapsed = false">list</v-icon>
 			</div>
 		</div>
 				
 		<div v-show="!collapsed">
+			<v-icon color="blue-grey lighten-4" class="map-legend-btn-help pl-1 pt-2 pointer" style="transform: translateY(-2px);">help_outline</v-icon>
 			<table>
 			<tr v-for="(label, index) in labelsReversed">
 				<td class="map-legend-color-key" v-bind:style="'background-color:' + colors[index] + ';'">&nbsp;</td>
@@ -46,6 +47,10 @@
 .map-legend-color-key {
 	width: 24px;
 	border: 2px solid #eee;
+}
+
+.map-legend-btn-help {
+	float: right;
 }
 
 </style>

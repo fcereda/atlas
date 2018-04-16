@@ -1,14 +1,18 @@
 <template>
   <v-app id="atlas-eleitoral">
 
-    <div id="sidebar" ref="sidebar" class="sidebar">
+    <div 
+        id="sidebar" 
+        ref="sidebar" 
+        class="sidebar" 
+    >
 
       <div class="cepesp-logo" v-bind:class="classLogo">
         <span ref="logo-cepesp">CEPESP&nbsp;</span>
         <span ref="logo-atlas-eleitoral" style="font-weight:100">Atlas&nbsp;Eleitoral</span>
         <span v-if="!modoInicial" style="flex:1"></span>
         <span v-if="!modoInicial">
-            <v-tooltip v-if="true" bottom z-index="1000">
+            <v-tooltip v-if="true" bottom z-index="1000" id="btnHome">
                 <v-menu
                   offset-x
                   :close-on-content-click="false"
@@ -34,18 +38,24 @@
                 </v-menu>
                 <span>Voltar à tela inicial</span>
             </v-tooltip>    
-            <v-tooltip v-if="false" bottom open-delay="200" >
-              <v-btn flat icon _color="blue-grey lighten-4" class="button-logo-pequeno" slot="activator" @click="goHome">
+            <v-tooltip v-if="false" bottom open-delay="200">
+              <v-btn flat icon class="button-logo-pequeno" slot="activator" @click="goHome" id="btnGoHome">
                 <v-icon>home</v-icon>
               </v-btn>
               <span>Voltar à tela inicial</span>
             </v-tooltip>  
-            <v-tooltip bottom open-delay="200" z-index="10000">
-              <v-btn flat icon _color="blue-grey lighten-4" class="button-logo-pequeno" slot="activator" @click="saveState">
+            <v-tooltip bottom open-delay="200" z-index="10000" id="btnSalvar">
+              <v-btn flat icon class="button-logo-pequeno" slot="activator" @click="saveState">
                 <v-icon>save</v-icon>
               </v-btn>
               <span>Salvar o mapa atual</span>
             </v-tooltip>  
+            <v-tooltip bottom open-delay="200" z-index="10000" id="btnHelp">
+              <v-btn flat icon class="button-logo-pequeno" slot="activator" @click="runTutorial">
+                <v-icon>help</v-icon>
+              </v-btn>
+              <span>Obter ajuda sobre as opções disponíveis</span>
+            </v-tooltip>             
         </span>    
       </div>
 
@@ -180,7 +190,8 @@ export default {
             color: 'error',
             visible: false
         },
-        currentLocation: window.location.href
+        currentLocation: window.location.href,
+        intro: null,
     }),
 
     props: {
@@ -391,6 +402,107 @@ export default {
 
         onClickLogo () {
             window.open('http://www.github.com/fcereda/atlas')
+        },
+
+        runTutorial () {
+            const getEl = (id) => document.getElementById(id) 
+            const intro = introJs()
+            const modoIndicesIndividuais = !!this.showIndexes
+            let startingSteps = [{
+                element: getEl('selectCandidatos'),
+                intro: 'Para adicionar candidatos à lista, basta digitar parte do nome no campo de busca.'
+            }, {
+                element: getEl('btnBuscaAvancada'),
+                intro: 'Para adicionar vários candidatos, ou procurar candidatos por cargo, partido ou eleição, clique aqui.'
+            }, {
+                element: getEl('atlasCandidates'),
+                intro: 'Os candidatos escolhidos aparecem aqui.'
+            }]
+            let leafletControlZoom = document.getElementsByClassName('leaflet-control-zoom')[0]
+            let leafletControlFitBorder = document.getElementsByClassName('leaflet-control-custom')[1]
+            let closingSteps = [{
+                element: leafletControlZoom,
+                intro: 'Você pode ampliar ou reduzir o mapa clicando aqui ou usando a roda do mouse. Você também pode movimentar o mapa, bastando clicá-lo e arrastá-lo.',
+                position: 'right'
+            }, {
+                element: leafletControlFitBorder,
+                intro: 'Mova, amplie e reduza o mapa à vontade. Para voltar a ver o estado inteiro, clique neste botão.',
+                position: 'right'
+            }, {
+                element: getEl('whiteboard-control'),
+                intro: 'Você também pode desenhar à mão livre e fazer anotações no mapa. Clique aqui para abrir os controles de desenho. Quando terminar de desenhar, clique neste mesmo botão novamente.',
+                position: 'right'
+            }, {    
+                element: getEl('btnSalvar'), 
+                intro: 'Para salvar o mapa atual, clique aqui. Você poderá voltar a ele mais tarde e poderá compartilhá-lo com outras pessoas',
+                position: 'right'
+            }, {
+                element: getEl('btnHome'),
+                intro: 'Para mudar de estado, clique aqui.',
+                position: 'right'
+            }]
+
+            intro.addSteps(startingSteps)
+            if (Store.candidatos.length) {
+                if (modoIndicesIndividuais) {
+                    let btnCompararCandidatos = null
+                    let btnTrajetoriaEleitoral = null
+                    let index = Store.candidatos.indexOf(this.showIndexes)
+                    if (index >= 0) {
+                        let listaBtnCompararCandidatos = document.getElementsByClassName('btn-comparar-candidatos')
+                        let listaBtnTrajetoriaEleitoral = document.getElementsByClassName('btn-trajetoria-eleitoral')
+                        btnCompararCandidatos = listaBtnCompararCandidatos[index]
+                        btnTrajetoriaEleitoral = listaBtnTrajetoriaEleitoral[index]
+                    }
+                    intro.addSteps([{    
+                        element: getEl('controlIndexTypes'),
+                        intro: 'Clique aqui para ver diferentes índices para analisar o desempenho do candidato selecionado.',
+                        position: 'left'
+                    }, {
+                        element: getEl('mapLegend'),
+                        intro: 'Se quiser saber mais sobre um índice, clique no no botão de Ajuda nesta legenda.',
+                        position: 'top-left'
+                    }, {
+                        element: btnTrajetoriaEleitoral,
+                        intro: 'Clique aqui para ver a trajetória eleitoral deste candidato desde 1998.',
+                        position: 'right'
+                    }, {
+                        element: btnCompararCandidatos,
+                        intro: 'Para comparar os desempenhos dos candidatos selecionados, clique aqui.',
+                        position: 'right'
+                    }])
+                }
+                else {
+                    let headerFirstCandidate = document.getElementsByClassName('candidate-detail-header')[0]
+                    intro.addSteps([{
+                        element: getEl('controlChartTypes'),
+                        intro: 'Aqui você seleciona diversas visualizações que comparam, no mapa, o desempenho dos candidatos selecionados',
+                        position: 'left' 
+                    }, {
+                        element: headerFirstCandidate,
+                        intro: 'Se você quiser analisar o desempenho individual de um dos candidatos, clique no seu nome. Seu painel de análise individual será aberto.',
+                        position: 'right'
+                    }])
+                }    
+                intro.addSteps(closingSteps)
+            }
+            else {
+                intro.addSteps([{
+                    element: getEl('btnHelp'),
+                    intro: 'Escolha pelo menos um candidato, e clique aqui novamente para mais informações',
+                    position: 'right'
+                }])
+            }
+            intro.setOptions({
+                'showStepNumbers': false,
+                'doneLabel': 'Terminar',
+                'skipLabel': 'Sair',
+                'prevLabel': ' ◄  Anterior ',
+                'nextLabel': ' Próximo  ► ',
+                scrollPadding: 0,
+                disableInteraction: true
+            })    
+            intro.start()
         }
 
     }  

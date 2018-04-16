@@ -3,45 +3,50 @@
 <div class="select-candidates">
 	<v-container fluid class="pa-2">
 
-	    <div v-if="!candidatosSelecionados.length" class="pa-2">
-	    	Agora, escolha um ou mais candidatos ou partidos que tenham disputado eleições {{ uf.sigla == 'DF' ? 'no Distrito Federal': 'neste estado' }}. Basta digitar parte do nome no campo abaixo. Para fazer uma busca mais detalhada, clique em <code>BUSCA AVANÇADA</code>:
-	    </div>	
+        <div id="atlasCandidates">
 
-		<atlas-candidate-chip
-			v-for="candidato in candidatosSelecionados"
-			:nome="candidato.nome"
-			:partido="candidato.partido"
-			:cargo="candidato.cargo"
-			:ano="candidato.ano"
-            :numero="candidato.numero"
-			:color="candidato.color"
-			:classificacao="candidato.classificacao"
-            :resultado="candidato.resultado"
-			:total="candidato.total"
-            :totalEleicao="candidato.totalEleicao"
-			:indiceLQ="candidato.indiceLQGlobal"
-			:indiceG="candidato.indiceGGlobal"
-            :indiceMoran="candidato.indiceMoranGlobal"
-			:loading="candidato.loading"
-			:disabled="candidato.disabled"
-			:showDetails="candidato.showDetails"
-			@remove="removeCandidate(candidato)"
-			@disable="disableCandidate(candidato)"
-			@enable="enableCandidate(candidato)"
-			@open="showDetailsCandidate(candidato)"
-			@close="hideDetailsCandidate(candidato)"
-            @change-color="changeCandidateColor(candidato, $event)"
-			@ver-indices="verIndicesIndividuais(candidato)"
-			@esconder-indices="verIndicesIndividuais(null)"
-            @ver-carreira="verCarreira(candidato)"
-            @salvar-arquivo="salvarArquivo(candidato)"
-            @show-dialog-charts="verGraficosCandidato(candidato)"
-		></atlas-candidate-chip>	
+    	    <div v-if="!candidatosSelecionados.length" class="pa-2">
+    	    	Agora, escolha um ou mais candidatos ou partidos que tenham disputado eleições {{ uf.sigla == 'DF' ? 'no Distrito Federal': 'neste estado' }}. Basta digitar parte do nome no campo abaixo. Para fazer uma busca mais detalhada, clique em <code>BUSCA AVANÇADA</code>:
+    	    </div>	
+
+    		<atlas-candidate-chip
+    			v-for="candidato in candidatosSelecionados"
+    			:nome="candidato.nome"
+    			:partido="candidato.partido"
+    			:cargo="candidato.cargo"
+    			:ano="candidato.ano"
+                :numero="candidato.numero"
+    			:color="candidato.color"
+    			:classificacao="candidato.classificacao"
+                :resultado="candidato.resultado"
+    			:total="candidato.total"
+                :totalEleicao="candidato.totalEleicao"
+    			:indiceLQ="candidato.indiceLQGlobal"
+    			:indiceG="candidato.indiceGGlobal"
+                :indiceMoran="candidato.indiceMoranGlobal"
+    			:loading="candidato.loading"
+    			:disabled="candidato.disabled"
+    			:showDetails="candidato.showDetails"
+    			@remove="removeCandidate(candidato)"
+    			@disable="disableCandidate(candidato)"
+    			@enable="enableCandidate(candidato)"
+    			@open="showDetailsCandidate(candidato)"
+    			@close="hideDetailsCandidate(candidato)"
+                @change-color="changeCandidateColor(candidato, $event)"
+    			@ver-indices="verIndicesIndividuais(candidato)"
+    			@esconder-indices="verIndicesIndividuais(null)"
+                @ver-carreira="verCarreira(candidato)"
+                @salvar-arquivo="salvarArquivo(candidato)"
+                @show-dialog-charts="verGraficosCandidato(candidato)"
+    		></atlas-candidate-chip>	
+
+        </div>    
 
 	    <p></p>
 
 		<atlas-select-candidate
 			:uf="uf"
+            id="atlasSelectCandidate"
 			@add-candidate="addCandidate"
             @add-multiple-candidates="addMultipleCandidates"
         ></atlas-select-candidate>

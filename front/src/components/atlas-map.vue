@@ -8,6 +8,7 @@
 		<div class="map-controls map-control-chart-type" v-show="displayChartTypes">
 
             <atlas-map-control
+            	id="controlChartTypes"
                 v-show="!mostrarIndicesIndividuais"
                 :buttons="chartTypes"
                 :value="chartType"
@@ -15,6 +16,7 @@
             ></atlas-map-control>    
 
             <atlas-map-control
+            	id="controlIndexTypes"
                 v-show="mostrarIndicesIndividuais"
                 :buttons="indexChartTypes"
                 :value="indexChartType"
@@ -26,6 +28,7 @@
 		<div class="map-controls map-control-radius-type" v-show="displayChartTypes">
 
             <atlas-map-control
+            	id="controlRadiusTypes"
                 :buttons="radiusTypes"
                 :value="radiusType"
                 @input="changeRadiusType"
@@ -75,6 +78,7 @@
 		</v-menu>		
 
 		<atlas-map-legend
+			id="mapLegend"
 			v-show="mapLegend.show"
 			:title="mapLegend.title"
 			:text="mapLegend.text"

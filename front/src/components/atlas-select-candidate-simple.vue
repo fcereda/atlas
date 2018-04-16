@@ -6,6 +6,7 @@
 
 
 	        <v-select 
+	        	id="selectCandidatos"
 	        	ref="selectCandidatos"
 	        	:items="candidatos"
 	            v-model="candidatoSelecionado"
@@ -55,7 +56,7 @@
    	    		<v-btn
    	    			raised
    	    			dense
-
+ 					id="btnBuscaAvancada"
 	    			@click="showBuscaAvancada = true"
 	    		>
 	    			<v-icon left>search</v-icon>Busca avançada

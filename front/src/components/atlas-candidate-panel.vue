@@ -2,7 +2,7 @@
 
 <div class="candidate-record pt-2 pb-2 pl-1 pr-1" style="width:100%;display:flex;flex-direction:column">
 
-	<div style="width:100%; display:flex; flex-direction:row;" @mouseover="hovering=true" @mouseout="hovering=false">
+	<div class="candidate-detail-header" style="width:100%; display:flex; flex-direction:row;" @mouseover="hovering=true" @mouseout="hovering=false">
 
 		<div class="icon-class pt-2" :xstyle="iconStyle" style="vertical-align: center;font-size:20px">
             <v-tooltip bottom z-index="1000">
@@ -75,8 +75,8 @@
           <v-spacer></v-spacer>
 
           <v-flex xs12 sm2>
-            <v-tooltip bottom z-index="1000">
-              <v-btn flat icon slot="activator" @click="closeDetails">
+            <v-tooltip bottom z-index="1000" class="tooltip-comparar-candidatos">
+              <v-btn flat icon slot="activator" @click="closeDetails" class="btn-comparar-candidatos">
                 <v-icon>group</v-icon>
               </v-btn>
               <span>Comparar os candidatos da lista</span>
@@ -141,7 +141,7 @@
           </v-flex>
 
           <v-flex xs12 sm2>
-            <v-tooltip bottom z-index="1000">
+            <v-tooltip bottom z-index="1000" class="btn-trajetoria-eleitoral">
               <v-btn flat icon slot="activator" @click="verCarreira">
                 <v-icon>folder_shared</v-icon>
               </v-btn>
