@@ -24,7 +24,7 @@
 			<div class="candidate-name pointer" style="width:100%;flex:1" @click="openDetails">
 				<span v-html="titulo"></span>
 			</div>
-			<v-tooltip bottom class="z-index-top pt-2" v-if="!disabled">
+			<v-tooltip bottom class="z-index-top pt-2 btn-disable-candidate" v-if="!disabled">
 				<span v-if="!loading" class="pl-2 pr-2 pointer" slot="activator" @click="disableCandidato">
 					<v-icon>visibility</v-icon>
 				</span>

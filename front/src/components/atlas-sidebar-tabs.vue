@@ -15,6 +15,7 @@
           :key="tab.key"
           :href="'#' + tab.key"
           class="primary--text"
+          :class="tab.className"
           ripple
         >
           {{ tab.label }}
@@ -111,7 +112,8 @@ export default {
 				key: 'candidatos',
 			}, {
 				label: 'Detalhes',
-				key: 'detalhes'
+				key: 'detalhes',
+				className: 'tab-detalhes'
 			}, {	
 				label: 'Mais votados',
 				key: 'maisvotados'
@@ -126,16 +128,16 @@ export default {
 		var self = this
 
 		function onResize () {
-			console.log('entrou em onResize')
 			var tabsItems = self.$refs.tabsItems
 			if (!tabsItems) {
 				console.error('tabsItems not found')
 				console.log(self)
+				return
 			}
-			var tabsItemsEl = tabsItems.$el
-			var tabsItemsRect = tabsItemsEl.getBoundingClientRect()
-			var windowHeight = window.innerHeight
-			var tabsItemsTop = tabsItemsRect.top - tabsItemsRect.bottom,
+			var tabsItemsEl = tabsItems.$el,
+				tabsItemsRect = tabsItemsEl.getBoundingClientRect(),
+				windowHeight = window.innerHeight,
+				tabsItemsTop = tabsItemsRect.top - tabsItemsRect.bottom,
 				newHeight
 
 			if (tabsItemsTop < 50) {
@@ -143,9 +145,6 @@ export default {
 			}	
 			newHeight = windowHeight - tabsItemsTop
 			tabsItemsEl.style.height = newHeight + 'px'
-			console.log('windowHeight =', windowHeight)
-			console.log(tabsItemsRect)
-			console.log('newHeight =', newHeight)
 		}
 
 		window.addEventListener('resize', onResize)

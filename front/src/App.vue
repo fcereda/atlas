@@ -406,18 +406,16 @@ export default {
 
         runTutorial () {
             const getEl = (id) => document.getElementById(id) 
+            const getElByClass = (className, index=0) => {
+                var elements = document.getElementsByClassName(className)
+                if (!elements.length)
+                    return null
+                index = Math.min(elements.length, index)
+                return elements[index]
+            } 
             const intro = introJs()
             const modoIndicesIndividuais = !!this.showIndexes
-            let startingSteps = [{
-                element: getEl('selectCandidatos'),
-                intro: 'Para adicionar candidatos à lista, basta digitar parte do nome no campo de busca.'
-            }, {
-                element: getEl('btnBuscaAvancada'),
-                intro: 'Para adicionar vários candidatos, ou procurar candidatos por cargo, partido ou eleição, clique aqui.'
-            }, {
-                element: getEl('atlasCandidates'),
-                intro: 'Os candidatos escolhidos aparecem aqui.'
-            }]
+            let startingSteps = []
             let leafletControlZoom = document.getElementsByClassName('leaflet-control-zoom')[0]
             let leafletControlFitBorder = document.getElementsByClassName('leaflet-control-custom')[1]
             let closingSteps = [{
@@ -445,16 +443,17 @@ export default {
             intro.addSteps(startingSteps)
             if (Store.candidatos.length) {
                 if (modoIndicesIndividuais) {
-                    let btnCompararCandidatos = null
-                    let btnTrajetoriaEleitoral = null
-                    let index = Store.candidatos.indexOf(this.showIndexes)
-                    if (index >= 0) {
-                        let listaBtnCompararCandidatos = document.getElementsByClassName('btn-comparar-candidatos')
-                        let listaBtnTrajetoriaEleitoral = document.getElementsByClassName('btn-trajetoria-eleitoral')
-                        btnCompararCandidatos = listaBtnCompararCandidatos[index]
-                        btnTrajetoriaEleitoral = listaBtnTrajetoriaEleitoral[index]
-                    }
-                    intro.addSteps([{    
+                    const indexCandidatoSelecionado = Store.candidatos.indexOf(this.showIndexes)
+                    const btnCompararCandidatos = getElByClass('btn-comparar-candidatos', indexCandidatoSelecionado)
+                    const btnTrajetoriaEleitoral = getElByClass('btn-trajetoria-eleitoral', indexCandidatoSelecionado)
+                    const painelCandidatoSelecionado = getElByClass('candidate-record', indexCandidatoSelecionado)
+                    const nomeOutroCandidato = getElByClass('candidate-record', indexCandidatoSelecionado > 0 ? indexCandidatoSelecionado - 1 : indexCandidatoSelecionado + 1)
+
+                    intro.addSteps([{
+                        element: painelCandidatoSelecionado,
+                        intro: 'Quando o painel de um candidato está aberto, o mapa mostra seus índices de desempenho individual',
+                        position: 'right'
+                    }, {    
                         element: getEl('controlIndexTypes'),
                         intro: 'Clique aqui para ver diferentes índices para analisar o desempenho do candidato selecionado.',
                         position: 'left'
@@ -463,6 +462,10 @@ export default {
                         intro: 'Se quiser saber mais sobre um índice, clique no no botão de Ajuda nesta legenda.',
                         position: 'top-left'
                     }, {
+                        element: getElByClass('tab-detalhes', 0),
+                        intro: 'Clicando em qualquer ponto desta Unidade da Federação, você verá detalhes sobre o votação do candidato no município/zona eleitoral em que você clicou.',
+                        position: 'bottom'
+                    }, {
                         element: btnTrajetoriaEleitoral,
                         intro: 'Clique aqui para ver a trajetória eleitoral deste candidato desde 1998.',
                         position: 'right'
@@ -470,24 +473,48 @@ export default {
                         element: btnCompararCandidatos,
                         intro: 'Para comparar os desempenhos dos candidatos selecionados, clique aqui.',
                         position: 'right'
+                    }, {
+                        element: nomeOutroCandidato,
+                        intro: 'Para ver o desempenho individual de outro candidato, basta clicar no seu nome.',
+                        position: 'top'
                     }])
                 }
                 else {
-                    let headerFirstCandidate = document.getElementsByClassName('candidate-detail-header')[0]
                     intro.addSteps([{
+                        element: getEl('atlasCandidates'),
+                        intro: 'Quando todos os painéis de candidatos estiverem fechados, o mapa comparará seus desempenhos, destacando o mais votado em cada município e zona eleitoral.',
+                        position: 'right'
+                    }, {    
                         element: getEl('controlChartTypes'),
-                        intro: 'Aqui você seleciona diversas visualizações que comparam, no mapa, o desempenho dos candidatos selecionados',
+                        intro: 'Você tem diversas formas de ver, no mapa, o desempenho dos candidatos.',
                         position: 'left' 
                     }, {
-                        element: headerFirstCandidate,
+                        element: getElByClass('btn-disable-candidate', 0),
+                        intro: 'Para retirar temporariamente um candidato das comparações, clique aqui.',
+                        position: 'right'
+                    }, {    
+                        element: getElByClass('candidate-detail-header', 0),
                         intro: 'Se você quiser analisar o desempenho individual de um dos candidatos, clique no seu nome. Seu painel de análise individual será aberto.',
                         position: 'right'
+                    }, {
+                        element: getElByClass('tab-detalhes', 0),
+                        intro: 'Clicando em qualquer ponto desta Unidade da Federação, você verá a votação de cada candidato selecionado no município/zona eleitoral em que você clicou.',
+                        position: 'bottom'
                     }])
                 }    
                 intro.addSteps(closingSteps)
             }
             else {
                 intro.addSteps([{
+                    element: getEl('selectCandidatos'),
+                    intro: 'Para adicionar candidatos à lista, basta digitar parte do nome no campo de busca.'
+                }, {
+                    element: getEl('btnBuscaAvancada'),
+                    intro: 'Para adicionar vários candidatos, ou procurar candidatos por cargo, partido ou eleição, clique aqui.'
+                }, {
+                    element: getEl('atlasCandidates'),
+                    intro: 'Os candidatos escolhidos aparecem aqui.'
+                }, {
                     element: getEl('btnHelp'),
                     intro: 'Escolha pelo menos um candidato, e clique aqui novamente para mais informações',
                     position: 'right'
