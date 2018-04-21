@@ -408,7 +408,6 @@ export default {
 		showIndexes () {
             // this.showIndexes points to the Candidato object
             // whose individual index we want to display
-            debugger
 			if (this.showIndexes) {
                 this.changeIndexChartType(this.indexChartType)
 				this.mostrarIndicesIndividuais = true
