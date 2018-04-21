@@ -56,7 +56,7 @@ var MapCharts = {
     redrawCharts () {
         // if chartBorders is not null, we're displaying a choropleth map
         if (chartBorders) {
-            this.setChartBordersStyle()
+            this.setChartBordersStyle(this.chartType)         
         }
         if (chartCanvas) {
             chartCanvas.needRedraw()
@@ -86,7 +86,7 @@ var MapCharts = {
             this.onDrawLayer = this.drawChartFactory('empty', options)
             if (chartBorders) {
                 chartBorders.addTo(leafletMap)
-                this.setChartBordersStyle()
+                this.setChartBordersStyle(chartType)
             }
         }
         else {
@@ -120,6 +120,7 @@ var MapCharts = {
     setChartBordersStyle (chartType) {
 
         var plottingDataById = {}
+        var candidatePosition = chartType == 'runnerup' ? 1 : 0
         if (plottingData && plottingData.data) {
             for (var i=0; i<plottingData.data.length; i++) {
                 var data = plottingData.data[i]
@@ -128,6 +129,8 @@ var MapCharts = {
         }    
 
         chartBorders.setStyle(feature => {
+            var valor = 0
+            var color = 'white'
             var id = feature.properties.id
             var d = plottingDataById[feature.properties.id]
             if (!d) {
@@ -135,8 +138,10 @@ var MapCharts = {
                     fillOpacity: 0
                 }
             }    
-            var valor = d.orderedPoints[0].value
-            var color = d.orderedPoints[0].color
+            if (d.orderedPoints[candidatePosition]) {
+                valor = d.orderedPoints[candidatePosition].value
+                color = d.orderedPoints[candidatePosition].color
+            }
 
             if (chartType != 'index' && !valor) 
                 return {
@@ -166,6 +171,19 @@ var MapCharts = {
 
         var noChart = function () {}    
 
+        var drawNthCandidateChart = function (ctx, dot, d, index, position) {
+            if (index)
+                return     
+            if (!d.orderedPoints[position])
+                return
+            ctx.beginPath()
+            ctx.moveTo(dot.x, dot.y)
+            ctx.arc(dot.x, dot.y, radius, 0, doisPI)
+            ctx.fillStyle = Colors.calcColor(d.orderedPoints[position].color, opacity)
+            ctx.fill()
+            ctx.closePath()
+        } 
+
         var drawWinnerChart = function (ctx, dot, d, index) {
             if (index)
                 return     
@@ -176,6 +194,10 @@ var MapCharts = {
             ctx.fill()
             ctx.closePath()
         }        
+
+        var drawRunnerUpChart = function (ctx, dot, d, index) {
+            drawNthCandidateChart(ctx, dot, d, index, 1)
+        }
 
         var drawPieChart = function (ctx, dot, d, index) {
             ctx.beginPath();
@@ -283,14 +305,15 @@ var MapCharts = {
         }
 
         const functionsByChartType = {
-            'bar'    : drawBarChart,
-            'donut'  : drawDonutChart,
-            'pie'    : drawPieChart,
-            'winner' : drawWinnerChart,
-            'pill'   : drawPillChart,
-            'hbar'   : drawHorizontalBarChart,
-            'index'  : drawIndexChart,
-            'empty'  : drawEmptyChart,
+            'bar'     : drawBarChart,
+            'donut'   : drawDonutChart,
+            'pie'     : drawPieChart,
+            'winner'  : drawWinnerChart,
+            'runnerup': drawRunnerUpChart,
+            'pill'    : drawPillChart,
+            'hbar'    : drawHorizontalBarChart,
+            'index'   : drawIndexChart,
+            'empty'   : drawEmptyChart,
             'choropleth': null
         }       
 

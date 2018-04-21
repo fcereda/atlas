@@ -182,9 +182,13 @@ export default {
 			displayChartTypes: false,
 			chartTypes: [{
 				name: 'winner',
-				icon: 'fiber_manual_record',
+				icon: 'looks_one', //'fiber_manual_record',
                 tooltip: 'Mostra o candidato mais votado'
 			}, {
+				name: 'runnerup',
+				icon: 'looks_two',
+				tooltip: 'Mostra o segundo candidato mais votado'
+			}, {	
 				name: 'pie',
 				icon: 'pie_chart',
                 tooltip: 'Mostra a votação de cada candidato usando gráfico pizza'
@@ -404,6 +408,7 @@ export default {
 		showIndexes () {
             // this.showIndexes points to the Candidato object
             // whose individual index we want to display
+            debugger
 			if (this.showIndexes) {
                 this.changeIndexChartType(this.indexChartType)
 				this.mostrarIndicesIndividuais = true
@@ -971,15 +976,16 @@ export default {
 		},
 
 		changeChartType (chartType) {
+            var chartTypeIsWinnerOrRunnerUp = ['winner', 'runnerup'].includes(chartType)
             this.chartType = chartType
-            if (chartType != 'winner' && this.radiusType == 'choropleth') {
+            if (!chartTypeIsWinnerOrRunnerUp && this.radiusType == 'choropleth') {
             	this.lastRadiusTypeSelectedByUser = 'choropleth'
             	this.radiusType = 'variable'
             }
-            if (chartType == 'winner' && this.lastRadiusTypeSelectedByUser == 'choropleth') {
+            if (chartTypeIsWinnerOrRunnerUp && this.lastRadiusTypeSelectedByUser == 'choropleth') {
             	this.radiusType = 'choropleth'
             }
-            this.disableChoroplethButton(chartType != 'winner')
+            this.disableChoroplethButton(!chartTypeIsWinnerOrRunnerUp)
 			MapCharts.setChartType(this.chartType, this.radiusType)	
 			MapCharts.redrawCharts()
 		},
@@ -1038,7 +1044,8 @@ export default {
 		changeRadiusType (radiusType) {
 			// If user asked for choropleth radius and we're in comparison charts and  
 			// we're not displaying the winner chart, don't go any further
-			if (radiusType == 'choropleth' && !this.showIndexes && this.chartType != 'winner') {
+			let ChartTypeIsWinnerOrRunnerUp = ['winner', 'runnerup'].includes(this.chartType)
+			if (radiusType == 'choropleth' && !this.showIndexes && !ChartTypeIsWinnerOrRunnerUp) {
 				return
 			}
 			MapCharts.setRadiusType(radiusType)
