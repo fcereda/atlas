@@ -158,6 +158,9 @@ import atlasDisplayUf from './components/atlas-display-uf.vue'
 import atlasPainelZonas from './components/atlas-painel-zonas.vue'
 import atlasSidebarTabs from './components/atlas-sidebar-tabs.vue'
 
+            import scrollIntoViewIfNeeded from 'scroll-into-view-if-needed'
+
+
 export default {
 
     components: {
@@ -447,7 +450,18 @@ export default {
                     const btnCompararCandidatos = getElByClass('btn-comparar-candidatos', indexCandidatoSelecionado)
                     const btnTrajetoriaEleitoral = getElByClass('btn-trajetoria-eleitoral', indexCandidatoSelecionado)
                     const painelCandidatoSelecionado = getElByClass('candidate-record', indexCandidatoSelecionado)
+                    const indexOutroCandidato = indexCandidatoSelecionado > 0 ? 
+                                                indexCandidatoSelecionado - 1 :
+                                                indexCandidatoSelecionado < Store.candidatos.length - 1 ?
+                                                indexCandidatoSelecionado + 1 :
+                                                indexCandidatoSelecionado
+                    const painelOutroCandidato = getElByClass('candidate-record', indexOutroCandidato)
                     const nomeOutroCandidato = getElByClass('candidate-record', indexCandidatoSelecionado > 0 ? indexCandidatoSelecionado - 1 : indexCandidatoSelecionado + 1)
+                    const scrollOptions = {
+                        boundary: getElByClass('tabs__items', 0)
+                    }
+                    scrollIntoViewIfNeeded(painelCandidatoSelecionado, scrollOptions)
+                    scrollIntoViewIfNeeded(painelOutroCandidato, scrollOptions)
 
                     intro.addSteps([{
                         element: painelCandidatoSelecionado,
@@ -463,7 +477,7 @@ export default {
                         position: 'top-left'
                     }, {
                         element: getElByClass('tab-detalhes', 0),
-                        intro: 'Clicando em qualquer ponto desta Unidade da Federação, você verá detalhes sobre o votação do candidato no município/zona eleitoral em que você clicou.',
+                        intro: 'Clicando em qualquer ponto desta Unidade da Federação, você verá, nesta aba, detalhes sobre a votação do candidato no município/zona eleitoral em que você clicou.',
                         position: 'bottom'
                     }, {
                         element: btnTrajetoriaEleitoral,
@@ -498,7 +512,7 @@ export default {
                         position: 'right'
                     }, {
                         element: getElByClass('tab-detalhes', 0),
-                        intro: 'Clicando em qualquer ponto desta Unidade da Federação, você verá a votação de cada candidato selecionado no município/zona eleitoral em que você clicou.',
+                        intro: 'Clicando em qualquer ponto desta Unidade da Federação, você verá, nesta aba, a votação de cada candidato selecionado no município/zona eleitoral em que você clicou.',
                         position: 'bottom'
                     }])
                 }    
@@ -526,10 +540,12 @@ export default {
                 'skipLabel': 'Sair',
                 'prevLabel': ' ◄  Anterior ',
                 'nextLabel': ' Próximo  ► ',
-                scrollPadding: 0,
-                disableInteraction: true
+//                scrollPadding: 0,
+                disableInteraction: true,
+                scrollToElement: false
             })    
-            intro.start()
+            intro.onskip(() => console.log('SKIP intro.js'))
+            this.$nextTick(() => intro.start())
         }
 
     }  
@@ -599,5 +615,11 @@ html {
     margin-top:-4px;
     color:#222;
 }
+
+/* Utilizado por intro.js porque o botão skip está com a cor errada */
+
+.introjs-skipbutton {
+    color: #333 !important;
+}  
 
 </style>
