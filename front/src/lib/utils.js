@@ -212,6 +212,11 @@ export default {
 	    }, {})
 	},
 
+	findObjectByProperty (objArray, property, value) {
+		const searchFunction = obj => obj[property] == value
+		return objArray.find(searchFunction)
+	},
+
 	replaceLast (str, substr, newsubstr) {
     	var charpos = str.lastIndexOf(substr)
     	if (charpos<0) {

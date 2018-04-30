@@ -160,6 +160,16 @@ class Candidatos {
         return distritos
     }
 
+    obterVotacoesTotais (args) {
+        var votacoesPorCandidato = this.obterVotacoesDict(args)
+        var votacoesTotais = {}
+        Object.keys(votacoesPorCandidato).forEach(districtId => {
+            let size = votacoesPorCandidato[districtId].size
+            votacoesTotais[districtId] = size
+        })
+        return votacoesTotais
+    }
+
 
     filter (callback) {
         var returnArray = []

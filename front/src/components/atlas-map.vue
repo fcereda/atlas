@@ -16,6 +16,14 @@
             ></atlas-map-control>    
 
             <atlas-map-control
+            	id="controlGlobalIndexTypes"
+            	v-show="!mostrarIndicesIndividuais"
+            	:buttons="globalIndexTypes"
+            	:value="chartType"
+            	@input="changeGlobalIndexType"
+			></atlas-map-control>            	
+
+            <atlas-map-control
             	id="controlIndexTypes"
                 v-show="mostrarIndicesIndividuais"
                 :buttons="indexChartTypes"
@@ -219,13 +227,27 @@ export default {
 			}],
 			chartType: 'winner',
 
+			globalIndexTypes: [{
+				name: 'indiceF',
+				label: 'IF',
+				tooltip: 'Índice de fragmentação dos candidatos selecionados',
+				palette: ['#ffffb2','#fecc5c','#fd8d3c','#f03b20','#bd0026'],
+				legendTitle: 'Índice de fragmentação'
+/*
+			}, {
+				name: 'indiceSoma',
+				label: 'S',
+				tooltip: 'Ver soma das porcentagens dos candidatos',
+				legendTitle: 'Soma das porcentagens'
+*/	// VAMOS PRIMEIRO ARRENDONDAR TUDO ANTES DE HABILITAR NOVOS ÍNDICES GLOBAIS				
+			}],
+
 			indexChartTypes: [{
 				name: 'indicePorcentagem',
 				label: '%',
 				tooltip: 'Ver porcentagens dos votos',
 				palette: ['#ffffcc','#c7e9b4','#7fcdbb','#41b6c4','#1d91c0','#225ea8','#0c2c84'], 
-				//['#f7f4f9','#e7e1ef','#d4b9da','#c994c7','#df65b0','#e7298a','#ce1256','#980043','#67001f'],
-				domain: [0.5, 1, 5, 10, 25, 50, 100],   //[1, 5, 10, 20, 30, 40, 50, 60, 100],
+				domain: [0.5, 1, 5, 10, 25, 50, 100], 
 				legendTitle: 'Porcentagem dos votos',
 				legendLabels: ['Até 0,5%', '0,5% - 1,0%', '1% - 5%', '5% - 10%', '10% - 25%', '25% - 50%', 'Mais de 50%']
 			}, {
@@ -414,13 +436,14 @@ export default {
 			}
 			else {
                 // if this.showIndexes is null, user requested to 
-                // display comparison charts
-				this.setMapData({
-					mapDataType: 'votes',
-					showDisabled: false
-				})
-				this.changeChartType(this.chartType)
-				this.setMapLegend(null)
+                // display global comparison charts
+                let chartTypeIsGlobalIndex = this.chartType.indexOf('indice') >= 0
+				if (chartTypeIsGlobalIndex) {
+					this.changeGlobalIndexType(this.chartType)
+				}
+				else {
+					this.changeChartType(this.chartType)		
+				}	
 				this.mostrarIndicesIndividuais = false
 			}
 			MapCharts.redrawCharts()			
@@ -518,7 +541,7 @@ export default {
                 }, 1000)
             }
             if (mapState.chartType) {
-                this.changeChartType(mapState.chartType)
+            	this.chartType = mapState.chartType
             }
             if (mapState.indexType) {
                 this.indexChartType = mapState.indexType
@@ -885,22 +908,42 @@ export default {
 			if (this.mostrarIndicesIndividuais) {
 				return        
 			}
-			this.setMapData({
-				dataType: 'votes',
-				showDisabled: false
-			})        
-			MapCharts.redrawCharts()
+			let mostrarGlobalIndex = this.chartType.indexOf('indice') >= 0
+			if (mostrarGlobalIndex) {
+				this.changeGlobalIndexType(this.chartType)
+			}
+			else {
+				this.setMapData({
+					dataType: 'votes',
+					showDisabled: false
+				})
+				MapCharts.redrawCharts()
+			}	
 		},
+
+		// method setMapData (options)
+		// Creates a new PlottingData object, along with a domain object for use with atlas-map-legend,
+		// based on the argument options
 
 		setMapData (options) {
 			// options: object 
 			// For displaying comparison data of all enabled candidates, the
 			// following properties must be set:
+			// .index: null
 			// .showDisabled: true if data of all candidates is to be displayed; false otherwise
+			
+			// For displaying an index, set the following properties:
+			// .index: string containing the index to be displayed OR
+			// .indiceDict: dictionary of the index by district id
+			// .votosDict: dictionary of the size of each district
+			// .colors: chroma object containing the color scale to be used
+			// .candidate must be null
+			
 			// For displaying an index of a specific candidate, set the following properties:
 			// .candidate: Candidate object 
 			// .index: string containing the index to be displayed
 			// .colors: chroma object containing the color scale to be used
+
             // Calling setMapData() without arguments recalculates and resets the plotting data 
             // Returns a domain array if a custom domain was set based on the data provided, or null otherwise 
 
@@ -914,14 +957,37 @@ export default {
 				options = this.setMapData.options
 			}
 
-			if (options.candidate) {
+			if (options.index) {
 				// Will display one index from a candidate's data
 				// options.candidate contains the candidate id object
-				let candidate = Store.candidatos.obterCandidato(options.candidate)
+				let candidate = options.candidate ? Store.candidatos.obterCandidato(options.candidate) : null
 				let index = options.index || 'indiceLQ'
 				let colors = options.colors 
-				let indiceDict = candidate.obterIndicePorDistrito(index)
-				let votosDict = candidate.obterVotacaoPorDistrito(false)
+				let indiceDict= {}
+				let votosDict = {}
+				if (candidate) {
+					indiceDict = candidate.obterIndicePorDistrito(index)
+					votosDict = candidate.obterVotacaoPorDistrito(false)
+				}
+				else {
+					if (options.indiceDict) {
+						indiceDict = options.indiceDict
+					}
+					else {
+						indiceDict = Store.candidatos.obterIndice(options.index)
+					}
+					if (options.votosDict) {
+						votosDict = options.votosDict
+					}	
+					else {
+						let totaisDict = Store.candidatos.obterVotacoesTotais(options.showDisabled)
+						Object.keys(totaisDict).forEach(districtId => {
+							votosDict[districtId] = { 
+								total: totaisDict[districtId] 
+							}
+						})
+					}
+				}					
 				let data = {}
 
 				Object.keys(votosDict).forEach(districtId => {
@@ -931,15 +997,16 @@ export default {
 					}
 				})
 
-                if (index == 'indiceLD' || index == 'indicePorcentagem') {
+				// Lets calculate the domain
+
+				// Special case of index === 'indiceLD' 
+                if (index == 'indiceLD') { //|| index == 'indicePorcentagem') {
                     let max = PlottingData.max(data) * 0.9
                     let min = PlottingData.min(data) * 0.9
                     if (max + min > 0)
                         domain = [-max, max]
                     else
                         domain = [min, -min]
-                    //options.domain = domain
-                    //colors.domain(domain)
                 }
 
                 if (index == 'indicePorcentagem') {
@@ -951,8 +1018,13 @@ export default {
                 	min = Math.floor(min * 10) / 10
 
                 	domain = [min, max]
-                	//options.domain = domain
-                	//colors.domain(domain)
+                }
+
+                if (['indiceF', 'indiceSoma'].includes(index)) {
+					domain = [
+						PlottingData.min(data) || 0,
+						PlottingData.max(data) || 0
+					]
                 }
 
                 if (domain) {
@@ -975,6 +1047,12 @@ export default {
 		},
 
 		changeChartType (chartType) {
+            var oldChartTypeWasGlobalIndex = ['indiceF', 'indiceSoma'].includes(this.chartType)
+            if (oldChartTypeWasGlobalIndex) {
+            	this.setMapData({
+            		index: null
+            	})
+            }
             var chartTypeIsWinnerOrRunnerUp = ['winner', 'runnerup'].includes(chartType)
             this.chartType = chartType
             if (!chartTypeIsWinnerOrRunnerUp && this.radiusType == 'choropleth') {
@@ -985,12 +1063,100 @@ export default {
             	this.radiusType = 'choropleth'
             }
             this.disableChoroplethButton(!chartTypeIsWinnerOrRunnerUp)
+            this.setMapLegend(null)
 			MapCharts.setChartType(this.chartType, this.radiusType)	
 			MapCharts.redrawCharts()
 		},
 
+		changeGlobalIndexType (indexType) {
+
+			function calcIndex (calcFunction) {
+				const votacoesDict = Store.candidatos.obterVotacoesDict(true)
+				let indiceDict = {}
+				for (var id in votacoesDict) {
+					let votacoes = votacoesDict[id].values
+					indiceDict[id] = calcFunction(votacoes, id)
+				}
+				return indiceDict
+			}
+
+			function calcIndiceF (votacoes, id) {
+				if (votacoes.length <= 1) 
+					return votacoes.length
+				const total = SimpleStats.sum(votacoes)
+				if (!total) 
+					return 0
+				const denominador = votacoes.reduce((somaP, votacao) => {
+					return somaP + Math.pow(votacao / total, 2)
+				}, 0)
+				return 1 / denominador
+			}
+
+			function calcIndiceSoma (votacoes, id) {
+				const total = SimpleStats.sum(votacoes)
+				return total
+			}
+
+			const indexFunctions = {
+				'indiceF': calcIndiceF
+			}
+
+			const thisChart = Utils.findObjectByProperty(this.globalIndexTypes, 'name', indexType)
+			if (!thisChart) {
+				console.error(`Error in changeGlobalIndexType: index ${indexType} not found`)
+				return
+			}
+			const indexFunction = indexFunctions[indexType]
+			if (!indexFunction) {
+				console.error(`Error in changeGlobalIndexType: invalid argument ${indexType}`)
+				return
+			}
+			const indiceDict = calcIndex(indexFunction) 
+
+			let palette = thisChart.palette || ['#ffffb2','#fecc5c','#fd8d3c','#f03b20','#bd0026']
+			if (indexType == 'indiceF') {
+				const numEnabledCandidates = Store.candidatos.filter(cand => !cand.disabled).length
+				if (numEnabledCandidates < 2) {
+					palette = ['#f03b20', '#f03b20']
+				}	
+			}
+			const chromaColor = chroma.scale(palette)  
+			const domain = this.setMapData({
+				mapDataType: 'index',
+				index: indexType,
+				colors: chromaColor,
+				indiceDict
+			})
+
+			if (this.lastRadiusTypeSelectedByUser) {
+				this.radiusType = this.lastRadiusTypeSelectedByUser
+			}
+			MapCharts.setChartType('index', this.radiusType)
+			MapCharts.redrawCharts()
+			this.chartType = indexType
+			this.disableChoroplethButton(false)
+
+			// Now we will display a legend
+			// We must prepare a legendObj object to be used as an argument 
+			// for this.setMapLegend()
+			const domainDigits = thisChart.domainDigits || 2
+			const domainFormatFunction = thisChart.domainFormatFunction || function (value) { return Utils.formatFloat(value, domainDigits) }
+			const domainGap = domain[1] - domain[0]
+			const legendLabels = palette.map((color, index) => {
+				return domainFormatFunction( domainGap * (index / (palette.length-1)) + domain[0] )
+			})
+			const legendObj = {
+				legendTitle: thisChart.legendTitle,
+				domain,
+				palette,
+				legendLabels
+			}
+			this.setMapLegend(legendObj)
+
+		},
+
 		changeIndexChartType (chartType) {
-            var chart = this.indexChartTypes.find(indexChartType => indexChartType.name == chartType)
+            let chart = Utils.findObjectByProperty(this.indexChartTypes, 'name', chartType)
             if (!chart) {
                 return console.error('Error in changeIndexChartType: invalid chart type ' + chartType)
             }
@@ -1043,8 +1209,8 @@ export default {
 		changeRadiusType (radiusType) {
 			// If user asked for choropleth radius and we're in comparison charts and  
 			// we're not displaying the winner chart, don't go any further
-			let ChartTypeIsWinnerOrRunnerUp = ['winner', 'runnerup'].includes(this.chartType)
-			if (radiusType == 'choropleth' && !this.showIndexes && !ChartTypeIsWinnerOrRunnerUp) {
+			let ChartAllowsChoropleth = this.showIndexes || ['winner', 'runnerup', 'indiceF', 'indiceSoma'].includes(this.chartType)
+			if (radiusType == 'choropleth' && !ChartAllowsChoropleth) {
 				return
 			}
 			MapCharts.setRadiusType(radiusType)
@@ -1056,10 +1222,8 @@ export default {
 		},
 
 		disableChoroplethButton (disabled) {
-			console.log('choropleth.disabled = ', disabled)
 			let choroplethButton = this.radiusTypes.find(btn => btn.name == 'choropleth')
 			this.$set(choroplethButton, 'disabled', disabled)
-            //choroplethButton.disabled = (disabled)
 		},
 
 		setMapLegend (indexObj) {
