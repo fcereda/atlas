@@ -442,6 +442,10 @@ export default {
 					this.changeGlobalIndexType(this.chartType)
 				}
 				else {
+					this.setMapData({
+						dataType: 'votes',
+						showDisabled: false
+					})
 					this.changeChartType(this.chartType)		
 				}	
 				this.mostrarIndicesIndividuais = false
@@ -917,6 +921,7 @@ export default {
 					dataType: 'votes',
 					showDisabled: false
 				})
+				this.changeChartType(this.chartType)
 				MapCharts.redrawCharts()
 			}	
 		},
