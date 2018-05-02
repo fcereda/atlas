@@ -91,11 +91,15 @@ class Candidatos {
     }
 
     removerTodosCandidatos () {
+        let candidatos = []
         while (this.length) {
-            var candidato = this[this.length-1]
+            let candidato = this[this.length-1]
+            candidatos.push(candidato)
+            this[this.length-1] = null
             this.length -= 1
-            this.callCallbacksCandidato('remover', candidato)
+            //this.callCallbacksCandidato('remover', candidato)
         }
+        this.callCallbacksCandidato('remover-todos', candidatos)
     }
 
     desabilitarCandidato (candidato) {
@@ -127,7 +131,7 @@ class Candidatos {
 
         if (typeof args == 'object') {
             var indicesCandidatosAIncluir = args
-            return indicesCandidatosAAIncluir.map(index => this[index]).map(mapFunction)
+            return indicesCandidatosAIncluir.map(index => this[index]).map(mapFunction)
         }    
         else if (args) {
             return this.filter(cand => !cand.disabled).map(mapFunction)

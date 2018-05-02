@@ -85,8 +85,16 @@ var MapCharts = {
         if (options.radiusType == CHOROPLETH) {
             this.onDrawLayer = this.drawChartFactory('empty', options)
             if (chartBorders) {
-                chartBorders.addTo(leafletMap)
-                this.setChartBordersStyle(chartType)
+                if (chartType == 'empty') {
+                    chartBorders.setStyle({
+                        fillOpacity: 0
+                    })
+                    chartBorders.removeFromMap()
+                }
+                else {
+                    chartBorders.addTo(leafletMap)
+                    this.setChartBordersStyle(chartType)
+                }    
             }
         }
         else {

@@ -132,6 +132,8 @@ import atlasMapLegend from './atlas-map-legend.vue'
 var statesBordersLayer = null	
 var borders = null
 
+// Helper function
+const candidatosHabilitados = () => Store.candidatos.filter(cand => !cand.disabled)
 
 export default {
 
@@ -995,14 +997,14 @@ export default {
 				}					
 				let data = {}
 
-				Object.keys(votosDict).forEach(districtId => {
+				Object.keys(indiceDict).forEach(districtId => {
 					data[districtId] = {
-						size: votosDict[districtId].total,
-						values: [ indiceDict[districtId] ]
+						size: votosDict[districtId].total || 0,
+						values: [ indiceDict[districtId] ]  
 					}
 				})
 
-				// Lets calculate the domain
+				// Now we will calculate the domain array
 
 				// Special case of index === 'indiceLD' 
                 if (index == 'indiceLD') { //|| index == 'indicePorcentagem') {
@@ -1044,7 +1046,7 @@ export default {
 				// Will compare the enabled candidates
 				// When comparing candidates, we always show only enabled candidates
 				let votingData = Store.candidatos.obterVotacoesDict(true)
-				let colors = Store.candidatos.filter(cand => !cand.disabled).map(cand => cand.color)
+				let colors = candidatosHabilitados().map(cand => cand.color)
 				plottingData = new PlottingData(colors, votingData)
 			}			
 			MapCharts.setPlottingData(plottingData)
@@ -1080,17 +1082,19 @@ export default {
 				let indiceDict = {}
 				for (var id in votacoesDict) {
 					let votacoes = votacoesDict[id].values
-					indiceDict[id] = calcFunction(votacoes, id)
+					let indice = calcFunction(votacoes, id)
+					if (indice !== null)
+						indiceDict[id] = indice
 				}
 				return indiceDict
 			}
 
 			function calcIndiceF (votacoes, id) {
-				if (votacoes.length <= 1) 
-					return votacoes.length
+				if (!votacoes.length)
+					return null
 				const total = SimpleStats.sum(votacoes)
 				if (!total) 
-					return 0
+					return null
 				const denominador = votacoes.reduce((somaP, votacao) => {
 					return somaP + Math.pow(votacao / total, 2)
 				}, 0)
@@ -1106,6 +1110,18 @@ export default {
 				'indiceF': calcIndiceF
 			}
 
+
+			// If there are no candidates, there's nothing to display
+/*
+			let numeroCandidatos = candidatosHabilitados().length
+			if (!numeroCandidatos) {
+				this.chartType = indexType
+				MapCharts.setChartType('empty', this.radiusType)
+				MapCharts.redrawCharts()
+				this.setMapLegend(null)
+				return
+			}
+*/
 			const thisChart = Utils.findObjectByProperty(this.globalIndexTypes, 'name', indexType)
 			if (!thisChart) {
 				console.error(`Error in changeGlobalIndexType: index ${indexType} not found`)
@@ -1120,13 +1136,13 @@ export default {
 
 			let palette = thisChart.palette || ['#ffffb2','#fecc5c','#fd8d3c','#f03b20','#bd0026']
 			if (indexType == 'indiceF') {
-				const numEnabledCandidates = Store.candidatos.filter(cand => !cand.disabled).length
+				const numEnabledCandidates = candidatosHabilitados().length
 				if (numEnabledCandidates < 2) {
-					palette = ['#f03b20', '#f03b20']
+					palette = ['#ffffff', '#f03b20']
 				}	
 			}
 			const chromaColor = chroma.scale(palette)  
-			const domain = this.setMapData({
+			let domain = this.setMapData({
 				mapDataType: 'index',
 				index: indexType,
 				colors: chromaColor,
@@ -1144,12 +1160,26 @@ export default {
 			// Now we will display a legend
 			// We must prepare a legendObj object to be used as an argument 
 			// for this.setMapLegend()
+
+			// If there are no candidates, do not display a legend
+			const numeroCandidatos = candidatosHabilitados().length
+			if (!numeroCandidatos) {
+				this.setMapLegend(null)
+				return
+			}				
 			const domainDigits = thisChart.domainDigits || 2
 			const domainFormatFunction = thisChart.domainFormatFunction || function (value) { return Utils.formatFloat(value, domainDigits) }
+			let legendLabels
 			const domainGap = domain[1] - domain[0]
-			const legendLabels = palette.map((color, index) => {
-				return domainFormatFunction( domainGap * (index / (palette.length-1)) + domain[0] )
-			})
+			if (!domainGap) {
+				// If domainGap == 0, we will have only one point in the legend
+				legendLabels = [ domainFormatFunction(domain[0]) ]
+			}
+			else {
+				legendLabels = palette.map((color, index) => {
+					return domainFormatFunction( domainGap * (index / (palette.length-1)) + domain[0] )
+				})
+			}				
 			const legendObj = {
 				legendTitle: thisChart.legendTitle,
 				domain,
@@ -1245,7 +1275,7 @@ export default {
 					palette: indexObj.legendPalette || indexObj.palette,
 					domain: indexObj.legendDomain || indexObj.domain,
 					padding: indexObj.padding,
-					labels: indexObj.legendLabels,
+					labels: indexObj.legendLabels || indexObj.labels,
 				}	
 			}				
 		}
