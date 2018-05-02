@@ -93,7 +93,7 @@
 		      slot="activator"
 		    >
 		      <v-btn flat icon slot="activator">
-		      	<v-icon>close</v-icon>
+		      	<v-icon>delete</v-icon>
 		      </v-btn>
 
 		      <v-card>
