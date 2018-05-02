@@ -202,11 +202,11 @@ export default {
 				name: 'pie',
 				icon: 'pie_chart',
                 tooltip: 'Mostra a votação de cada candidato usando gráfico pizza'
+/*
 			}, {
 				name: 'donut',
 				icon: 'donut_large',
                 tooltip: 'Mostra a votação de cada candidato usando gráfico de rosca'
-/*
 			}, {	
 				name: 'bar',
 				icon: 'equalizer',
@@ -235,13 +235,12 @@ export default {
 				tooltip: 'Índice de fragmentação dos candidatos selecionados',
 				palette: ['#ffffb2','#fecc5c','#fd8d3c','#f03b20','#bd0026'],
 				legendTitle: 'Índice de fragmentação'
-/*
 			}, {
 				name: 'indiceSoma',
-				label: 'S',
+				label: '∑',
 				tooltip: 'Ver soma das porcentagens dos candidatos',
+				palette: ['#ffffcc','#a1dab4','#41b6c4','#2c7fb8','#253494'],
 				legendTitle: 'Soma das porcentagens'
-*/	// VAMOS PRIMEIRO ARRENDONDAR TUDO ANTES DE HABILITAR NOVOS ÍNDICES GLOBAIS				
 			}],
 
 			indexChartTypes: [{
@@ -1103,11 +1102,12 @@ export default {
 
 			function calcIndiceSoma (votacoes, id) {
 				const total = SimpleStats.sum(votacoes)
-				return total
+				return total * 100
 			}
 
 			const indexFunctions = {
-				'indiceF': calcIndiceF
+				'indiceF': calcIndiceF,
+				'indiceSoma': calcIndiceSoma
 			}
 
 
