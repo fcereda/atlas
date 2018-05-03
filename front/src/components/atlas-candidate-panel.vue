@@ -301,7 +301,7 @@ export default {
         		cargo = this.cargo
         	if (!resultado || resultado == '')
         		return ''
-            if (resultado.indexOf('ELEITO') == 0)
+            if (resultado.indexOf('ELEITO') == 0 || resultado == 'MÉDIA')
                 return 'Eleito'
             if (resultado.charAt(0) == '2')
                 return 'Passou para o 2o. turno'
