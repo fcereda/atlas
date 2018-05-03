@@ -17,7 +17,7 @@
                   hide-details 
                 ></v-select>
               </v-flex>
-              <v-flex xs12 sm6 md6>
+              <v-flex xs12 sm6 md5>
                 <v-select 
                   label="Cargo"
                   v-model="cargoSelecionado" 
@@ -28,7 +28,7 @@
                   hide-details 
                 ></v-select>
               </v-flex>
-              <v-flex xs12 sm6 md3>
+              <v-flex xs12 sm6 md4>
                   <v-select
                       label="Partido"
                       v-bind:items="partidos"
@@ -41,9 +41,18 @@
                       @keypress.native="selectOnKey"
                   ></v-select>
               </v-flex>
-              <v-flex xs12 sm12 md12 class="pt-0">
-                <v-text-field label="Nome" v-model="nomeSelecionado" required hint="Basta digitar parte do nome"></v-text-field>
+              <v-flex xs12 sm6 md8 class="pt-0">
+                <v-text-field label="Nome" v-model="nomeSelecionado" hint="Basta digitar parte do nome"></v-text-field>
               </v-flex>
+              <v-flex xs12 sm6 md4 class="pt-0 pb-1">
+                <v-select 
+                  label="Mostrar apenas"
+                  v-bind:items="filtros" 
+                  v-model="filtroSelecionado" 
+                  clearable
+                  hide-details 
+                ></v-select>
+              </v-flex>     
 
 <!--
               <v-flex xs12 sm6 md6>
@@ -122,6 +131,9 @@ export default {
         partidoSelecionado: null,
 
         nomeSelecionado: null,
+
+        filtros: ['Eleitos', 'Suplentes', 'Não eleitos', 'Eleitos ou suplentes'],
+        filtroSelecionado: null,
 
         headersCandidatos: [
           {
@@ -216,6 +228,42 @@ export default {
 
       procurarCandidatos () {
 
+        let filtro = this.filtros.indexOf(this.filtroSelecionado)
+
+        function filterCandidates (candidatos) {
+          const ELEITO = 0
+          const SUPLENTE = 1
+          const NAO_ELEITO = 2
+          const ELEITO_OU_SUPLENTE = 3
+
+          function filterByResult (cand) {
+            const resultados = {
+              'ELEITO': ELEITO,
+              'ELEITO POR QP': ELEITO,
+              'MÉDIA': ELEITO,
+              'NÃO ELEITO': NAO_ELEITO,
+              '2º TURNO': ELEITO,
+              'SUPLENTE': SUPLENTE
+            }
+            let candResultado = cand.resultado .toUpperCase()
+            let resultado = resultados[candResultado]
+            if (resultado === null) {
+              console.log('atlas-dialog-busca-avancada: Resultado não encontrado: ' + cand.resultado)
+              resultado = NAO_ELEITO
+            }
+            if (filtro == ELEITO_OU_SUPLENTE && (resultado == ELEITO || resultado == SUPLENTE)) {
+              resultado = ELEITO_OU_SUPLENTE
+            }
+            return resultado == filtro
+          }
+
+          let noFilterSelected = (filtro == -1)
+          if (noFilterSelected) {
+            return candidatos
+          }
+          return candidatos.filter(filterByResult)
+        }
+
         function orderCandidatesByRelevance (candidatos, nome) {
 
           function sortByRelevance (a, b) {
@@ -259,6 +307,7 @@ export default {
         }})
         .then(function (response) {
             var candidatos = response.data
+            candidatos = filterCandidates(candidatos)
             candidatos.forEach((candidato) => {
               candidato.nome = Utils.capitalizeName(candidato.nome)
               candidato.displayName = candidato.nome + ' (' + candidato.partido + ')'
