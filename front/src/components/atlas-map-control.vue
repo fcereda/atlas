@@ -10,7 +10,7 @@
 
 			<div 
 				@click="onClick(button)" 
-				v-bind:class="value==button.name?'selected-button':''"
+				v-bind:class="buttonClass(button)"
 				slot="activator"
 			>
 				<v-icon 
@@ -49,6 +49,14 @@ export default {
 
 	methods: {
 
+		buttonClass: function (button) {
+			if (button.disabled)
+				return 'disabled-button'
+			if (this.value == button.name)
+				return 'selected-button'
+			return 'enabled-button'
+		},
+
 		onClick: function (button) {
 			this.$emit('input', button.name)
 		}
@@ -62,7 +70,15 @@ export default {
 <style>
 
 .selected-button {
-	color: #64b5f6;
+	color: #64b5f6;			/* blue darken-2 */
+}
+
+.enabled-button {
+	color: #616161;			/* grey darken-2 */
+}
+
+.disabled-button {
+	color: #EEEEEE;			/* grey-lighten-3 */
 }
 
 .char-icon {
