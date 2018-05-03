@@ -240,12 +240,13 @@ export default {
             const resultados = {
               'ELEITO': ELEITO,
               'ELEITO POR QP': ELEITO,
+              'ELEITO POR MÉDIA': ELEITO,
               'MÉDIA': ELEITO,
               'NÃO ELEITO': NAO_ELEITO,
               '2º TURNO': ELEITO,
               'SUPLENTE': SUPLENTE
             }
-            let candResultado = cand.resultado .toUpperCase()
+            let candResultado = cand.resultado.toUpperCase()
             let resultado = resultados[candResultado]
             if (resultado === null) {
               console.log('atlas-dialog-busca-avancada: Resultado não encontrado: ' + cand.resultado)
