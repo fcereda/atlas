@@ -61,6 +61,20 @@
 -->              
               <v-flex xs12>
 
+                  <scrolling-data-table
+                    :headers="headersCandidatos"
+                    :items="candidatosEncontrados"
+                    item-key="id"
+                    :selectable="true"
+                    :selectRow="true"
+                    no-data-text="Nenhum candidato encontrado"
+                    max-height="320"
+                    @input="candidatosSelecionados = $event"
+                  ></scrolling-data-table>
+
+ 
+<!--
+
   <v-data-table
       v-bind:headers="headersCandidatos"
       :items="candidatosEncontrados"
@@ -86,6 +100,7 @@
     </template>
   </v-data-table>
 
+-->
 
               </v-flex>
             </v-layout>
@@ -110,9 +125,14 @@
 import axios from 'axios'
 import api from '../lib/api.js'
 import Utils from '../lib/utils.js'
-
+import scrollingDataTable from './scrolling-data-table.vue'
 
 export default {
+
+    components: {
+      'scrolling-data-table': scrollingDataTable
+    },
+
     props: ['show', 'uf'],
 
     data () {
@@ -135,7 +155,7 @@ export default {
         filtros: ['Eleitos', 'Suplentes', 'Não eleitos', 'Eleitos ou suplentes'],
         filtroSelecionado: null,
 
-        headersCandidatos: [
+        headersCandidatos0: [
           {
             text: 'Nome e partido',
             align: 'left',
@@ -146,6 +166,39 @@ export default {
           { text: 'Cargo', value: 'cargo' },
           { text: 'Votação', value: 'votacao', align:'right' }
         ],
+
+        headersCandidatos: [{
+          name: 'Nome e partido',
+          align: 'left',
+          sortable: true,
+          value: 'displayName'
+        }, { 
+          name: 'Ano',  
+          value: 'ano',
+          align: 'right',
+          sortable: true,
+        }, { 
+          name: 'Cargo', 
+          value: 'cargo',
+          align: 'center',
+          sortable: true, 
+          format: (cargo) => Utils.obterNomeCargo(cargo, false)
+        }, { 
+          name: 'Votação', 
+          value: 'votacao', 
+          align:'right',
+          sortable: true,
+          format: Utils.formatInt
+/*
+        }, {
+          name: 'Resultado',
+          value: 'resultado',
+          align: 'right',
+          sortable: true
+*/          
+        }],
+
+
         candidatosEncontrados: [],
         candidatosSelecionados: [],
 
@@ -168,20 +221,28 @@ export default {
 
       anoSelecionado () {
         this.partidos = this.obterPartidosDoAno(this.anoSelecionado)
-        this.candidatosEncontrados = []
+        if (this.candidatosEncontrados.length)
+            this.candidatosEncontrados = []
       },
 
       cargoSelecionado () {
-        this.candidatosEncontrados = []
+        if (this.candidatosEncontrados.length)
+            this.candidatosEncontrados = []
       },
 
       partidoSelecionado () {
-        this.candidatosEncontrados = []
+        if (this.candidatosEncontrados.length)
+            this.candidatosEncontrados = []
+      },
+
+      filtroSelecionado () {
+        if (this.candidatosEncontrados.length)
+            this.candidatosEncontrados = []
       },
 
       nomeSelecionado () {
-        if (this.candidatosEncontrados)
-          this.candidatosEncontrados = []
+        if (this.candidatosEncontrados.length)
+            this.candidatosEncontrados = []
       }
     },
 
@@ -205,10 +266,7 @@ export default {
       },
 
       selectOnKey (e) {
-          console.log('entrou em selectOnKey')
           if (e.key == 'Enter') {
-              console.log('tecla é enter')
-              console.log(e)
               e.cancelBubble = true
               e.preventDefault()
               e.stopPropagation()
@@ -330,6 +388,7 @@ export default {
         //this.$emit('add-multiple-candidates', this.candidatosSelecionados)
         this.candidatosSelecionados = []
         this.closeDialog()
+        setTimeout(() => this.candidatosEncontrados = [], 2000)
       }
 
     }
