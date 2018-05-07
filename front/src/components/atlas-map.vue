@@ -237,7 +237,7 @@ export default {
 				legendTitle: 'Índice de fragmentação'
 			}, {
 				name: 'indiceSoma',
-				label: '∑',
+				label: 'Σ',
 				tooltip: 'Ver soma das porcentagens dos candidatos',
 				palette: ['#ffffcc','#a1dab4','#41b6c4','#2c7fb8','#253494'],
 				legendTitle: 'Soma das porcentagens'
@@ -598,9 +598,10 @@ export default {
 					style.borderLeft = '0'
 					style.cursor = 'pointer' 
 
-					container.addEventListener('click', () => {
+					container.addEventListener('click', (event) => {
                         that.$emit('input', !that.sidebarOpen)
 						setContainerInnerHTML(200)
+						event.stopPropagation()
 					})
 
 					setContainerInnerHTML()
@@ -623,10 +624,11 @@ export default {
 					container.style.height = '30px'
 					container.style.cursor = 'pointer'
 
-					container.addEventListener('click', () => {
+					container.addEventListener('click', (event) => {
 						var uf = that.uf.sigla
 						that.fitBoundsToUf(uf)
-					})
+	                    event.stopPropagation()                    
+    				})
 
 					return container
 				}
