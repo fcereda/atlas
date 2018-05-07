@@ -327,24 +327,32 @@ export default {
 
           function sortByRelevance (a, b) {
             if (a.indexNome > b.indexNome)
-              return 1;
+              return 1
             if (a.indexNome < b.indexNome)
-              return -1;
-            return sortByName(a, b);
+              return -1
+            return sortByVotacao(a, b);
+          }
+
+          function sortByVotacao (a, b) {
+            if (a.votacao > b.votacao) 
+                return -1
+            if (a.votacao < b.votacao) 
+                return 1               
+            return sortByName(a, b)
           }
 
           function sortByName (a, b) {
             if (a.nome > b.nome)
-              return 1;
+              return -1
             if (a.nome < b.nome)
-              return -1;
-            return 0;           
+              return 1
+            return 0           
           }
 
           if (nome) {
-            nome = nome.toUpperCase();
-            candidatos.forEach((candidato) => {
-              candidato.indexNome = candidato.nome.toUpperCase().indexOf(nome);
+            nome = Utils.normalizeNome(nome)
+            candidatos.forEach(candidato => {
+              candidato.indexNome = Utils.normalizeNome(candidato.nome).indexOf(nome)
             })
             return candidatos.sort(sortByRelevance)
           } 
