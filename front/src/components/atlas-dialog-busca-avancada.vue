@@ -126,6 +126,7 @@ import axios from 'axios'
 import api from '../lib/api.js'
 import Utils from '../lib/utils.js'
 import scrollingDataTable from './scrolling-data-table.vue'
+import Candidatos from '../classes/candidatos.js'
 
 export default {
 
@@ -381,7 +382,8 @@ export default {
               candidato.nomeCargo = Utils.obterNomeCargo(candidato.cargo)
               candidato.votacaoFormatada = Utils.formatInt(candidato.votacao)
             })
-            this.candidatosEncontrados = orderCandidatesByRelevance(candidatos, this.nomeSelecionado)
+            //this.candidatosEncontrados = orderCandidatesByRelevance(candidatos, this.nomeSelecionado)
+            this.candidatosEncontrados = Candidatos.ordenarPorRelevancia(candidatos)
             this.procurandoCandidatos = false
         }.bind(this))
         .catch(function (error) {
@@ -397,7 +399,7 @@ export default {
         this.candidatosSelecionados = []
         this.closeDialog()
         setTimeout(() => this.candidatosEncontrados = [], 2000)
-      }
+      },
 
     }
 

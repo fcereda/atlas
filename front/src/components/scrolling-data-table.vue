@@ -37,7 +37,7 @@
 	              key="index" 
 	              _class="content-row" 
 	              v-bind:class="rowClass(row)" 
-	              @click="selectRow && toggleRow(row)">  <!-- selectRow && toggleRow(row) -->
+	              @click="selectRow && toggleRow(row, $event)">  <!-- selectRow && toggleRow(row) -->
 	            <td v-if="selectable" class="select">
 	              <div v-on:click="toggleRow(row, $event)" v-html="row.selected ? selectedHtml : notSelectedHtml"></div>
 	            </td>
@@ -113,6 +113,7 @@ export default {
 			rows: [],
 		    lastSortedHeader: null,
 		    lastSortedOrder: null,
+		    lastSelected: null,
 		    selectedHtml: '<i class="material-icons selected">check_box</i>', // '☒',
 		    notSelectedHtml: '<i class="material-icons">check_box_outline_blank</i>',  //'☐',
 		    indeterminateSelectionHtml: '<i class="material-icons undeterminated">indeterminate_check_box</i>',  //'☐',
@@ -150,6 +151,7 @@ export default {
 		},
 
 		items: function () {
+			this.$refs.wrap.scrollTop = 0		// NAO ESTÁ FUNCIONANDO
 			this.rows = this.items.map(item => {
 				return {...item}
 			})
@@ -200,7 +202,19 @@ export default {
 	    
 	    toggleRow: function (row, event) {
 	      let newSelected = !row.selected
-	      this.$set(row, 'selected', newSelected)
+	      if (event && event.shiftKey && this.lastSelected) {
+	      	let lastSelectedIndex = this.rows.indexOf(this.lastSelected)
+	      	let thisSelectedIndex = this.rows.indexOf(row)
+	      	let first = Math.min(lastSelectedIndex, thisSelectedIndex)
+	      	let last = Math.max(lastSelectedIndex, thisSelectedIndex)
+	      	for (var i=first; i<=last; i++) {
+	      		this.$set(this.rows[i], 'selected', newSelected)
+	      	}
+	      }
+	      else {
+	      	this.$set(row, 'selected', newSelected)
+	      }	
+	      this.lastSelected = row
 	      if (event) {
 	      	event.stopPropagation()
 	      }  	
@@ -271,6 +285,7 @@ export default {
 	      }    
 	      this.lastSortedHeader = header
 	      this.lastSortedOrder = order
+	      this.lastSelected = null
 	      this.rows = this.rows.sort(sortFunction)
 	    },
 
@@ -358,6 +373,13 @@ export default {
 
 .vue-table thead td {
 	padding: 6px;
+}
+
+.vue-table tr td {
+  -webkit-user-select: none;  /* Chrome all / Safari all */
+  -moz-user-select: none;     /* Firefox all */
+  -ms-user-select: none;      /* IE 10+ */
+  user-select: none;          /* Likely future */      
 }
 
 .vue-table tr td.select {

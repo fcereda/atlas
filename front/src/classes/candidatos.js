@@ -260,6 +260,39 @@ class Candidatos {
         return candidato.obterIndicePorDistrito(nomeIndice)
     }
 
+    static ordenarPorRelevancia (candidatos) {
+        if (!candidatos)
+            candidatos = this
+        var agrupadosPorNome = candidatos.reduce((dict, candidato) => {
+            var nome = candidato.nomeCompleto   
+            // Temos que usar nomeCompleto para poder identificar corretamente os candidatos,
+            // pois vários candidatos mudam o nome de urna de eleição para eleição, enquanto
+            // outros utilizam nomes de urna iguais aos de políticos mais famosos
+            if (!dict[nome]) {
+                dict[nome] = {
+                    lista: [],
+                    votacao: 0
+                }
+            }
+            dict[nome].lista.push(candidato)
+            dict[nome].votacao += candidato.votacao
+            return dict
+        }, {})
+
+        var ordenadosPorVotacao = Object.keys(agrupadosPorNome).map((key) =>
+            agrupadosPorNome[key]).sort((a, b) => b.votacao - a.votacao)
+
+        var ordenadosPorRelevancia = ordenadosPorVotacao.reduce((listaFinal, pessoa) => {
+            pessoa.lista
+            .sort((a, b) => b.ano - a.ano)
+            .forEach((candidato) => listaFinal.push(candidato))
+            return listaFinal
+        }, [])
+
+        console.log(ordenadosPorRelevancia.map((candidato) => candidato.nome))
+        return ordenadosPorRelevancia
+    }
+
 }
 
 //module.exports = Candidatos
