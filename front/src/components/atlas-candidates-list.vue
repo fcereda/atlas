@@ -173,8 +173,8 @@ export default {
 
     	addCandidate: function (candidate, addingMultiple=false) {
 
-    		var that = this,
-    			candidateObj = {
+    		var that = this
+    		var candidateObj = {
                     ...candidate, 
                     nome: Utils.capitalizeName(candidate.nome),
                     nomeCompleto: Utils.capitalizeName(candidate.nomeCompleto),
@@ -184,6 +184,17 @@ export default {
                     disabled: false, 
                     showDetails: false
                 }
+
+            debugger
+            //  Não continua se o novo candidato já existir em Store.candidatos
+            if (Store.candidatos.obterCandidato(candidate)) {
+                // Só mostra a mensagem se não estiver carregando múltiplos candidatos
+                if (!addingMultiple) {
+                    this.snackbar.text = 'Este candidato já faz parte da lista'
+                    this.snackbar.visible = true
+                }                    
+                return new Promise((resolve, reject) => reject())
+            }
 
             this.candidatosSelecionados.push(candidateObj)
             var newCandidate = new Candidato (candidateObj)            
