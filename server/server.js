@@ -29,6 +29,8 @@ var arqCandidatos = './data/candidatos.csv',
  	candidatosPorUfAno = {},
  	candidatosPorUfAnoCargo = {},
  	candidatosPorUfCargo = {},
+ 	nameDict = {},
+ 	nameDictsPorUf = {},
 	coordsArray = [],
 	coordenadas = {},
 	coordenadasPorUf = {},
@@ -102,7 +104,24 @@ function normalizarNome (str) {
 		replace('Ñ', 'N')
 }
 
+function buscarCandidatosPorNome (nome, uf) {
+    var matches = []
+    var dict = uf ? nameDictsPorUf[uf.toUpperCase()] : nameDict
+    nome = normalizarNome(nome)
+    var strStart = nome.substr(0, 3)
+    var possiveisCandidatos = dict[strStart] || []
+
+    for (var i=0; i<possiveisCandidatos.length; i++) {
+    	let candidato = possiveisCandidatos[i]
+        if (candidato.nomeNormalizado.indexOf(nome) >= 0) {
+            matches.push(candidato)
+        }
+    }   
+    return matches
+}
+
 function filterCandidates (arrayCandidatos, uf, ano, cargo, nome, nomeCompleto, cpf, partido, resultado) {
+
 	return arrayCandidatos.filter((candidato) => {
 		if (Array.isArray(candidato))
 			return false
@@ -173,6 +192,8 @@ router.route('/api/candidatos')
 					}
 				})
 			}
+			else if (nome && !ano && !cargo)
+				arrayAFiltrar = buscarCandidatosPorNome(nome, uf)
 			else if (uf && ano && cargo)
 				arrayAFiltrar = candidatosPorUfAnoCargo[uf][ano][cargo]
 			else if (uf && ano)
@@ -380,6 +401,40 @@ debugMode = options.debug || debugMode
 developmentMode = options.dev || developmentMode
 
 
+function calcNameDict (candidatos) {
+    
+    function getSubstrings (name) {
+        var letters = []
+        //name = name.replace(/\s/g, '')
+        for (var i=0; i<name.length-2; i++) {
+            let substring = name.substr(i, 3)
+            if (!letters.includes(substring)) {
+                letters.push(substring)
+            }    
+        }
+        return letters
+    }
+
+    var nameDict = {}
+    
+    candidatos.forEach(candidato => {
+        var nome = candidato.nomeNormalizado,
+            substrings = getSubstrings(nome)
+        for (var i=0; i<substrings.length; i++) {
+            let substring = substrings[i]
+            if (!nameDict[substring]) {
+                nameDict[substring] = [candidato]
+            }
+            else {
+                nameDict[substring].push(candidato)
+            }
+        }
+    })
+  
+    return nameDict
+   
+}
+
 
 function loadCandidates (next) {
 
@@ -397,6 +452,7 @@ function loadCandidates (next) {
 	    		.filter((row) => parseInt(row['CODIGO_CARGO']) <= 8)	// Elimina todos os prefeitos e vereadores
 	    		.map((row) => parseCandidateRow(row))
 
+	    	nameDict = calcNameDict(candidatos)		// nameDict é o name dictionary geral -- todas as UFs
 	    	candidatos.forEach((candidato) => {
 	    		var {id, uf, ano, cargo} = candidato
 	    		if (!candidatosPorUf[uf])
@@ -425,6 +481,12 @@ function loadCandidates (next) {
 	    		candidatosPorUfAnoCargo[uf][ano][cargo].push(candidato)
 	    	})	
 
+	    	// nameDictsPorUf são os dicts dos nomes separados por UF
+	    	nameDictsPorUf = Object.keys(candidatosPorUf).reduce((dict, uf) => {
+	    		dict[uf] = calcNameDict(candidatosPorUf[uf])
+	    		return dict
+	    	}, {})
+
 	    	var sumarioCandidato = ({ numero,nome,votacao }) => numero + ' ' + nome + ', ' + votacao + ' votos'
 
 	    	if (debugMode) {
@@ -449,6 +511,7 @@ function loadCandidates (next) {
 	}
 
 }
+
 
 
 function loadParties (next) {
