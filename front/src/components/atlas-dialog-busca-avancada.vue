@@ -53,14 +53,8 @@
                   hide-details 
                 ></v-select>
               </v-flex>     
-
-<!--
-              <v-flex xs12 sm6 md6>
-                <v-text-field label="Limitar aos votados em" hint="Escolha um município"></v-text-field>
-              </v-flex>
--->              
               <v-flex xs12>
-
+              
                   <scrolling-data-table
                     :headers="headersCandidatos"
                     :items="candidatosEncontrados"
@@ -71,36 +65,6 @@
                     max-height="320"
                     @input="candidatosSelecionados = $event"
                   ></scrolling-data-table>
-
- 
-<!--
-
-  <v-data-table
-      v-bind:headers="headersCandidatos"
-      :items="candidatosEncontrados"
-      v-model="candidatosSelecionados"
-      item-key="id"
-      no-data-text="Nenhum candidato encontrado"
-      select-all      
-      class="elevation-1"
-    >
-    <template slot="items" slot-scope="props">
-      <td class="pl-1 pr-1">
-        <v-checkbox
-          primary
-          hide-details
-          v-model="props.selected"
-        >
-        </v-checkbox>
-      </td>
-      <td class="pl-0 text-xs-left">{{ props.item.nome }} ({{ props.item.partido }})</td>
-      <td class="text-xs-right">{{ props.item.ano }}</td>
-      <td class="text-xs-right">{{ props.item.nomeCargo }}</td>
-      <td class="text-xs-right">{{ props.item.votacaoFormatada }}</td>
-    </template>
-  </v-data-table>
-
--->
 
               </v-flex>
             </v-layout>
@@ -324,46 +288,6 @@ export default {
           return candidatos.filter(filterByResult)
         }
 
-        function orderCandidatesByRelevance (candidatos, nome) {
-
-          function sortByRelevance (a, b) {
-            if (a.indexNome > b.indexNome)
-              return 1
-            if (a.indexNome < b.indexNome)
-              return -1
-            return sortByVotacao(a, b);
-          }
-
-          function sortByVotacao (a, b) {
-            if (a.votacao > b.votacao) 
-                return -1
-            if (a.votacao < b.votacao) 
-                return 1               
-            return sortByName(a, b)
-          }
-
-          function sortByName (a, b) {
-            if (a.nome > b.nome)
-              return -1
-            if (a.nome < b.nome)
-              return 1
-            return 0           
-          }
-
-          if (nome) {
-            nome = Utils.normalizeNome(nome)
-            candidatos.forEach(candidato => {
-              candidato.indexNome = Utils.normalizeNome(candidato.nome).indexOf(nome)
-            })
-            return candidatos.sort(sortByRelevance)
-          } 
-          else {
-            candidatos.forEach((candidato) => {
-              candidato.indexNome = 0
-            })
-            return candidatos.sort(sortByName)
-          }
-        }
         
         this.procurandoCandidatos = true
         axios.get('/api/candidatos', { params: {
@@ -382,7 +306,6 @@ export default {
               candidato.nomeCargo = Utils.obterNomeCargo(candidato.cargo)
               candidato.votacaoFormatada = Utils.formatInt(candidato.votacao)
             })
-            //this.candidatosEncontrados = orderCandidatesByRelevance(candidatos, this.nomeSelecionado)
             this.candidatosEncontrados = Candidatos.ordenarPorRelevancia(candidatos)
             this.procurandoCandidatos = false
         }.bind(this))
