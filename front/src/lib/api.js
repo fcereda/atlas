@@ -1,9 +1,13 @@
 import CepespQuery from './cepespquery.js'
+import DataQuery from './dataquery.js'
 import axios from 'axios'
 import Utils from './utils.js'
 
+const useCepespApi = false
 const atlasURL = '/api'
 const cepespURL = '/cepesp/api/consulta'
+const localDataURL = '/api/tse'
+const dataSourceURL = useCepespApi ? cepespURL : localDataURL
 
 // Cache for total of votes by zone and municipality.
 // We do this because a typical use case will have the user 
@@ -88,7 +92,7 @@ function getArrayFromCSV (data, selectedFields) {
 
 	function extractRowFromLine (line) {
 		var row = line.split(',')
-		return row.map((item) => item.slice(1, item.length-1))
+		return row.map((item) => item.charAt(0) == '"' ? item.slice(1, item.length-1) : item)
 	}
 
 	var lines = data.split('\n').filter((line) => line.trim().length > 0),
@@ -195,22 +199,37 @@ export default {
 	},
 
 	getVotesByZoneAndCity ({ ano, cargo, uf, numero }) {
-		var cargoETurno = getCargoETurno(cargo, uf)
-		cargo = cargoETurno.cargo
-		var turno = cargoETurno.turno
+		var query
 
-		var query = new CepespQuery ({
-			path: '/votos',
-			cargo,
-			ano,
-			agregacaoRegional: 7
-		})
-		query = query.addSearch('NUM_TURNO', turno)
-		  .addSearch('UF', uf)
-		  .addSearch('NUMERO_CANDIDATO', numero)
+		if (useCepespApi) {
+			// Fetch data from CEPESP's API
+			let cargoETurno = getCargoETurno(cargo, uf)
+			cargo = cargoETurno.cargo
+			let turno = cargoETurno.turno
+
+			query = new CepespQuery ({
+				path: '/votos',
+				cargo,
+				ano,
+				agregacaoRegional: 7
+			})
+			query = query.addSearch('NUM_TURNO', turno)
+			  .addSearch('UF', uf)
+			  .addSearch('NUMERO_CANDIDATO', numero)
+		}
+		else {
+			// Load data from local files
+			query = new DataQuery({
+				tipo: 'candidato',
+				uf,
+				ano,
+				cargo,
+				numero
+			})
+		}			
 
 		return new Promise ((resolve, reject) => {
-			axios.get(cepespURL + query.url())  
+			axios.get(dataSourceURL + query.url())  
 			.then((response) => {
 				var data = getArrayFromCSV(response.data, {
 					'numero': 'NUMERO_CANDIDATO',
@@ -228,12 +247,10 @@ export default {
 				reject(error)
 			})
 		})	
-
-// http://cepesp.io/api/consulta/votos?cargo=1&ano=2010&agregacao_politica=1&agregacao_regional=7&columns[0][name]=UF&columns[0][search][value]=SP&columns[1][name]=NUMERO_CANDIDATO&columns[1][search][value]=45&columns[2][name]=COD_MUN_TSE&colmns[2][search][value]=71072&selected_columns[0]=%22NUM_ZONA%22&selected_columns[1]=%22QTDE_VOTOS%22
-
 	},
 
 	getTotalVotesByZoneAndCity ({ ano, cargo, uf }) {
+		var query
 		var idEleicao = calcIdElection(ano, cargo, uf)
 
 		if (totalVotesByZoneAndCity[idEleicao]) {
@@ -243,41 +260,51 @@ export default {
 			})  
 		}
 
-		var cargoETurno = getCargoETurno(cargo, uf)
-		cargo = cargoETurno.cargo
-		var turno = cargoETurno.turno
+		if (useCepespApi) {
+			// This will fetch data from CEPESP's API
+			let cargoETurno = getCargoETurno(cargo, uf)
+			cargo = cargoETurno.cargo
+			let turno = cargoETurno.turno
 
-		var query = new CepespQuery({
-			path: '/tse',
-			ano,
-			cargo,
-			agregacaoRegional: 7,
-			agregacaoPolitica: 4
-		})
-		query.addSearch('UF', uf)
-		query.addSearch('NUM_TURNO', turno)
-
-/*
-		// Fallback para o caso de a API "/tse" do CEPESP parar de funcionar novamente
-		return new Promise ((resolve, reject) => {
-			axios.get(cepespURL + '/votos' + query)
-			.then((response) => {
-				var data = getArrayFromCSV(response.data, {
-					'ano': 'ANO_ELEICAO',
-					'codigoMunicipio': 'COD_MUN_TSE',
-					'nomeMunicipio': 'NOME_MUNICIPIO',
-					'codigoZona': 'NUM_ZONA',
-					'votos': 'QTDE_VOTOS'
-				})
-				data.forEach((obj) => obj.votos = parseInt(obj.votos))
-				totalVotesByZoneAndCity[idEleicao] = data
-				resolve(data)	
+			query = new CepespQuery({
+				path: '/tse',
+				ano,
+				cargo,
+				agregacaoRegional: 7,
+				agregacaoPolitica: 4
 			})
+			query.addSearch('UF', uf)
+			query.addSearch('NUM_TURNO', turno)
+/*
+			// Fallback para o caso de a API "/tse" do CEPESP parar de funcionar novamente
+			return new Promise ((resolve, reject) => {
+				axios.get(cepespURL + '/votos' + query)
+				.then((response) => {
+					var data = getArrayFromCSV(response.data, {
+						'ano': 'ANO_ELEICAO',
+						'codigoMunicipio': 'COD_MUN_TSE',
+						'nomeMunicipio': 'NOME_MUNICIPIO',
+						'codigoZona': 'NUM_ZONA',
+						'votos': 'QTDE_VOTOS'
+					})
+					data.forEach((obj) => obj.votos = parseInt(obj.votos))
+					totalVotesByZoneAndCity[idEleicao] = data
+					resolve(data)	
+				})
 */
+		}
+		else {
+			// This will load data from local files
+			query = new DataQuery({
+				tipo: 'totais',
+				uf,
+				ano,
+				cargo
+			})
+		}			
 
-		//O CÓDIGO COSTUMA FUNCIONAR, MAS ÀS VEZES A API DO CEPESP DÁ PROBLEMA
 		return new Promise ((resolve, reject) => {
-			axios.get(cepespURL + query.url())
+			axios.get(dataSourceURL + query.url())
 			.then((response) => {
 				var data = getArrayFromCSV(response.data, {
 					'ano': 'ANO_ELEICAO',
@@ -288,7 +315,6 @@ export default {
 					'votosNominais': 'QT_VOTOS_NOMINAIS',
 					'votosLegenda': 'QT_VOTOS_LEGENDA'
 				})
-				//data.forEach((row) => row.votos = parseInt(row.votosNominais) + parseInt(row.votosLegenda))
 				var totalVotos = data.map(({ano, turno, codigoZona, codigoMunicipio, votosNominais, votosLegenda}) => {
 					return {
 						ano,
@@ -306,63 +332,61 @@ export default {
 				reject(error)
 			})
 		})	
-
-// http://cepesp.io/api/consulta/votos?cargo=1&ano=2010&agregacao_politica=1&agregacao_regional=7&columns[0][name]=UF&columns[0][search][value]=SP&columns[1][name]=NUMERO_CANDIDATO&columns[1][search][value]=45&columns[2][name]=COD_MUN_TSE&colmns[2][search][value]=71072&selected_columns[0]=%22NUM_ZONA%22&selected_columns[1]=%22QTDE_VOTOS%22
-
 	},	
 
 	getElectionResultsByZoneAndCity ({ano, cargo, uf, codMunicipio, nomeMunicipio, zona}) {
+		var query
 		if (!ano || !cargo || !uf || (!codMunicipio && !nomeMunicipio))
 			return new Promise((resolve, reject) => reject('Missing parameters'))
 
-		var cargoETurno = getCargoETurno(cargo, uf)
-		cargo = cargoETurno.cargo
-		var turno = cargoETurno.turno
-/*		
-		var query = `?ano=${ano}&cargo=${cargo}`
-		query += '&agregacao_regional=7&agregacao_politica=2&selected_columns[]=SIGLA_PARTIDO&selected_columns[]=NUM_TURNO&selected_columns[]=NOME_MUNICIPIO&selected_columns[]=COD_MUN_TSE&selected_columns[]=NUM_ZONA&selected_columns[]=DESCRICAO_CARGO&selected_columns[]=QTDE_VOTOS&selected_columns[]=NOME_CANDIDATO&selected_columns[]=NOME_URNA_CANDIDATO&selected_columns[]=NUMERO_CANDIDATO&selected_columns[]=UF'
-		query += `&columns[0][name]=UF&columns[0][search][value]=${uf}`
-		query += `&columns[1][name]=NUM_TURNO&columns[1][search][value]=${turno}`
-		if (codMunicipio) {
-			query += `&columns[2][name]=COD_TSE_MUN&columns[2][search][value]=${codMunicipio}`
-		}
-		else if (nomeMunicipio) {
-			query += `&columns[2][name]=NOME_MUNICIPIO&columns[2][search][value]=${nomeMunicipio}`	
-		}
-		if (zona){
-			query += `&columns[3][name]=NUM_ZONA&columns[3][search][value]=${zona}`
-		}	
-*/
-		var query = new CepespQuery({
-			path: '/tse',
-			ano,
-			cargo,
-			uf,
-			agregacaoPolitica: 2,
-			agregacaoRegional: 7
-		}).addStandardFields({
-			'agregacaoPolitica': 2,
-			'agregacaoRegional': 7
-		}).addField('NOME_URNA_CANDIDATO')
-  		  .removeField('DESCRICAO_CARGO')
-		  .removeField('NUMERO_PARTIDO')
-		  .removeField('NOME_CANDIDATO')
-		  .addSearch('NUM_TURNO', turno)
-		if (codMunicipio) {
-			codMunicipio = ('00000'+codMunicipio).substr(-5)
-			query = query.addSearch('COD_MUN_TSE', codMunicipio)
-		}
-		else if (nomeMunicipio) {
-			query = query.addSearch('NOME_MUNICIPIO', nomeMunicipio)
-		}
+		if (useCepespApi) {
+			// Fetches data from the CEPESP API
+			let cargoETurno = getCargoETurno(cargo, uf)
+			cargo = cargoETurno.cargo
+			let turno = cargoETurno.turno
 
-		if (zona) {
-			query = query.addSearch('NUM_ZONA', parseInt(zona))
+			query = new CepespQuery({
+				path: '/tse',
+				ano,
+				cargo,
+				uf,
+				agregacaoPolitica: 2,
+				agregacaoRegional: 7
+			}).addStandardFields({
+				'agregacaoPolitica': 2,
+				'agregacaoRegional': 7
+			}).addField('NOME_URNA_CANDIDATO')
+	  		  .removeField('DESCRICAO_CARGO')
+			  .removeField('NUMERO_PARTIDO')
+			  .removeField('NOME_CANDIDATO')
+			  .addSearch('NUM_TURNO', turno)
+			if (codMunicipio) {
+				codMunicipio = ('00000'+codMunicipio).substr(-5)
+				query = query.addSearch('COD_MUN_TSE', codMunicipio)
+			}
+			else if (nomeMunicipio) {
+				query = query.addSearch('NOME_MUNICIPIO', nomeMunicipio)
+			}
+
+			if (zona) {
+				query = query.addSearch('NUM_ZONA', parseInt(zona))
+			}
 		}
+		else {
+			// Gets data from local files
+			query = new DataQuery({
+				tipo: 'maisvotados',
+				uf,
+				ano,
+				cargo,
+				codMunicipio,
+				zona
+			})
+		}	
 
 		return new Promise ((resolve, reject) => {
 			console.log(query.url())
-			axios.get(cepespURL + query.url(), { timeout:120000 })
+			axios.get(dataSourceURL + query.url(), { timeout:120000 })
 			.then((response) => {
 				if (!response.data || !response.data.length) {
 					throw Error('Empty response from the CEPESP API')
@@ -477,7 +501,7 @@ export default {
 		//var query = `/api/candidatos?nome=
 
 		return new Promise ((resolve, reject) => {
-			axios.get(cepespURL + query)
+			axios.get(dataSourceURL + query)
 			.then((response) => {
 				var data = getArrayFromCSV(response.data, {
 					'ano': 'ANO_ELEICAO',

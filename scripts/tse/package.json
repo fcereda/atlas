@@ -1,0 +1,16 @@
+{
+  "name": "tse-data",
+  "version": "0.1.0",
+  "description": "Script to convert TSE's electoral data to the format used by Atlas Eleitoral",
+  "main": "buildfiles.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Fabio Cereda",
+  "license": "MIT",
+  "dependencies": {
+    "command-line-args": "^5.0.2",
+    "csv-parser": "^1.12.1",
+    "csv-write-stream": "^2.0.0"
+  }
+}

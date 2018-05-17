@@ -5,9 +5,9 @@ var app = express()
 var router = express.Router()
 var bodyParser = require('body-parser')
 const fs = require('fs')
+const path = require('path')
 var parse = require('csv-parse')
 var proxy = require('express-http-proxy')
-var path = require('path');
 var apicache = require('apicache')
 var AppState = require('./appstate.js')
 var logger = require('./logger.js')
@@ -300,6 +300,99 @@ app.get('/api/status', (req, res) => {
 		cacheIndex: apicache.getIndex()
 	})
 })
+
+
+// APIs que servem os dados de votação gravados no disco
+// Esses dados foram obtidos direto do TSE, e convertidos para 
+// os formatos usados pelo cliente. Dessa forma, não é 
+// necessário requisitar os dados à API do CEPESP 
+
+app.get('/api/tse/candidato/:uf/:ano/:cargo/:numero', (req, res) => {
+    try {
+        var {uf, ano, cargo, numero} = req.params
+        uf = checkUf(uf)
+        ano = checkAno(ano)     
+        cargo = checkCargo(cargo)
+        var filename = `${uf}-${ano}-${cargo}-${numero}.csv`
+        var filename = path.join(__dirname, 'data', 'tse', 'candidatos', uf, ano, filename)
+        res.sendFile(filename)
+    }    
+    catch (err) {
+        res.status(400).json({error: 'Invalid parameters'})
+    }
+})
+
+app.get('/api/tse/totais/:uf/:ano/:cargo', (req, res) => {
+    try {
+        var {uf, ano, cargo} = req.params
+        uf = checkUf(uf)
+        ano = checkAno(ano)
+        cargo = checkCargo(cargo)
+        var filename = `${uf}-${ano}-${cargo}.csv`
+        var filename = path.join(__dirname, 'data', 'tse', 'totais', uf, ano, filename)
+        res.sendFile(filename)
+    }
+    catch (err) {
+        res.status(400).json({error: 'Invalid parameters'})
+    }
+})
+
+app.get('/api/tse/maisvotados/:uf/:ano/:cargo/:idZona', (req, res) => {
+    try {
+        var {uf, ano, cargo, idZona} = req.params
+        uf = checkUf(uf)
+        ano = checkAno(ano)
+        cargo = checkCargo(cargo)
+        idZona = checkIdZona(idZona)
+        var filename = `${uf}-${ano}-${idZona}-${cargo}.csv`
+        var filename = path.join(__dirname, 'data', 'tse', 'maisvotados', uf, ano, filename)
+        res.sendFile(filename)
+    }
+    catch (err) {
+        res.status(400).json({error: 'Invalid parameters'})
+    }
+})
+
+function checkUf (uf) {
+    const ufs = [
+        'AC', 'AL', 'AM', 'AP',
+        'BA', 'CE', 'DF','ES', 'GO',
+        'MA', 'MG', 'MS', 'MT',
+        'PA', 'PB', 'PE', 'PI', 'PR',
+        'RJ', 'RN', 'RO', 'RR', 'RS',
+        'SC', 'SE', 'SP', 'TO'
+    ]
+    uf = uf.toUpperCase()
+    if (!ufs.includes(uf))
+        throw Error('Parameter "uf" is not valid')
+    return uf
+}
+
+function checkAno (ano) {
+    const anos = [1998, 2000, 2002, 2004, 2006, 2008, 2010, 2012, 2014, 2016]
+    ano = parseInt(ano)
+    if (!anos.includes(ano))
+        throw  Error('Parameter "ano" is not valid')
+    return ano.toString()
+}
+
+function checkCargo (cargo) {
+  	const cargos = ['pr1', 'pr2', 'g1', 'g2', 's', 'df', 'de', 'dd']
+    cargo = cargo.toLowerCase()
+    if (!cargos.includes(cargo)) 
+        throw Error('Parameter "cargo" is not valid')
+    return cargo
+
+}
+
+function checkIdZona (idZona) {
+    const components = idZona.split('-')
+    if (components[0] != parseInt(components[0]) ||
+        components[1] != parseInt(components[1]))
+        throw Error('Parameter "coordinate id" is not valid')
+    return idZona
+}
+
 
 
 // Identifica se a chamada corresponde ao formato

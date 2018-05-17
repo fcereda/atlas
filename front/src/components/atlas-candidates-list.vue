@@ -185,7 +185,6 @@ export default {
                     showDetails: false
                 }
 
-            debugger
             //  Não continua se o novo candidato já existir em Store.candidatos
             if (Store.candidatos.obterCandidato(candidate)) {
                 // Só mostra a mensagem se não estiver carregando múltiplos candidatos
