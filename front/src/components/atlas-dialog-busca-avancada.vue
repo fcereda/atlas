@@ -1,6 +1,6 @@
 <template>
   <v-layout row justify-center style="z-index:10000;">
-    <v-dialog v-model="show" max-width="700px"  z-index="10000" @input="onInput">
+    <v-dialog v-model="show" max-width="800px"  z-index="10000" @input="onInput">
       <v-card>
         <v-card-title>
           <span class="headline">Busca avançada de candidatos</span>
@@ -54,7 +54,7 @@
                 ></v-select>
               </v-flex>     
               <v-flex xs12>
-              
+
                   <scrolling-data-table
                     :headers="headersCandidatos"
                     :items="candidatosEncontrados"
@@ -91,6 +91,23 @@ import api from '../lib/api.js'
 import Utils from '../lib/utils.js'
 import scrollingDataTable from './scrolling-data-table.vue'
 import Candidatos from '../classes/candidatos.js'
+
+const ELEITO = 0
+const SUPLENTE = 1
+const NAO_ELEITO = 2
+const ELEITO_OU_SUPLENTE = 3
+const SEGUNDO_TURNO = 4
+
+
+const formatarResultado = (resultado) => {
+    if (['ELEITO', 'ELEITO POR QP', 'ELEITO POR MÉDIA', 'MÉDIA'].includes(resultado)) 
+        return 'Eleito'
+    if (resultado == '2º TURNO')
+        return '2º Turno'
+    if (resultado == 'SUPLENTE')
+        return 'Suplente'
+    return 'Não eleito'
+}
 
 export default {
 
@@ -154,13 +171,12 @@ export default {
           align:'right',
           sortable: true,
           format: Utils.formatInt
-/*
         }, {
           name: 'Resultado',
           value: 'resultado',
           align: 'right',
-          sortable: true
-*/          
+          sortable: true,
+          format: formatarResultado
         }],
 
 
@@ -254,36 +270,33 @@ export default {
         let filtro = this.filtros.indexOf(this.filtroSelecionado)
 
         function filterCandidates (candidatos) {
-          const ELEITO = 0
-          const SUPLENTE = 1
-          const NAO_ELEITO = 2
-          const ELEITO_OU_SUPLENTE = 3
 
-          function filterByResult (cand) {
-            const resultados = {
-              'ELEITO': ELEITO,
-              'ELEITO POR QP': ELEITO,
-              'ELEITO POR MÉDIA': ELEITO,
-              'MÉDIA': ELEITO,
-              'NÃO ELEITO': NAO_ELEITO,
-              '2º TURNO': ELEITO,
-              'SUPLENTE': SUPLENTE
+            function normalizarResultado (resultado) {
+                resultado = resultado.toUpperCase()
+                if (['ELEITO', 'ELEITO POR QP', 'ELEITO POR MÉDIA', 'MÉDIA', '2º TURNO'].includes(resultado)){
+                    return ELEITO
+                }
+                if (resultado == 'SUPLENTE')
+                    return SUPLENTE
+                return NAO_ELEITO
             }
-            let candResultado = cand.resultado.toUpperCase()
-            let resultado = resultados[candResultado]
-            if (resultado === null) {
-              console.log('atlas-dialog-busca-avancada: Resultado não encontrado: ' + cand.resultado)
-              resultado = NAO_ELEITO
+
+            function filterByResult (cand) {
+                let candResultado = cand.resultado.toUpperCase()
+                let resultado = normalizarResultado(cand.resultado)
+                if (resultado === null) {
+                    console.log('atlas-dialog-busca-avancada: Resultado não encontrado: ' + cand.resultado)
+                    resultado = NAO_ELEITO
+                }
+                if (filtro == ELEITO_OU_SUPLENTE && (resultado == ELEITO || resultado == SUPLENTE)) {
+                    resultado = ELEITO_OU_SUPLENTE
+                }
+                return resultado == filtro
             }
-            if (filtro == ELEITO_OU_SUPLENTE && (resultado == ELEITO || resultado == SUPLENTE)) {
-              resultado = ELEITO_OU_SUPLENTE
-            }
-            return resultado == filtro
-          }
 
           let noFilterSelected = (filtro == -1)
           if (noFilterSelected) {
-            return candidatos
+              return candidatos
           }
           return candidatos.filter(filterByResult)
         }
