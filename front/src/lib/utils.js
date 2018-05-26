@@ -148,9 +148,9 @@ export default {
 		]
 
 		var words = name.split(' ')
-		return words.map((word) => {
+		return words.map((word, index) => {
 			word = word.toUpperCase();
-			if (word.length <= 3 && exclusions.indexOf(word) >= 0)
+			if (index > 0 && word.length <= 3 && exclusions.indexOf(word) >= 0)
 				return word.toLowerCase()
 
 			return word.substr(0, 1).toUpperCase() + word.substr(1, word.length-1).toLowerCase()
