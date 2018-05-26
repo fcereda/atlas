@@ -90,9 +90,11 @@ function setMode (newMode) {
         return
     if (mode == 'draw') {
         thisMap.dragging.disable()
+        L.DomUtil.addClass(thisMap._container, 'pen-cursor')
     }
     else {
         thisMap.dragging.enable()
+        L.DomUtil.removeClass(thisMap._container, 'pen-cursor')
     }
 }
 
@@ -171,6 +173,9 @@ function onMouseDown (e) {
         mouseIsDown = true
         currentPolyline = null // Just to be on the safe side
         oldPosition = e.latlng
+
+        e.originalEvent.stopPropagation()
+        e.originalEvent.preventDefault()
     }
 }
 
@@ -179,6 +184,9 @@ function onMouseUp (e) {
 	    addPolyline(currentPolyline)
         currentPolyline = null
         mouseIsDown = false
+
+        e.originalEvent.stopPropagation()
+        e.originalEvent.preventDefault()
     }
 }
 
