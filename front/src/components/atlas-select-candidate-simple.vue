@@ -174,7 +174,8 @@ export default {
 
         querySelectionsCandidates (val) {
             val = val || ''
-            if (val.length < 3) {
+            const podeSerPartido = (val.length > 1) && (val.charAt(0).toUpperCase() == 'P')
+            if (val.length < 3 && !podeSerPartido) {
             	this.$refs.selectCandidatos.cachedItems = []
             	this.$set(this, 'candidatos', [])
                 return;

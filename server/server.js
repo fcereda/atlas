@@ -108,7 +108,7 @@ function buscarCandidatosPorNome (nome, uf) {
     var matches = []
     var dict = uf ? nameDictsPorUf[uf.toUpperCase()] : nameDict
     nome = normalizarNome(nome)
-    var strStart = nome.substr(0, 3)
+    var strStart = nome.length >= 3 ? nome.substr(0, 3) : (nome + '   ').substr(0, 3)
     var possiveisCandidatos = dict[strStart] || []
 
     for (var i=0; i<possiveisCandidatos.length; i++) {
