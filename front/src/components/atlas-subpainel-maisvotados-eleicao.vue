@@ -25,6 +25,7 @@
 			:candidatos="zona.candidatos"
 			:totalVotos="zona.totalVotos"
 			:id="zona.totalVotos"
+			@add-candidate="adicionarCandidato"
 		></atlas-table-maisvotados-zona>	
 
 		<atlas-table-maisvotados-zona
@@ -34,6 +35,7 @@
 			:candidatos="zonaAgrupada.candidatos"
 			:totalVotos="zonaAgrupada.totalVotos"
 			:id="zonaAgrupada.totalVotos * 2"
+			@add-candidate="adicionarCandidato"
 		></atlas-table-maisvotados-zona>	
 
 	</div>	
@@ -137,8 +139,6 @@ export default {
 			this.loading = true
 			this.message = ''
 			
-			console.log('Vai carregar dados para as eleições ' + this.id)
-
 			var idZonas = this.zonas.map((zona) => zona.id)
 
 			this.carregarMaisVotados(idZonas, this.id)
@@ -153,13 +153,8 @@ export default {
 						candidatos = response[i],
 						totalVotos = 0
 						
-					//console.log('zonaId', zonaId, ', municipio = ', municipio, ' candidatos.length = ', candidatos.length)	
-
 					candidatos = candidatos.sort((a, b) => b.votacao - a.votacao)						
 					totalVotos = candidatos.reduce((total, candidato) => total + candidato.votacao, 0) 
-
-					//console.log('totalVotos = ', totalVotos)
-
 					candidatos.forEach((candidato) => {
 						candidato.porcentagem = candidato.votacao / totalVotos
 						candidato.nome = Utils.capitalizeName(candidato.nome)
@@ -254,6 +249,11 @@ export default {
 
 			return api.runRequestsInSequence(api.getElectionResultsByZoneAndCity, argsArray)
 		},		
+
+		adicionarCandidato (id) {
+			console.log('entrou em adicionarCandidato de atlas-subpainel-maisvotados-eleicoes, id = ' + id)
+			this.$emit('add-candidate', id)
+		}
 
 	},
 

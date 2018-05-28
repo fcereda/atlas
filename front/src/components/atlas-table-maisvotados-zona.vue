@@ -13,7 +13,7 @@
 	<template v-for="(candidato, index) in candidatos">
 		<tr v-show="index < maxIndex">
 			<td align="right">{{ index+1 }}.&nbsp;</td>
-			<td width="100%"><span class="link" @click="adicionarCandidato(candidato)">{{ candidato.nome }} ({{ candidato.partido }})</span></td>
+			<td width="100%"><span class="link" @click="adicionarCandidato(candidato)">{{ identificacao(candidato) }}</span></td>
 			<td align="right">{{ formatInt(candidato.votacao) }}</td>
 			<td align="right">&nbsp;({{ (candidato.porcentagem * 100).toFixed(1) }}%)</td>
 		</tr>	
@@ -65,6 +65,7 @@
 import atlasTituloZonas from './atlas-titulo-zonas.vue'
 
 import Utils from '../lib/utils.js'
+import Candidato from '../classes/candidato.js'
 
 const NUM_CANDIDATOS_PRIMEIRA_TELA = 8
 
@@ -119,14 +120,22 @@ export default {
 			return Utils.formatInt(numero)
 		},
 
+		identificacao (candidato) {
+			if (Candidato.ePartido(candidato.cargo, candidato.numero)) {
+				return `${candidato.partido} (legenda)`
+			}
+			return `${candidato.nome} (${candidato.partido})`
+		},
+
 		toggleMostrarTodos () {
 			this.mostrarTodosCandidatos = !this.mostrarTodosCandidatos
 		},
 
 		adicionarCandidato (candidato) {
-			console.log('adicionando candidato')
-			console.log(candidato)
-			this.$emit('add-candidate', candidato)
+			let id = `${this.uf.sigla}-${Candidato.calcularId(candidato)}`
+			console.log(id)
+			console.log('vai agora emitir uma mensagem add-candidate')
+			this.$emit('add-candidate', id)
 		}
 
 	}

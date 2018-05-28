@@ -1,5 +1,6 @@
 <template>
 
+<div>
     <v-tabs 
     	v-model="activeTab" 
     	:centered="true"
@@ -33,6 +34,7 @@
             id="candidatos"
         >
 			<atlas-candidates-list
+				ref="candidatesList"
 			    :uf="uf"
 			    :colorScale="colorScale"
 			    :originalCandidates="originalCandidates"
@@ -69,6 +71,7 @@
         		:uf="uf"
         		:zonas="zonasToDisplay"
         		ref="painelMaisVotados"
+        		@add-candidate="addCandidateById"
         	></atlas-painel-maisvotados>	
 
         </v-tabs-content>
@@ -76,6 +79,21 @@
 
       </v-tabs-items>
     </v-tabs>
+
+    <v-snackbar
+      :timeout="5000"
+      :absolute="true"
+      :top="true"
+      :left="true"
+      color="primary"
+      :multi-line="true"
+      v-model="snackbar.visible"
+    >
+      {{ snackbar.text }}
+      <v-btn flat color="black" @click.native="snackbar.visible = false">Fechar</v-btn>
+    </v-snackbar>
+
+</div>
 
  </template>
 
@@ -118,7 +136,12 @@ export default {
 				label: 'Mais votados',
 				key: 'maisvotados'
 			}],
-			candidatoSelecionado: null
+			candidatoSelecionado: null,
+
+			snackbar: {
+				text: 'Dados carregados com êxito',
+				visible: false
+			}
 		}
 
 	},
@@ -174,6 +197,19 @@ export default {
 
 		addCandidate (e) {
 			this.$emit('add-candidate', e)
+		},
+
+		addCandidateById (id) {
+			// Chama diretamente um método de atlas-candidates-list
+			// O segundo argumento (true) indica que queremos que
+			// o candidato recém-carregado não interfira na visualização 
+			// corrente
+			this.$refs.candidatesList.addCandidateById(id, true)
+			.then(candidato => {
+				console.log(candidato)
+				this.snackbar.text = `Dados de ${candidato.nome} foram carregados`
+				this.snackbar.visible = true
+			})
 		},
 
 		removeCandidate (e) {

@@ -254,6 +254,7 @@
 <script>
 
 import Utils from '../lib/utils.js'
+import Candidato from '../classes/candidato.js'
 import colorPicker from './color-picker.vue'
 import chroma from 'chroma-js'
 
@@ -298,7 +299,10 @@ export default {
 
         identificacaoResultado () {
         	var resultado = this.resultado,
-        		cargo = this.cargo
+        		cargo = this.cargo,
+        		numero = this.numero
+        	if (Candidato.ePartido(cargo, numero))
+        		return 'Voto de legenda'
         	if (!resultado || resultado == '')
         		return ''
             if (resultado.indexOf('ELEITO') == 0 || resultado == 'MÉDIA')

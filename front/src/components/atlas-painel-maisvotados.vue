@@ -50,6 +50,7 @@
 				:ano="eleicao.ano"
 				:zonas="zonasInfo"
 				:agrupar="mostrarDadosAgrupados"
+				@add-candidate="adicionarCandidato"
 			></atlas-subpainel-maisvotados-eleicao>
 			
 		</div>		
@@ -175,6 +176,11 @@ export default {
 
 		setVisible (visible) {
 			this.visible = visible
+		},
+
+		adicionarCandidato (id) {
+			console.log('Adicionar candidato ' + id)
+			this.$emit('add-candidate', id)
 		}
 
 	}

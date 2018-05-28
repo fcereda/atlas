@@ -171,6 +171,15 @@ export default {
             }
         },
 
+        addCandidateById: function (id, addingMultiple=false) {
+            return api.getCandidateById(id)
+            .then(candidate => this.addCandidate(candidate, addingMultiple))
+            .catch(err => {
+                console.error(err)
+                this.snackbar.visible = true
+            })                
+        },
+
     	addCandidate: function (candidate, addingMultiple=false) {
 
     		var that = this
@@ -184,10 +193,14 @@ export default {
                     disabled: false, 
                     showDetails: false
                 }
+            if (Candidato.ePartido(candidateObj.cargo, candidateObj.numero)) {
+                candidateObj.nome = candidateObj.partido + ' (legenda)'
+                candidateObj.nome = candidateObj.nomeCompleto
+            }    
 
             //  Não continua se o novo candidato já existir em Store.candidatos
             if (Store.candidatos.obterCandidato(candidate)) {
-                // Só mostra a mensagem se não estiver carregando múltiplos candidatos
+                // Só mostra a mensagem se não estiver carregando múltiplos candidatosr
                 if (!addingMultiple) {
                     this.snackbar.text = 'Este candidato já faz parte da lista'
                     this.snackbar.visible = true
@@ -199,6 +212,11 @@ export default {
             var newCandidate = new Candidato (candidateObj)            
     		return newCandidate.carregarVotacao()
             .then(() => {
+                // candidateObj é o objeto que faz parte do array this.candidatosSelecionados
+                // ele é diferente de newCandidate, que é o objeto que será armazenado em
+                // Store.candidatos
+                // A razão disso é que o objeto em Store.candidatos não pode ser reativo, o
+                // que ocorreria se ele fosse colocado em this.candidatosSelecionados
                 candidateObj.loading = false
                 candidateObj.color = this.colorSequence.getNextColor(candidate.color)
                 candidateObj.total = newCandidate.total
@@ -232,7 +250,7 @@ export default {
                 // Retorna uma Promise para permitir que this.addMultipleCandidates comece 
                 // a carregar o próximo candidato somente depois que o candidato atual
                 // tenha sido carregado
-                return new Promise((resolve, reject) => resolve())
+                return new Promise((resolve, reject) => resolve(newCandidate))
             })
             .catch((error) => {
                 console.error(`Error trying to load candidate data`)
