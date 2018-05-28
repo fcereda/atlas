@@ -198,6 +198,27 @@ export default {
 		return axios.get(topoFileAddress)
 	},
 
+	getCandidateById (id) {
+		const errorMsg = 'Erro em api.getCandidateById: '
+		return new Promise((resolve, reject) => {
+			const query = `/api/candidatos?id=${id}`
+			axios.get(query)
+			.then(response => {
+				const candidatos = response.data
+				if (!candidatos.length) {
+					reject(errorMsg + 'candidato não encontrado')
+				}
+				else if (candidatos.length > 1) {
+					reject(errorMsg + 'erro em id incorreto')
+				}
+				else {
+					resolve(candidatos[0])
+				}
+			})
+			.catch(err => reject(err))
+		})
+	},
+
 	getVotesByZoneAndCity ({ ano, cargo, uf, numero }) {
 		var query
 
