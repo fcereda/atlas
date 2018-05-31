@@ -7,9 +7,25 @@
         class="sidebar" 
     >
 
-      <div class="cepesp-logo" v-bind:class="classLogo">
+      <div class="sidebar-content" v-bind:class="sidebarContent">
+
+<!--
+        <img id="logoatlas" src="/public/logo_atlas.svg" alt="Atlas" height="24px" class="logo big" style="padding-top:4px;padding-right:0px;"> 
+        <img id="logoeleitoral" src="/public/logo_eleitoral.svg" alt="Eleitoral" height="24px" class="logo big" style="padding-top:3px;">
+        <span style="flex:1">&nbsp;</span>
+-->
+
+<!--
+        <span ref="logo-cepesp">Atlas&nbsp;</span>
+        <span ref="logo-atlas-eleitoral" style="font-weight:100">Eleitoral</span>
+-->
+
+        <atlas-logo :modo-inicial="modoInicial"></atlas-logo>
+
+<!--
         <span ref="logo-cepesp">CEPESP&nbsp;</span>
         <span ref="logo-atlas-eleitoral" style="font-weight:100">Atlas&nbsp;Eleitoral</span>
+-->
         <span v-if="!modoInicial" style="flex:1"></span>
         <span v-if="!modoInicial">
             <v-tooltip v-if="true" bottom z-index="1000" id="btnHome">
@@ -151,6 +167,7 @@ import Store from './lib/store.js'
 import api from './lib/api.js'
 import utils from './lib/utils.js'
 import Candidato from './classes/candidato.js'
+import atlasLogo from './components/atlas-logo.vue'
 import atlasCandidatesList from './components/atlas-candidates-list.vue'
 import atlasMap from './components/atlas-map.vue'
 import atlasSelectUf from './components/atlas-select-uf.vue'
@@ -158,12 +175,13 @@ import atlasDisplayUf from './components/atlas-display-uf.vue'
 import atlasPainelZonas from './components/atlas-painel-zonas.vue'
 import atlasSidebarTabs from './components/atlas-sidebar-tabs.vue'
 
-            import scrollIntoViewIfNeeded from 'scroll-into-view-if-needed'
+import scrollIntoViewIfNeeded from 'scroll-into-view-if-needed'
 
 
 export default {
 
     components: {
+        'atlas-logo': atlasLogo,
         'atlas-candidates-list': atlasCandidatesList,
         'atlas-map': atlasMap,
         'atlas-select-uf': atlasSelectUf,
@@ -202,8 +220,8 @@ export default {
     },
 
     computed: {
-        classLogo () {
-          return this.modoInicial ? 'cepesp-logo-grande' : 'cepesp-logo-pequeno'
+        sidebarContent () {
+          return this.modoInicial ? 'sidebar-content-modoinicial' : 'sidebar-content-modoufselecionada'
         }
     },
 
@@ -585,26 +603,20 @@ html {
     background-color:orange;
 }
 
-
-.cepesp-logo {
+.sidebar-content {
     transition: all 0.4s ease;  
-    font-weight:700;
     padding:16px;
-    color:#eee;
-    color:#222;
-    color:#1a237e;
     display:flex;
-    cursor:pointer;
 }
 
-.cepesp-logo-grande {
+.sidebar-content-modoinicial {
     font-size:48px;
     line-height:1.0;
     padding-top:180px;
     flex-direction:column;
 }
 
-.cepesp-logo-pequeno {
+.sidebar-content-modoufselecionada {
     font-size:22px;
     padding-top:12px;
     padding-bottom:10px;
