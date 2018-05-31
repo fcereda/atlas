@@ -418,7 +418,7 @@ function isAppstateId (url) {
 
 function parseCandidateRow (row) {
 
-	const cargos = ['pr', 'vpr', 'g', 'vg', 's', 'df', 'de', 'de', '1s', '2s', 'pm', 'vpm', 'vm']
+	const cargos = ['pr', 'vpr', 'g', 'vg', 's', 'df', 'de', 'dd', '1s', '2s', 'pm', 'vpm', 'vm']
 
 	var nome = row['NOME_URNA_CANDIDATO'],
 		nomeCompleto = row['NOME_CANDIDATO'],
@@ -548,6 +548,8 @@ function loadCandidates (next) {
 	    	nameDict = calcNameDict(candidatos)		// nameDict é o name dictionary geral -- todas as UFs
 	    	candidatos.forEach((candidato) => {
 	    		var {id, uf, ano, cargo} = candidato
+	    		if (candidatosPorId[id])
+	    			return	// Elimina eventuais duplicatas -- infelizmente elas existem...
 	    		if (!candidatosPorUf[uf])
 	    			candidatosPorUf[uf] = []
 

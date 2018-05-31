@@ -125,7 +125,7 @@ export default {
         anos: [1998, 2002, 2006, 2010, 2014],
         anoSelecionado: null,
 
-        cargos: Utils.obterCargos(),
+        cargos: this.obterCargos(),
         cargoSelecionado: null,
 
         todosPartidos: [],
@@ -196,6 +196,11 @@ export default {
     },
 
     watch: {
+
+        uf () {
+            this.cargos = this.obterCargos()
+        },
+
       show () {
         this.dialog = true
       },
@@ -237,6 +242,13 @@ export default {
     },
 
     methods: {
+
+        obterCargos () {
+            const cargoAExcluir = this.uf.sigla.toUpperCase() == 'DF' ? 'de' : 'dd'
+            const cargos = Utils.obterCargos().filter(cargo => cargo.id != cargoAExcluir)
+            return cargos
+        },
+
       closeDialog () {
         this.$emit('close')
       },
