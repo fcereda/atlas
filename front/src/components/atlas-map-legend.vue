@@ -13,7 +13,12 @@
 		</div>
 				
 		<div v-show="!collapsed">
-			<v-icon color="blue-grey lighten-4" class="map-legend-btn-help pl-1 pt-2 pointer" style="transform: translateY(-2px);">help_outline</v-icon>
+			<v-icon 
+				v-bind:color="helpButtonColor" 
+				class="map-legend-btn-help pl-1 pt-2 pointer" 
+				style="transform: translateY(-2px);"
+				@click="showDialogHelp = true"
+			>help_outline</v-icon>
 			<table>
 			<tr v-for="(label, index) in labelsReversed">
 				<td class="map-legend-color-key" v-bind:style="'background-color:' + colors[index] + ';'">&nbsp;</td>
@@ -21,6 +26,13 @@
 			 </tr>
 			 </table>	
 		</div>	 
+
+		<atlas-dialog-ajuda
+			:title="title"
+			:text="help"
+			:show="showDialogHelp"
+			@close="showDialogHelp=false"
+		></atlas-dialog-ajuda>	
 
 	</div>
 </template>
@@ -61,18 +73,21 @@
 
 import chroma from 'chroma-js'
 
+import atlasDialogAjuda from './atlas-dialog-ajuda.vue'
+
 export default {
 
-	props: ['title', 'text', 'palette', 'domain', 'padding', 'labels' ],
+	components: {
+		atlasDialogAjuda
+	},
+
+	props: ['title', 'text', 'palette', 'domain', 'padding', 'labels', 'help' ],
 
 	data () {
-
 		return {
-
-			collapsed: false
-
+			collapsed: false,
+			showDialogHelp: false
 		}
-
 	},
 
 	computed: {
@@ -81,6 +96,12 @@ export default {
 			if (!this.labels)
 				return null
 			return [...this.labels].reverse()
+		},
+
+		helpButtonColor () {
+			if (this.help)
+				return 'primary'
+			return 'blue-grey lighten-4' 
 		},
 
 		colors () {

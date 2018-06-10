@@ -94,6 +94,7 @@
 			:domain="mapLegend.domain"
 			:padding="mapLegend.padding"
 			:labels="mapLegend.labels"
+			:help="mapLegend.help"
 		>
 		</atlas-map-legend>
 
@@ -250,7 +251,8 @@ export default {
 				palette: ['#ffffcc','#c7e9b4','#7fcdbb','#41b6c4','#1d91c0','#225ea8','#0c2c84'], 
 				domain: [0.5, 1, 5, 10, 25, 50, 100], 
 				legendTitle: 'Porcentagem dos votos',
-				legendLabels: ['Até 0,5%', '0,5% - 1,0%', '1% - 5%', '5% - 10%', '10% - 25%', '25% - 50%', 'Mais de 50%']
+				legendLabels: ['Até 0,5%', '0,5% - 1,0%', '1% - 5%', '5% - 10%', '10% - 25%', '25% - 50%', 'Mais de 50%'],
+				helpText: 'Mostra no gráfico a porcentagem obtida pelo candidato em cada município/zona.<br>O município/zona onde o candidato foi mais votado é pintado de azul escuro; o município/zona onde o candidato obteve menor votação é pintado de amarelo claro.'
 			}, {
 				name: 'indiceLQ',
 				label: 'QL',
@@ -367,7 +369,8 @@ export default {
 				palette: null,
 				domain: null,
 				padding: null,
-				labels: []
+				labels: [],
+				help: null
 			}	
 
 		}
@@ -1278,6 +1281,7 @@ export default {
 					domain: indexObj.legendDomain || indexObj.domain,
 					padding: indexObj.padding,
 					labels: indexObj.legendLabels || indexObj.labels,
+					help: indexObj.helpText
 				}	
 			}				
 		}
