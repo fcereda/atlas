@@ -7,9 +7,9 @@
         class="sidebar" 
     >
 
-      <div class="cepesp-logo" v-bind:class="classLogo">
-        <span ref="logo-cepesp">CEPESP&nbsp;</span>
-        <span ref="logo-atlas-eleitoral" style="font-weight:100">Atlas&nbsp;Eleitoral</span>
+      <div class="logo-bar" v-bind:class="classLogo">
+        <span ref="logo-cepesp" class="atlas-logo">Atlas&nbsp;</span>
+        <span ref="logo-atlas-eleitoral" class="atlas-logo atlas-logo-parte2">Eleitoral</span>
         <span v-if="!modoInicial" style="flex:1"></span>
         <span v-if="!modoInicial">
             <v-tooltip v-if="true" bottom z-index="1000" id="btnHome">
@@ -558,7 +558,7 @@ export default {
 
 html { 
   overflow-y: hidden;
-}
+  }
 
 /* The sidebar */
 #sidebar {
@@ -586,15 +586,22 @@ html {
 }
 
 
-.cepesp-logo {
+.logo-bar {
     transition: all 0.4s ease;  
-    font-weight:700;
+    font-weight:500;
     padding:16px;
-    color:#eee;
-    color:#222;
-    color:#1a237e;
     display:flex;
     cursor:pointer;
+}
+
+.atlas-logo {
+    font-family: 'Rubik', 'Roboto', sans-serif;
+    color:#1a237e;
+    font-weight:500;
+}
+
+.atlas-logo-parte2 {
+    // font-weight:100;
 }
 
 .cepesp-logo-grande {
@@ -605,9 +612,10 @@ html {
 }
 
 .cepesp-logo-pequeno {
-    font-size:22px;
-    padding-top:12px;
-    padding-bottom:10px;
+    font-size:24px;
+    padding-top:11px;
+    padding-bottom:9px;
+    padding-left:20px;
 }
 
 .button-logo-pequeno {
