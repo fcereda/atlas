@@ -548,8 +548,13 @@ function loadCandidates (next) {
 	    	nameDict = calcNameDict(candidatos)		// nameDict é o name dictionary geral -- todas as UFs
 	    	candidatos.forEach((candidato) => {
 	    		var {id, uf, ano, cargo} = candidato
-	    		if (candidatosPorId[id])
-	    			return	// Elimina eventuais duplicatas -- infelizmente elas existem...
+	    		if (candidatosPorId[id]) {
+	    			// Elimina eventuais duplicatas -- infelizmente elas existem...
+	    			// Objetos que tenham a propriedade remover serão filtradas fora do array 
+	    			// depois de candidatos.forEach()
+	    			candidato.remover = true
+	    			return	
+	    		}
 	    		if (!candidatosPorUf[uf])
 	    			candidatosPorUf[uf] = []
 
@@ -575,22 +580,30 @@ function loadCandidates (next) {
 	    		candidatosPorUfCargo[uf][cargo].push(candidato) 
 	    		candidatosPorUfAnoCargo[uf][ano][cargo].push(candidato)
 	    	})	
-
+	    	// Remove todos os objetos que tenham sido marcados para remoção do array
+	    	candidatos = candidatos.filter(candidato => !candidato.remover)
 	    	// nameDictsPorUf são os dicts dos nomes separados por UF
 	    	nameDictsPorUf = Object.keys(candidatosPorUf).reduce((dict, uf) => {
 	    		dict[uf] = calcNameDict(candidatosPorUf[uf])
 	    		return dict
 	    	}, {})
 
-	    	var sumarioCandidato = ({ numero,nome,votacao }) => numero + ' ' + nome + ', ' + votacao + ' votos'
+	    	var sumarioCandidato = ({ numero,nome,votacao,cpf }) => numero + ' ' + nome + ', ' + cpf + ', ' + votacao + ' votos'
 
 	    	if (debugMode) {
-		    	print('todos os candidatos a presidente:')
-		    	console.log(candidatosPorUf['SP']['pr1']
+		    	print('todos os candidatos a deputado distrital:')
+		    	console.log(candidatosPorUfCargo['DF']['dd']
 		    		.sort((a, b) => (a.ano * 100 + a.numero) - (b.ano * 100 + b.numero))
 		    		.map(sumarioCandidato))
-		    	console.log('candidatos a governador em 2014')
-		    	console.log(candidatosPorUf['SP'][2014]['g1']
+
+		    	print('Fabio Marreco')
+		    	console.log(candidatosPorUfCargo['DF']['dd']
+		    		.filter(candidato => candidato.numero == 55555)
+		    		.sort((a, b) => (a.ano * 100 + a.numero) - (b.ano * 100 + b.numero))
+		    		.map(sumarioCandidato))
+
+		    	console.log('candidatos a deputado distrital em 2014')
+		    	console.log(candidatosPorUfAnoCargo['DF'][2014]['dd']
 		    		.map(sumarioCandidato))
 		    }	
 
