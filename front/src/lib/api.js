@@ -441,29 +441,32 @@ export default {
 
 	
 	getCandidateCareer (cpf, nomeCompleto) {
-		var query = '/api/candidatos?'
-		if (cpf)
-			query = query + 'cpf=' + cpf
-		else if (nomeCompleto)
-			query = query + 'nome=' + nomeCompleto
-		else
-			return new Promise ((resolve, reject) => reject('getCandidateCareer: Invalid arguments'))
 
 		return new Promise ((resolve, reject) => {
 			function ehCandidatoAPresidente (candidato) {
 				return ['pr1', 'pr2'].includes(candidato.cargo)
 			}
 
+			var query = '/api/candidatos?'
+			if (cpf)
+				query = query + 'cpf=' + cpf
+			else if (nomeCompleto)
+				query = query + 'nome=' + nomeCompleto
+			else {
+				reject('getCandidateCareer: Invalid arguments')
+				return
+			}
+
 			axios.get(query)
 			.then((response) => {
-					// Eliminamos as linhas com uf == 'ZZ' porque os dados do CEPESP
-					// para as eleições aboard (ZZ) estão incorretos
-				var data = response.data.filter((cand) => cand.uf != 'ZZ'),
+				// Eliminamos as linhas com uf == 'ZZ' porque os dados do CEPESP
+				// para as eleições aboard (ZZ) estão incorretos
+				var data = response.data.filter((cand) => cand.uf != 'ZZ')
 					// Agrupamos as candidaturas por ano-cargo porque, para candidatos
 					// a presidente, a API retorna uma candidatura diferente para cada UF 
-					candidaturas = Utils.groupBy(data, (cand) => {
-						return cand.ano + '-' + cand.cargo
-					})
+				var	candidaturas = Utils.groupBy(data, (cand) => {
+					return cand.ano + '-' + cand.cargo
+				})
 
 				candidaturas = Object.keys(candidaturas).map((id) => {
 					var candPorId = candidaturas[id]
@@ -480,35 +483,7 @@ export default {
 						return candFinal
 					}, null)
 				})
-
-
 				resolve(candidaturas)
-				return;
-
-				// O QUE VEM ABAIXO SERÁ APAGADO QUANDO O QUE VEM ACIMA ESTIVER FUNCIONANDO
-
-				// Para os candidatos a presidente, a API envia uma linha para cada 
-				// estado. Vamos deixar apenas um row indicando a candidatura a presidente,
-				// com uf = 'BR'
-
-
-
-
-				data = data.filter((candidatura) => {
-					if (!ehCandidatoAPresidente(candidatura))
-						return true
-					return (candidatura.uf == 'SP')	// filtramos por SP porque é o maior estado
-				}).map((candidatura) => {
-					candidatura.ano = parseInt(candidatura.ano)
-					candidatura.classificacao = parseInt(candidatura.classificacao)
-					candidatura.votacao = parseInt(candidatura.votacao)
-					if (candidatura.uf == 'SP' && ehCandidatoAPresidente(candidatura)) {
-						candidatura.uf = 'BR'
-						candidatura.id = candidatura.id.replace('SP', 'BR')
-					}
-					return candidatura
-				})
-				resolve(data)
 			})
 			.catch((error) => reject(error))
 		})
