@@ -15,9 +15,10 @@
 		<div v-show="!collapsed">
 			<v-icon 
 				v-bind:color="helpButtonColor" 
-				class="map-legend-btn-help pl-1 pt-2 pointer" 
+				class="map-legend-btn-help pl-1 pt-2" 
+				:class="helpButtonClass"
 				style="transform: translateY(-2px);"
-				@click="showDialogHelp = true"
+				@click="onClick"
 			>help_outline</v-icon>
 			<table>
 			<tr v-for="(label, index) in labelsReversed">
@@ -104,6 +105,11 @@ export default {
 			return 'blue-grey lighten-4' 
 		},
 
+		helpButtonClass () {
+			if (this.help)
+				return 'pointer'
+		},
+
 		colors () {
 			return chroma
 				.scale(this.palette)
@@ -114,6 +120,12 @@ export default {
 	},
 
 	methods: {
+
+		onClick () {
+			if (this.help) {
+				this.showDialogHelp = true
+			}
+		}
 
 	}
 
