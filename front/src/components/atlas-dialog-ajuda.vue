@@ -10,9 +10,24 @@
         	<v-icon class="pointer" @click="closeDialog">close</v-icon></v-btn>
         </v-card-title>
         <v-divider></v-divider>
-        <v-card-text>
+        <v-card-text :class="vCardTextClass">
 
-        	<div class="pb-3" style="font-size:16px;" v-html="text"></div>
+        	<div 
+        		v-if="!!text" 
+        		class="pb-3" 
+        		style="font-size:16px;" 
+        		v-html="text"
+        	></div>
+
+        	<iframe 
+        		v-if="!!iframe" 
+        		width="700" 
+        		height="500" 
+        		marginheight="16"
+        		marginwidth="16"
+        		frameborder=0 
+        		:src="iframe"
+        	></iframe>
        	
         </v-card-text>
         <v-divider></v-divider>
@@ -35,12 +50,19 @@
 
 export default {
 
-	props: ['title', 'text', 'show'],
+	props: ['title', 'text', 'show', 'iframe'],
 
 	data () {
 
 		return {}
 
+	},
+
+	computed: {
+		vCardTextClass () {
+			if (this.iframe) 
+				return 'pa-0'
+		}
 	},
 
 	methods: {

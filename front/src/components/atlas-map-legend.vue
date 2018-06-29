@@ -31,6 +31,7 @@
 		<atlas-dialog-ajuda
 			:title="title"
 			:text="help"
+			:iframe="helpPage"
 			:show="showDialogHelp"
 			@close="showDialogHelp=false"
 		></atlas-dialog-ajuda>	
@@ -82,7 +83,7 @@ export default {
 		atlasDialogAjuda
 	},
 
-	props: ['title', 'text', 'palette', 'domain', 'padding', 'labels', 'help' ],
+	props: ['title', 'text', 'palette', 'domain', 'padding', 'labels', 'help', 'helpPage' ],
 
 	data () {
 		return {
@@ -99,14 +100,18 @@ export default {
 			return [...this.labels].reverse()
 		},
 
+		hasHelp () {
+			return (this.help || this.helpPage)
+		},
+
 		helpButtonColor () {
-			if (this.help)
+			if (this.hasHelp)
 				return 'primary'
 			return 'blue-grey lighten-4' 
 		},
 
 		helpButtonClass () {
-			if (this.help)
+			if (this.hasHelp)
 				return 'pointer'
 		},
 
@@ -122,7 +127,7 @@ export default {
 	methods: {
 
 		onClick () {
-			if (this.help) {
+			if (this.hasHelp) {
 				this.showDialogHelp = true
 			}
 		}

@@ -95,6 +95,7 @@
 			:padding="mapLegend.padding"
 			:labels="mapLegend.labels"
 			:help="mapLegend.help"
+			:helpPage="mapLegend.helpPage"
 		>
 		</atlas-map-legend>
 
@@ -260,7 +261,8 @@ export default {
 				palette: ['#f46d43','#fdae61','#fee090','#ffffbf','#e0f3f8','#abd9e9','#74add1','#4575b4','#313695'],
 				domain: [0, 0.1, 0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0],
 				legendTitle: 'Quociente de locação',
-				legendLabels: ['Até 0,1', '0,1 \u2014 0,25', '0,25 \u2014 0,5', '0,5 \u2014 1,0', '1,0 \u2014 2.0', '2.0 \u2014 4.0', '4.0 \u2014 8.0', '8,0 \u2014 16,0', '16.0 ou mais']
+				legendLabels: ['Até 0,1', '0,1 \u2014 0,25', '0,25 \u2014 0,5', '0,5 \u2014 1,0', '1,0 \u2014 2.0', '2.0 \u2014 4.0', '4.0 \u2014 8.0', '8,0 \u2014 16,0', '16.0 ou mais'],
+				helpPage: 'help.html?ql'
 			}, {
                 name: 'indiceLI',
                 label: 'IL',
@@ -268,7 +270,8 @@ export default {
                 palette: 'RdYlBu',
                 domain: [-5, -2.5, -1, -0.5, -0,1, 0.1, 0.5, 1, 2.5, 5],
                 legendTitle: 'I de Moran Local',
-                legendLabels: ['-5 ou inferior', '-5 a -2,5', '-2,5 a -1', '-1 a 0', '0 a 1', '1 a 2,5', '2,5 a 5', 'Mais de 5']
+                legendLabels: ['-5 ou inferior', '-5 a -2,5', '-2,5 a -1', '-1 a 0', '0 a 1', '1 a 2,5', '2,5 a 5', 'Mais de 5'], 
+                helpPage: 'help.html?il'
             }, {
                 name: 'indiceLD',
                 label: 'DL',
@@ -277,7 +280,8 @@ export default {
                 domain: [-0.10, 0.10],
                 legendTitle: 'Diferença de locação',
                 legendLabels: ['-10%', '-8%', '-5%', '-2.5%', '0', '+2,5%', '+5%', '+8%', '+10%'],
-                numLegendLabels: 9
+                numLegendLabels: 9,
+                helpPage: 'help.html?dl'
             }, {
                 name: 'indiceZ',
                 label: 'Z',
@@ -285,7 +289,8 @@ export default {
                 palette: 'RdYlBu',
                 domain: [-3, 3],
                 legendTitle: 'Valor Z',
-                legendLabels: [-3, -2, -1, 0, +1, +2, +3]
+                legendLabels: [-3, -2, -1, 0, +1, +2, +3],
+                helpPage: 'help.html#z'
 /*
             }, {    
 				name: 'indiceRI',
@@ -1281,7 +1286,8 @@ export default {
 					domain: indexObj.legendDomain || indexObj.domain,
 					padding: indexObj.padding,
 					labels: indexObj.legendLabels || indexObj.labels,
-					help: indexObj.helpText
+					help: indexObj.helpText,
+					helpPage: indexObj.helpPage ? `/public/help/${indexObj.helpPage}` : null,
 				}	
 			}				
 		}

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:m="http://www.w3.org/1998/Math/MathML">
+
+<head>
+	<meta charset="utf-8">
+
+	<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+	<script type="text/javascript" async
+	  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_CHTML">
+	</script>
+
+<style>
+
+body {
+  font-family: 'Roboto', sans-serif;
+  line-height: 1.35;
+}
+
+.page {
+	display: none;
+}
+
+.fonte {
+	font-size:0.85em;
+}
+
+</style>
+
+<script type="text/x-mathjax-config">
+	MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+
+	<title>Índices do Atlas Eleitoral</title>
+</head>
+
+<body>
+
+<div id="il" class="page">
+<p>
+A estatística I de Moran local (IL) é usada para determinar se a votação de um candidato em uma localidade* está correlacionada com a votação do mesmo candidato nas localidades vizinhas. 
+<p>
+A estatística IL é calculada da seguinte forma:
+
+$$
+IL_i = \frac {m(s_i – \overline{s} )∑_j^m w_{ij}(s_j – \overline{s})}{ ∑_j^m (s_j - \overline{s} )^2 }
+$$
+<p>
+onde
+<ul>
+<li>$IL_i$ é a estatística IL calculada para a localidade $i$</li>
+<li>$m$ é o número de localidades em uma unidade da federação</li>
+<li>$s_i$ é a porcentagem de votos do candidato analisado na localidade $i$</li>
+<li>$s$ é a média de $s_i$</li>
+<li>$s_j$ é a porcentagem de votos do candidato analisado na localidade $j$, que é vizinho da localidade $i$</li>
+<li>$w_{ij}$ é 1 ÷ número de vizinhos da localidade $i$</li>
+</ul>
+<p>
+Dessa forma, $IL_i$ captura o grau em que uma variável particular ($s_i$) em uma localização $i$ 
+possui similaridade ou dissimilaridade em relação às mesmas variáveis das regiões vizinhas ($s_j$). 
+<p>
+No Atlas Eleitoral, a estatística IL mostra, em azul, as regiões que apresentaram correlação entre as votações de suas localidades. O mapa da estatística IL também mostra, em vermelho, as localidades onde correlação com a votação do candidato nas localidades vizinhas é negativa (ou seja, um local onde o candidato é bem votado cercado de locais onde é mal votado, ou vice-versa), chamados de outliers.
+<p>
+Note que, para candidatos com votações expressivas em todo o estado, é possível haver IL elevado (azul) em regiões onde o candidato teve desempenho inferior ao padrão; por isso, para candidatos a cargos executivos ou parlamentares com expressiva votação em estados pequenos, deve-se ter cuidado para não confundir IL elevado em uma localidade com votação elevada na mesma localidade.
+<p>
+A soma de todos os IL das diversas localidades que compõem um estado é a estatística I de Moran, que aparece no painel de cada candidato. Quanto maior o I de Moran de um candidato, maior é o grau de concentração de seus votos.
+<p>
+* <i>No Atlas Eleitoral, uma </i>localidade<i> é um município inteiro (nos casos dos municípios que façam parte de uma única zona eleitoral) ou uma zona eleitoral dentro de um município que possua mais de uma zona.</i>
+<p>
+<span class="fonte">
+Fonte: ANSELIN, Luc (1995). “Local Indicators of Spatial Association – LISA”. <i>Geographical Analysis</i>, Vol 27, No. 2, Abril.
+</span>
+</p>
+</div>
+
+<div class="page" id="ql">
+O quociente de locação (QL) mede a proporção entre a votação de um candidato em uma localidade e a média da votação do mesmo candidato em todo o estado. É uma medida apropriada para mostrar onde se concentram os votos dos candidatos a cargos proporcionais. Para candidatos cargos majoritários, é mais recomendável utilizar a estatística DL.
+<p>
+A estatística QL é calculada da seguinte forma:
+
+$$
+QL_i = { \frac{vd_i} {vd} } \div { \frac {v_i}{v} }
+$$
+
+onde 
+<ul>
+<li>$QL_i$ é a estatística QL calculada para a localidade $i$</li>
+<li>$vd_i$ é o número de votos do deputado d na localidade $i$</li>
+<li>$vd$ é o total de votos do deputado $d$</li>
+<li>$v_i$ é o total de votos obtidos pelo candidato $d$ e por todos os seus concorrentes na localidade $i$</li>
+<li>$v$ é o total de votos do candidato $d$ e de todos os seus concorrentes em todo o estado</li>
+</ul>
+Quando a estatística QL de um candidato for selecionada, o mapa mostrará, em azul, as localidades onde o candidato teve desempenho melhor do que a votação média e, em vermelho, as localidades onde teve votação inferior à média.
+<p>
+<span class="fonte">
+Fonte: AVELINO, George; BIDERMAN, Ciro; SILVA, Glauco P. (2011) “A Concentração Eleitoral nas Eleições Paulistas: Medidas e Aplicações”. <i>DADOS – Revista de Ciências Sociais</i>, vol. 54, nº 2.
+</span>
+</div>
+
+
+<div class="page" id="dl">
+A diferença de locação (DL) mede a diferença entre a votação de um candidato em uma localidade e a média da votação do mesmo candidato em todo o estado. É uma medida mais apropriada para ver a distribuição de votos dos candidatos a cargos majoritários. Para candidatos a cargos proporcionais, é mais recomendável utilizar a estatística QL.
+<p>
+A estatística DL é calculada da seguinte forma:
+
+$$
+DL_i = \frac {vd_i}{vd} - \frac {v_i}{v}
+$$
+
+onde 
+<ul>
+<li>$DL_i$ é a estatística DL calculada para a localidade $i$</li>
+<li>$vd_i$ é o número de votos do deputado $d$ na localidade $i$</li>
+<li>$vd$ é o total de votos do deputado $d$</li>
+<li>$v_i$ é o total de votos obtidos pelo candidato $d$ e por todos os seus concorrentes na localidade $i$</li>
+<li>$v$ é o total de votos do candidato $d$ e de todos os seus concorrentes em todo o estado</li>
+</ul>
+
+Quando a estatística DL de um candidato for selecionada, o mapa mostrará, em azul, as localidades onde o candidato teve desempenho melhor do que a votação média e, em vermelho, as localidades onde o desempenho foi inferior à média.
+</div>
+
+<script>
+console.log('Entrou aqui')
+var page = window.location.search
+if (page) {
+	page = page.substr(1, page.length-1)
+}
+console.log(page)
+var pageElem = document.getElementById(page)
+if (pageElem) {
+	pageElem.style.display = 'block'
+	console.log(pageElem.style)
+}
+
+</script>
+
+
+</body>
+</html>
